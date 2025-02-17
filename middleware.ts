@@ -5,6 +5,7 @@ import { DEFAULT_LOGIN_REDIRECT, apiAuthPrefix, authRoutes, publicRoutes} from "
 const { auth } = NextAuth(authConfig);
 
 export default auth((req) => {
+  console.log("in middleware")
   const { nextUrl } = req;
   const isLoggedIn = !!req.auth;
 
