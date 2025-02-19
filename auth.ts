@@ -3,6 +3,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { db } from "./lib/db";
 import authConfig from "./auth.config";
 import { UserRole } from "@prisma/client"
+import { getUserById } from "./data/user";
 
 interface CustomUser extends User {
   role: UserRole
@@ -22,6 +23,13 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     }
   },
   callbacks: {
+    async signIn({ user, account }) {
+      if (account?.provider !== "credentials") return true;
+      if (!user.id) return false;
+      const existingUser = await getUserById(user.id);
+      if (!existingUser?.emailVerified) return false;
+      return true;
+    },
     async session({ session, token }) {
       return {
         ...session,
