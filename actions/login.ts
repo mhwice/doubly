@@ -14,6 +14,15 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
   const validatedFields = LoginSchema.safeParse(values);
   if (!validatedFields.success) return { error: "Invalid fields" };
   const { email, password } = validatedFields.data;
+  /*
+
+  TODO:
+
+  I am currently sending a verificationToken email to the provided email
+  even if the password is wrong. Should probably make sure they provide the
+  correct password before sending the email.
+
+  */
   const existingUser = await getUserByEmail(email);
   if (!existingUser || !existingUser.email || !existingUser.password) {
     return { error: "Invalid credentials" };
