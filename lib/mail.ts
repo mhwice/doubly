@@ -15,5 +15,21 @@ export const sendVerificationEmail = async (email: string, token: string) => {
     return { error: "Email could not send" };
   }
 
-  return { success: "Confirmation email sent" }
+  return { success: "Confirmation email sent" };
+}
+
+export const sendPasswordResetEmail = async (email: string, token: string) => {
+  const resetLink = `http://localhost:3000/auth/new-password?token=${token}`;
+  const { data, error } = await resend.emails.send({
+    from: "onboarding@resend.dev",
+    to: email,
+    subject: "Reset your password",
+    html: `<p>Click <a href="${resetLink}">here</a> to reset your password.</p>`
+  });
+
+  if (error) {
+    return { error: "Email could not send" };
+  }
+
+  return { success: "Password reset email sent" };
 }
