@@ -33,3 +33,19 @@ export const sendPasswordResetEmail = async (email: string, token: string) => {
 
   return { success: "Password reset email sent" };
 }
+
+export const sendTwoFactorTokenEmail = async (email: string, token: string) => {
+
+  const { data, error } = await resend.emails.send({
+    from: "onboarding@resend.dev",
+    to: email,
+    subject: "Your 2FA Code",
+    html: `<p>Your 2FA code: ${token}</p>`
+  });
+
+  // if (error) {
+  //   return { error: "Email could not send" };
+  // }
+
+  // return { success: "Password reset email sent" };
+}
