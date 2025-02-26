@@ -2,12 +2,13 @@ import NextAuth, { User } from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { db } from "./lib/db";
 import authConfig from "./auth.config";
-import { UserRole } from "@prisma/client"
+import { UserRole, User as PrismaUser } from "@prisma/client"
 import { getUserById } from "./data/user";
 import { getTwoFactorConfirmationByUserId } from "./data/two-factor-confirmation";
 
-interface CustomUser extends User {
-  role: UserRole
+export interface CustomUser extends User {
+  role: UserRole,
+  isTwoFactorEnabled: boolean
 }
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
@@ -45,12 +46,17 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         ...session,
         user: {
           ...session.user,
-          role: token.role
+          id: token.sub,
+          role: token.role,
+          isTwoFactorEnabled: token.isTwoFactorEnabled
         }
       };
     },
     async jwt({ token, user }) {
-      if (user) token.role = (user as CustomUser).role;
+      if (user) {
+        token.role = (user as CustomUser).role;
+        token.isTwoFactorEnabled = (user as CustomUser).isTwoFactorEnabled;
+      }
       return token;
     },
   },
