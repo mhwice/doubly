@@ -28,7 +28,7 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
   */
   const existingUser = await getUserByEmail(email);
   if (!existingUser || !existingUser.email || !existingUser.password) {
-    return { error: "Invalid credentials" };
+    return { error: "Invalid credentials", success: "false", twoFactor: false };
   }
 
   if (!existingUser.emailVerified) {
@@ -61,7 +61,7 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
     } else {
       const twoFactorToken = await generateTwoFactorToken(existingUser.email);
       await sendTwoFactorTokenEmail(twoFactorToken.email, twoFactorToken.token);
-      return { twoFactor: true };
+      return { success: "true", twoFactor: true };
     }
   }
 
@@ -71,6 +71,7 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
       password,
       redirectTo: DEFAULT_LOGIN_REDIRECT
     });
+    return { success: "true", twoFactor: false };
   } catch (error: unknown) {
     // if (isRedirectError(error)) throw error;
     if (error instanceof AuthError) {

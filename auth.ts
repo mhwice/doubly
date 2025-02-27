@@ -8,7 +8,8 @@ import { getTwoFactorConfirmationByUserId } from "./data/two-factor-confirmation
 
 export interface CustomUser extends User {
   role: UserRole,
-  isTwoFactorEnabled: boolean
+  isTwoFactorEnabled: boolean,
+  isOAuth: boolean
 }
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
@@ -48,7 +49,9 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
           ...session.user,
           id: token.sub,
           role: token.role,
-          isTwoFactorEnabled: token.isTwoFactorEnabled
+          isTwoFactorEnabled: token.isTwoFactorEnabled,
+          name: token.name,
+          email: token.email
         }
       };
     },
@@ -56,6 +59,8 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       if (user) {
         token.role = (user as CustomUser).role;
         token.isTwoFactorEnabled = (user as CustomUser).isTwoFactorEnabled;
+        token.name = user.name;
+        token.email = user.email;
       }
       return token;
     },
