@@ -6,3 +6,9 @@ export const currentUser = async () => {
   if (session?.user) return session.user as CustomUser;
   return undefined;
 }
+
+export const currentRole = async () => {
+  const session = await auth();
+  if (session?.user) return (session.user as CustomUser).role;
+  return undefined;
+}
