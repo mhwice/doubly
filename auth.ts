@@ -2,14 +2,14 @@ import NextAuth, { User } from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { db } from "./lib/db";
 import authConfig from "./auth.config";
-import { UserRole, User as PrismaUser } from "@prisma/client"
+import { UserRole, User as PrismaUser } from "@prisma/client";
 import { getUserById } from "./data/user";
 import { getTwoFactorConfirmationByUserId } from "./data/two-factor-confirmation";
 
 export interface CustomUser extends User {
-  role: UserRole,
-  isTwoFactorEnabled: boolean,
-  isOAuth: boolean
+  role: UserRole;
+  isTwoFactorEnabled: boolean;
+  isOAuth: boolean;
 }
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
@@ -21,9 +21,9 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     async linkAccount({ user }) {
       await db.user.update({
         where: { id: user.id },
-        data: { emailVerified: new Date() }
-      })
-    }
+        data: { emailVerified: new Date() },
+      });
+    },
   },
   callbacks: {
     async signIn({ user, account }) {
@@ -33,10 +33,12 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       if (!existingUser?.emailVerified) return false;
       // 2fa
       if (existingUser.isTwoFactorEnabled) {
-        const twoFactorConfirmation = await getTwoFactorConfirmationByUserId(existingUser.id);
+        const twoFactorConfirmation = await getTwoFactorConfirmationByUserId(
+          existingUser.id
+        );
         if (!twoFactorConfirmation) return false;
         await db.twoFactorConfirmation.delete({
-          where: { id: twoFactorConfirmation.id }
+          where: { id: twoFactorConfirmation.id },
         });
       }
 
@@ -51,8 +53,8 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
           role: token.role,
           isTwoFactorEnabled: token.isTwoFactorEnabled,
           name: token.name,
-          email: token.email
-        }
+          email: token.email,
+        },
       };
     },
     async jwt({ token, user }) {
