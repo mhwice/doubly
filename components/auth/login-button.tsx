@@ -25,15 +25,3 @@ export const LoginButton = ({ children, mode = "redirect" }: LoginButtonProps) =
     <span onClick={onClick} className="cursor-pointer">{children}</span>
   );
 };
-
-
-/*
-
-Questions
-- why "use client"?
-- I don't understand the props for this component...
-- the TS interface is a bit confusing. whats the ? mean? optional keys?
-
-- the useRouter hooks seems intuitive enough
-
-*/

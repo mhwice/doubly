@@ -7,5 +7,8 @@ export const auth = betterAuth({
   }),
   emailAndPassword: {
     enabled: true,
-  }
+  },
+  // emailVerification: {
+  //   sendOnSignUp: true
+  // }
 });
