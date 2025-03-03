@@ -1,5 +1,5 @@
-import { auth } from "@/auth";
-import type { CustomUser } from "@/auth"
+import { auth } from "@/deprecated-auth";
+import type { CustomUser } from "@/deprecated-auth"
 
 export const currentUser = async () => {
   const session = await auth();

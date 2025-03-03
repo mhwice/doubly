@@ -1,4 +1,4 @@
-import type { CustomUser } from "@/auth"
+import type { CustomUser } from "@/deprecated-auth"
 import {
   Card,
   CardContent,

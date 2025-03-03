@@ -1,6 +1,6 @@
 "use client";
 
-import { settings } from "@/actions/settings";
+import { settings } from "@/actions/deprecated-settings";
 import { Button } from "@/components/ui/button";
 import {
   Card,

@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { LoginSchema } from "@/schema";
-import { signIn } from "@/auth";
+import { signIn } from "@/deprecated-auth";
 import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
 import { AuthError } from "next-auth";
 import { isRedirectError } from "next/dist/client/components/redirect-error";

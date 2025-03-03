@@ -1,5 +1,5 @@
 import { useSession } from "next-auth/react";
-import { CustomUser } from "@/auth";
+import { CustomUser } from "@/deprecated-auth";
 
 export const useCurrentUser = () => {
   const session = useSession();

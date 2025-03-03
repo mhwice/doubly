@@ -1,7 +1,7 @@
 "use client";
 
-import { admin } from "@/actions/admin";
-import { RoleGate } from "@/components/auth/role-gate";
+import { admin } from "@/actions/depreccted-admin";
+import { RoleGate } from "@/components/auth/deprecated-role-gate";
 import { FormSuccess } from "@/components/form-success";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
