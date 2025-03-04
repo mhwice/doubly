@@ -2,41 +2,41 @@
 
 import { z } from "zod";
 import { RegisterSchema } from "@/schema";
-import bcrypt from "bcryptjs";
-// import { auth } from "@/utils/auth";
-
-import { authClient } from "@/utils/auth-client";
+import { auth } from "@/utils/auth";
+import { APIError } from "better-auth/api";
 
 export const register = async (values: z.infer<typeof RegisterSchema>) => {
   const validatedFields = RegisterSchema.safeParse(values);
   if (!validatedFields.success) return { error: "Invalid fields" };
 
   const { email, password, name } = validatedFields.data;
-  const hashedPassword = await bcrypt.hash(password, 10);
 
-  const { data, error } = await authClient.signUp.email({
-    email: "test@example.com",
-    password: "password1234",
-    name: "test",
-    image: "https://example.com/image.png",
-  });
+  try {
 
-  console.log("data", data);
-  console.log("error", error);
+    const { user, token } = await auth.api.signUpEmail({
+      body: { email, password, name },
+    });
 
-  return { success: "did something" };
+  } catch (error: unknown) {
+    if (error instanceof APIError) {
 
-  // auth.api.signUpEmail
+      // console.log("expected error", {
+      //   body: error.body,
+      //   cause: error.cause,
+      //   headers: error.headers,
+      //   message: error.message,
+      //   name: error.name,
+      //   stack: error.stack,
+      //   status: error.status,
+      //   statusCode: error.statusCode,
+      // });
 
-  // const response = await auth.api.signInEmail({
-  //     body: {
-  //         email,
-  //         password
-  //     },
-  //     asResponse: true // returns a response object instead of data
-  // });
+      return { error: error.message };
 
+    } else {
+      return { error: "Something went wrong" };
+    }
+  }
+
+  return { success: "User registered" };
 };
-
-
-
