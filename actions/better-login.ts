@@ -13,30 +13,30 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
 
   try {
     await auth.api.signInEmail({
-      body: { email, password }
+      body: { email, password, callbackURL: "/better-settings" },
     });
     // console.log({ redirect, token, url, user })
     console.log("successfull signin");
-    redirect("/better-settings");
 
   } catch (error: unknown) {
     if (error instanceof APIError) {
       return { error: error.message };
       // console.log("expected error", {
-      //   body: error.body,
-      //   cause: error.cause,
-      //   headers: error.headers,
-      //   message: error.message,
-      //   name: error.name,
-      //   stack: error.stack,
-      //   status: error.status,
-      //   statusCode: error.statusCode,
-      // });
-    } else {
-      // console.log("no idea man", error);
-      return { error: "Something went wrong" };
+        //   body: error.body,
+        //   cause: error.cause,
+        //   headers: error.headers,
+        //   message: error.message,
+        //   name: error.name,
+        //   stack: error.stack,
+        //   status: error.status,
+        //   statusCode: error.statusCode,
+        // });
+      } else {
+        console.log("no idea man", error);
+        return { error: "Something went wrong" };
+      }
     }
-  }
 
+    redirect("/better-settings");
   // return { success: "User signed in" };
 }

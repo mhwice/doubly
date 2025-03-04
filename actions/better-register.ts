@@ -14,7 +14,7 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
   try {
 
     const { user, token } = await auth.api.signUpEmail({
-      body: { email, password, name },
+      body: { email, password, name, callbackURL: "/better-settings" },
     });
 
   } catch (error: unknown) {

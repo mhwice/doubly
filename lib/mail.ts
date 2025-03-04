@@ -18,6 +18,18 @@ export const sendVerificationEmail = async (email: string, token: string) => {
   return { success: "Confirmation email sent" };
 }
 
+export const sendBetterVerificationEmail = async (email: string, callbackUrl: string) => {
+  const { error } = await resend.emails.send({
+    from: "onboarding@resend.dev",
+    to: email,
+    subject: "Confirm your email",
+    html: `<p>Click <a href="${callbackUrl}">here</a> to confirm email.</p>`
+  });
+
+  if (error) return { error: "Failed to send verification email" };
+  return { success: "Verification email sent" };
+}
+
 export const sendPasswordResetEmail = async (email: string, token: string) => {
   const resetLink = `http://localhost:3000/auth/new-password?token=${token}`;
   const { data, error } = await resend.emails.send({
