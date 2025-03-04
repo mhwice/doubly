@@ -1,36 +1,35 @@
-import authConfig from "./deprecated-auth.config";
-import NextAuth from "next-auth";
-import { DEFAULT_LOGIN_REDIRECT, apiAuthPrefix, authRoutes, publicRoutes} from "@/routes";
+import { NextRequest, NextResponse } from "next/server";
+import { getSessionCookie } from "better-auth/cookies";
 
-const { auth } = NextAuth(authConfig);
+export async function middleware(request: NextRequest) {
+	const sessionCookie = getSessionCookie(request); // Optionally pass config as the second argument if cookie name or prefix is customized.
+  const { nextUrl } = request;
 
-export default auth((req) => {
-  const { nextUrl } = req;
-  const isLoggedIn = !!req.auth;
+  /*
 
-  const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
-  const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
-  const isAuthRoute = authRoutes.includes(nextUrl.pathname);
+  TODO:
 
-  if (isApiAuthRoute) return;
-  if (isAuthRoute) {
-    if (isLoggedIn) return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
-    return;
-  }
+  Right now just allow anything, come back to this later.
 
-  if (!isLoggedIn && !isPublicRoute) return Response.redirect(new URL("/auth/login", nextUrl));
-});
+  There should be a few kinds of routes.
 
-// Optionally, don't invoke Middleware on some paths
+  1. Signed-in
+    Only a signed-in user can access /settings, /dashboard, etc.
+  2. Signed-out
+    Only a signed-out user can access /login, /register
+  3. Everyone
+    Anyone can view /
+  4. No one
+    Not really sure about this one..
 
-// we use Regex to only run the auth middleware on routes we want to check
-export const config = {
-  // matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
-  matcher: [
-    // the following regex is from Clerk
-    // Skip Next.js internals and all static files, unless found in search params
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    // Always run for API routes
-    '/(api|trpc)(.*)',
-  ]
+  */
+
+	if (!sessionCookie) {
+		return NextResponse.redirect(new URL("/", request.url));
+	}
+	return NextResponse.next();
 }
+
+export const config = {
+	matcher: ["/dashboard", "/auth/login"], // Specify the routes the middleware applies to
+};

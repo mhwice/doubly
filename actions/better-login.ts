@@ -4,6 +4,7 @@ import { z } from "zod";
 import { LoginSchema } from "@/schema";
 import { auth } from "@/utils/auth";
 import { APIError } from "better-auth/api";
+import { redirect } from "next/navigation";
 
 export const login = async (values: z.infer<typeof LoginSchema>) => {
   const validatedFields = LoginSchema.safeParse(values);
@@ -11,10 +12,12 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
   const { email, password, code } = validatedFields.data;
 
   try {
-    const { redirect, token, url, user } = await auth.api.signInEmail({
+    await auth.api.signInEmail({
       body: { email, password }
     });
     // console.log({ redirect, token, url, user })
+    console.log("successfull signin");
+    redirect("/better-settings");
 
   } catch (error: unknown) {
     if (error instanceof APIError) {
@@ -35,5 +38,5 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
     }
   }
 
-  return { success: "User signed in" };
+  // return { success: "User signed in" };
 }
