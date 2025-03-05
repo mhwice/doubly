@@ -22,7 +22,16 @@ export const auth = betterAuth({
       await sendBetterVerificationEmail(user.email, url);
     }
   },
-
+  socialProviders: {
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID || "",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+    },
+    github: {
+      clientId: process.env.GITHUB_CLIENT_ID || "",
+      clientSecret: process.env.GITHUB_CLIENT_SECRET || ""
+    }
+  },
   plugins: [nextCookies()] // make sure this is the last plugin in the array
 });
 
