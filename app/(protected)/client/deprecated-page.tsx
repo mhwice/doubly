@@ -1,11 +1,12 @@
 "use client";
 
-import { UserInfo } from "@/components/deprecated-user-info";
-import { useCurrentUser } from "@/hooks/deprecated-use-current-user";
+// import { UserInfo } from "@/components/user-info";
+// // import { useCurrentUser } from "@/hooks/deprecated-use-current-user";
 
 export default function ServerPage() {
-  const user = useCurrentUser();
+  // const user = useCurrentUser();
   return (
-    <UserInfo user={user} label="Client component" />
+    <div>oops</div>
+    // <UserInfo user={user} label="Client component" />
   );
 }

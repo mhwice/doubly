@@ -1,6 +1,6 @@
 "use client";
 
-import { UserButton } from "@/components/auth/deprecated-user-button";
+// import { UserButton } from "@/components/auth/deprecated-user-button";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -24,7 +24,7 @@ export default function Navbar() {
           <Link href="/settings">Settings</Link>
         </Button>
       </div>
-      <UserButton />
+      {/* <UserButton /> */}
     </nav>
   );
 }
