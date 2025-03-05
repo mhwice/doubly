@@ -1,11 +1,13 @@
 import { betterAuth } from "better-auth";
+import { twoFactor } from "better-auth/plugins"
 import { nextCookies } from "better-auth/next-js";
 import { Pool } from "pg";
 import { sendBetterPasswordResetEmail, sendBetterVerificationEmail } from "@/lib/mail";
 
 export const auth = betterAuth({
+  appName: "NextAuth",
   database: new Pool({
-    connectionString: process.env.DATABASE_URL
+    connectionString: process.env.DATABASE_URL || ""
   }),
   emailAndPassword: {
     enabled: true,
@@ -32,7 +34,10 @@ export const auth = betterAuth({
       clientSecret: process.env.GITHUB_CLIENT_SECRET || ""
     }
   },
-  plugins: [nextCookies()] // make sure this is the last plugin in the array
+  plugins: [
+    twoFactor(),
+    nextCookies(), // make sure this is the last plugin in the array
+  ]
 });
 
 export type User = typeof auth.$Infer.Session.user;
