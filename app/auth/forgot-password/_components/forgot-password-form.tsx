@@ -1,20 +1,22 @@
 "use client";
 
-import { CardWrapper } from "./card-wrapper";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { z } from "zod";
-import { ResetSchema } from "@/schema";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
-import { FormError } from "../form-error";
-import { FormSuccess } from "../form-success";
-// import { reset } from "@/actions/reset";
-import { reset } from "@/actions/better-reset";
 import { useState, useTransition } from "react";
 
-export const ResetForm = () => {
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
+import { ResetSchema } from "@/schema";
+import { reset } from "@/actions/better-reset";
+
+import { CardWrapper } from "@/components/auth/card-wrapper";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { FormError } from "@/components/form-error";
+import { FormSuccess } from "@/components/form-success";
+
+export const ForgotPasswordForm = () => {
 
   const [error, setError] = useState<string | undefined>();
   const [success, setSuccess] = useState<string | undefined>();

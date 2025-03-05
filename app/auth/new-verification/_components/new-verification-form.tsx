@@ -1,12 +1,15 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
-import { CardWrapper } from "./card-wrapper";
-import { BeatLoader } from "react-spinners";
 import { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+
+import { BeatLoader } from "react-spinners";
+
 import { newVerification } from "@/actions/new-verification";
-import { FormError } from "../form-error";
-import { FormSuccess } from "../form-success";
+
+import { CardWrapper } from "@/components/auth/card-wrapper";
+import { FormError } from "@/components/form-error";
+import { FormSuccess } from "@/components/form-success";
 
 export default function NewVerificationForm() {
   const [error, setError] = useState<string | undefined>();

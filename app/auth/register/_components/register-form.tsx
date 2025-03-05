@@ -1,17 +1,20 @@
 "use client";
 
-import { CardWrapper } from "./card-wrapper";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { z } from "zod";
-import { RegisterSchema } from "@/schema";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
-import { FormError } from "../form-error";
-import { FormSuccess } from "../form-success";
-import { register } from "@/actions/better-register";
 import { useState, useTransition } from "react";
+
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+import { register } from "@/actions/better-register";
+import { RegisterSchema } from "@/schema";
+
+import { CardWrapper } from "@/components/auth/card-wrapper";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { FormError } from "@/components/form-error";
+import { FormSuccess } from "@/components/form-success";
 
 export const RegisterForm = () => {
 
