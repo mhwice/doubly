@@ -1,15 +1,16 @@
 "use client";
 
-import { signIn } from "next-auth/react";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
 import { Button } from "../ui/button";
-import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
+import { authClient } from "@/utils/auth-client";
 
 export const Social = () => {
-  const onClick = (provider: "google" | "github") => {
-    signIn(provider, {
-      redirectTo: DEFAULT_LOGIN_REDIRECT
+  const onClick = async (provider: "google" | "github") => {
+    await authClient.signIn.social({
+      provider,
+      callbackURL: "/settings",
+      errorCallbackURL: "/oopsy"
     });
   }
 
