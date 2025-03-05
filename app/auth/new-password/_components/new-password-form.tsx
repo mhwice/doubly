@@ -79,7 +79,7 @@ export const NewPasswordForm = () => {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>New password</FormLabel>
                   <FormControl>
                     <Input
                       {...field}

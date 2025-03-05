@@ -33,11 +33,12 @@ export const auth = betterAuth({
 
 /*
 
-It seems to me that I don't need to manually create the verication email url - better-auth does that for me.
-So I can change my function signature to
+Things to ask online about:
 
-sendBetterVerificationEmail(url)
+When a we pass an email address to:
+await auth.api.forgetPassword({ body: { email, redirectTo: "/auth/new-password" } });
+that does not exist in the db, this returns a status 200 instead of throwing an error.
 
-and I can optionall include tehe users name as well.
+Also, is there a way to tell better-auth to not allow forgetPassword to send an email unless the user is already verified?
 
 */
