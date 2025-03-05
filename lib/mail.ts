@@ -18,12 +18,12 @@ export const sendVerificationEmail = async (email: string, token: string) => {
   return { success: "Confirmation email sent" };
 }
 
-export const sendBetterVerificationEmail = async (email: string, callbackUrl: string) => {
+export const sendBetterVerificationEmail = async (email: string, callbackURL: string) => {
   const { error } = await resend.emails.send({
     from: "onboarding@resend.dev",
     to: email,
     subject: "Confirm your email",
-    html: `<p>Click <a href="${callbackUrl}">here</a> to confirm email.</p>`
+    html: `<p>Click <a href="${callbackURL}">here</a> to confirm email.</p>`
   });
 
   if (error) return { error: "Failed to send verification email" };
@@ -43,6 +43,18 @@ export const sendPasswordResetEmail = async (email: string, token: string) => {
     return { error: "Email could not send" };
   }
 
+  return { success: "Password reset email sent" };
+}
+
+export const sendBetterPasswordResetEmail = async (email: string, callbackURL: string) => {
+  const { error } = await resend.emails.send({
+    from: "onboarding@resend.dev",
+    to: email,
+    subject: "Reset your password",
+    html: `<p>Click <a href="${callbackURL}">here</a> to reset your password.</p>`
+  });
+
+  if (error) return { error: "Failed to send password reset email" };
   return { success: "Password reset email sent" };
 }
 

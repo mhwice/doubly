@@ -10,15 +10,34 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { FormError } from "../form-error";
 import { FormSuccess } from "../form-success";
-import { newPassword } from "@/actions/new-password";
+// import { newPassword } from "@/actions/new-password";
+import { newPassword } from "@/actions/better-new-password";
 import { useState, useTransition } from "react";
 import { useSearchParams } from "next/navigation";
 
 export const NewPasswordForm = () => {
   const searchParams = useSearchParams();
-  const token = searchParams.get("token");
 
-  const [error, setError] = useState<string | undefined>();
+  /*
+
+  If the token that is passed in the url is invalid, we get this:
+
+  http://localhost:3000/auth/new-password?error=INVALID_TOKEN
+
+  If that is the case, we need to figure out what to do.
+  There are 2 things that may have happened.
+
+  1. Better-auth messed up.
+  2. Someone just randomly visited /auth/new-password without a valid token.
+
+  Either way, I can just say "invalid token" and they can navigate back to the home page.
+
+  */
+
+  const token = searchParams.get("token");
+  const queryError = searchParams.get("error");
+
+  const [error, setError] = useState<string | undefined>(queryError || "");
   const [success, setSuccess] = useState<string | undefined>();
 
   const [isPending, startTransition] = useTransition();
@@ -62,7 +81,7 @@ export const NewPasswordForm = () => {
                   <FormControl>
                     <Input
                       {...field}
-                      disabled={isPending}
+                      disabled={isPending || !!error}
                       placeholder="******"
                       type="password"
                     />
@@ -77,7 +96,7 @@ export const NewPasswordForm = () => {
           <Button
             type="submit"
             className="w-full"
-            disabled={isPending}
+            disabled={isPending || !!error}
           >
             Reset password
           </Button>
