@@ -11,12 +11,14 @@ export const newPassword = async (values: z.infer<typeof NewPasswordSchema>, tok
   if (!validatedFields.success) return { error: "Invalid fields" };
   const { password } = validatedFields.data;
 
-  await auth.api.resetPassword({
+  const x = await auth.api.resetPassword({
     body: {
       newPassword: password,
       token: token
     }
   });
+
+  console.log("better-new-password", x);
 
   return { success: "Password updated" };
 };

@@ -12,7 +12,7 @@ export const reset = async (values: z.infer<typeof ResetSchema>) => {
   const { email } = validatedFields.data;
 
   try {
-    const { status } = await auth.api.forgetPassword({
+    await auth.api.forgetPassword({
       body: {
         email,
         redirectTo: "/auth/new-password"

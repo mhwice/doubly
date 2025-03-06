@@ -13,29 +13,12 @@ import { NewPasswordSchema } from "@/schema";
 import { CardWrapper } from "@/components/auth/card-wrapper";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { FormError } from "@/components/form-error";
 import { FormSuccess } from "@/components/form-success";
-import { authClient } from "@/utils/auth-client";
+import { LoadingButton } from "@/components/auth/loading-button";
 
 export const NewPasswordForm = () => {
   const searchParams = useSearchParams();
-
-  /*
-
-  If the token that is passed in the url is invalid, we get this:
-
-  http://localhost:3000/auth/new-password?error=INVALID_TOKEN
-
-  If that is the case, we need to figure out what to do.
-  There are 2 things that may have happened.
-
-  1. Better-auth messed up.
-  2. Someone just randomly visited /auth/new-password without a valid token.
-
-  Either way, I can just say "invalid token" and they can navigate back to the home page.
-
-  */
 
   const token = searchParams.get("token");
   const queryError = searchParams.get("error");
@@ -57,19 +40,13 @@ export const NewPasswordForm = () => {
     setSuccess("");
 
     if (!token) return;
-    const { data, error } = await authClient.resetPassword({
-      newPassword: values.password,
-      token,
-    });
 
-    console.log({ data });
-    console.log({ error });  // error.message = 'invalid token'
-    // startTransition(() => {
-    //   newPassword(values, token).then((data) => {
-    //     if (data?.error) setError(data?.error);
-    //     if (data?.success) setSuccess(data?.success);
-    //   });
-    // });
+    startTransition(() => {
+      newPassword(values, token).then((data) => {
+        if (data?.error) setError(data?.error);
+        if (data?.success) setSuccess(data?.success);
+      });
+    });
   }
 
   return (
@@ -105,13 +82,7 @@ export const NewPasswordForm = () => {
           </div>
           <FormError message={error} />
           <FormSuccess message={success} />
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={isPending || !!error}
-          >
-            Reset password
-          </Button>
+          <LoadingButton loading={isPending}>Reset password</LoadingButton>
         </form>
       </Form>
     </CardWrapper>
