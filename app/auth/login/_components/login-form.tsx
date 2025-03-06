@@ -8,8 +8,10 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { login } from "@/actions/better-login";
+// import { login } from "@/actions/better-login";
 import { LoginSchema } from "@/schema";
+
+import { authClient } from "@/utils/auth-client";
 
 import { CardWrapper } from "@/components/auth/card-wrapper";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -17,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components//ui/button";
 import { FormError } from "@/components/form-error";
 import { FormSuccess } from "@/components/form-success";
+import { sleep } from "@/utils/helper";
 
 export const LoginForm = () => {
 
@@ -37,27 +40,34 @@ export const LoginForm = () => {
     }
   });
 
-  const onSubmit = (values: z.infer<typeof LoginSchema>) => {
+  const onSubmit = async (values: z.infer<typeof LoginSchema>) => {
     setError("");
     setSuccess("");
 
-    startTransition(() => {
-        login(values).then((data) => {
-          if (data?.error) {
-            form.reset();
-            setError(data.error);
-          }
+    sleep(5000);
 
-          // if (data?.success) {
-          //   form.reset();
-          //   setSuccess(data.success);
-          // }
+    // await authClient.signIn.email({
+    //   email: values.email,
+    //   password: values.password
+    // });
 
-          // if (data?.twoFactor) {
-          //   setShowTwoFactor(true);
-          // }
-      }).catch(() => setError("Something went wrong"));
-    });
+    // startTransition(() => {
+      //   login(values).then((data) => {
+      //     if (data?.error) {
+      //       form.reset();
+      //       setError(data.error);
+      //     }
+
+      //     // if (data?.success) {
+      //     //   form.reset();
+      //     //   setSuccess(data.success);
+      //     // }
+
+      //     // if (data?.twoFactor) {
+      //     //   setShowTwoFactor(true);
+      //     // }
+      // }).catch(() => setError("Something went wrong"));
+    // });
   }
 
   return (

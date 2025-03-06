@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { FormError } from "@/components/form-error";
 import { FormSuccess } from "@/components/form-success";
+import { authClient } from "@/utils/auth-client";
 
 export const NewPasswordForm = () => {
   const searchParams = useSearchParams();
@@ -51,15 +52,24 @@ export const NewPasswordForm = () => {
     }
   });
 
-  const onSubmit = (values: z.infer<typeof NewPasswordSchema>) => {
+  const onSubmit = async (values: z.infer<typeof NewPasswordSchema>) => {
     setError("");
     setSuccess("");
-    startTransition(() => {
-      newPassword(values, token).then((data) => {
-        if (data?.error) setError(data?.error);
-        if (data?.success) setSuccess(data?.success);
-      });
+
+    if (!token) return;
+    const { data, error } = await authClient.resetPassword({
+      newPassword: values.password,
+      token,
     });
+
+    console.log({ data });
+    console.log({ error });  // error.message = 'invalid token'
+    // startTransition(() => {
+    //   newPassword(values, token).then((data) => {
+    //     if (data?.error) setError(data?.error);
+    //     if (data?.success) setSuccess(data?.success);
+    //   });
+    // });
   }
 
   return (
