@@ -1,5 +1,5 @@
 import { betterAuth } from "better-auth";
-import { twoFactor } from "better-auth/plugins"
+// import { twoFactor } from "better-auth/plugins"
 import { nextCookies } from "better-auth/next-js";
 import { Pool } from "pg";
 import { sendBetterPasswordResetEmail, sendBetterVerificationEmail } from "@/lib/mail";
@@ -9,6 +9,11 @@ export const auth = betterAuth({
   database: new Pool({
     connectionString: process.env.DATABASE_URL || ""
   }),
+  account: {
+    accountLinking: {
+      enabled: true,
+    }
+  },
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 6,
@@ -35,22 +40,9 @@ export const auth = betterAuth({
     }
   },
   plugins: [
-    twoFactor(),
+    // twoFactor(),
     nextCookies(), // make sure this is the last plugin in the array
   ]
 });
 
 export type User = typeof auth.$Infer.Session.user;
-
-
-/*
-
-Things to ask online about:
-
-When a we pass an email address to:
-await auth.api.forgetPassword({ body: { email, redirectTo: "/auth/new-password" } });
-that does not exist in the db, this returns a status 200 instead of throwing an error.
-
-Also, is there a way to tell better-auth to not allow forgetPassword to send an email unless the user is already verified?
-
-*/
