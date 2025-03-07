@@ -5,7 +5,7 @@ import { FaApple, FaFacebook, FaGithub } from "react-icons/fa";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { linkSocial } from "@/actions/link-social";
-import { authClient } from "@/utils/auth-client";
+// import { authClient } from "@/utils/auth-client";
 // import { auth } from "@/utils/auth";
 // import { headers } from "next/headers";
 import { useState, useTransition } from "react";
@@ -18,10 +18,9 @@ export default function OAuthProviders() {
 
     startTransition(async () => {
       await linkSocial("github").then((data) => {
-        console.log(data);
+        console.log("ere", data);
       });
     });
-
 
     // const x = await authClient.linkSocial({
     //   provider: "github",

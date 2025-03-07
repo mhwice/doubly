@@ -3,15 +3,15 @@
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
 import { Button } from "../ui/button";
-import { authClient } from "@/utils/auth-client";
+// import { authClient } from "@/utils/auth-client";
 
 export const Social = () => {
   const onClick = async (provider: "google" | "github") => {
-    await authClient.signIn.social({
-      provider,
-      callbackURL: "/settings",
-      errorCallbackURL: "/oopsy"
-    });
+    // await authClient.signIn.social({
+    //   provider,
+    //   callbackURL: "/settings",
+    //   errorCallbackURL: "/oopsy"
+    // });
   }
 
   return (
