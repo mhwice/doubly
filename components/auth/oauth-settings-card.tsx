@@ -5,29 +5,51 @@ import { FaApple, FaFacebook, FaGithub } from "react-icons/fa";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { linkSocial } from "@/actions/link-social";
-// import { authClient } from "@/utils/auth-client";
-// import { auth } from "@/utils/auth";
-// import { headers } from "next/headers";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
+import { listAccounts } from "@/actions/list-accounts";
+import { unlinkSocial } from "@/actions/unlink-social";
+import type { SocialProvider } from "@/app/(protected)/admin/page";
 
-export default function OAuthProviders() {
+interface OAuthProvidersProps {
+  accounts: string[];
+}
+
+/*
+
+Next steps
+1. I can now successfully link/unlink accounts by calling the link/unlink server actions.
+   Now what I want is to add some logic that will call the correct server action depending on
+   the current state. For example, if Github is not linked, clicking the button should link it.
+   If Github is currently linked, clicking the button should unlink it.
+2. UI - when clicking the link/unlink button, I want to see a loading spinner.
+3. I think the unlink server action needs a revalidatePath call as well.
+
+
+*/
+
+export default function OAuthProviders({ accounts }: OAuthProvidersProps) {
+  console.log(accounts)
 
   const [isPending, startTransition] = useTransition();
-
+  const [githubLinked, setGithubLinked] = useState(false);
   const linkGithub = () => {
-
     startTransition(async () => {
       await linkSocial("github").then((data) => {
         console.log("ere", data);
       });
+
+      // await listAccounts().then((data) => {
+      //   if (data.data) {
+      //     for (const acc of data.data) {
+      //       if (acc === "github") setGithubLinked(true);
+      //     }
+      //   }
+      // });
+
+      // await unlinkSocial("github").then((data) => {
+      //   console.log("bye", data);
+      // })
     });
-
-    // const x = await authClient.linkSocial({
-    //   provider: "github",
-    //   callbackURL: "/settings"
-    // });
-
-    // console.log(x);
   }
 
   return (
@@ -43,7 +65,7 @@ export default function OAuthProviders() {
             <span>GitHub</span>
           </div>
           <Button onClick={() => linkGithub()} variant="default" className="bg-black hover:bg-black/90 text-white rounded-md px-4 py-1 h-8">
-            Link
+            {accounts.includes("github") ? "Unlink" : "Link"}
           </Button>
         </div>
 
@@ -53,7 +75,7 @@ export default function OAuthProviders() {
             <span>Google</span>
           </div>
           <Button variant="default" className="bg-black hover:bg-black/90 text-white rounded-md px-4 py-1 h-8">
-            Link
+            {accounts.includes("google") ? "Unlink" : "Link"}
           </Button>
         </div>
 
@@ -63,7 +85,7 @@ export default function OAuthProviders() {
             <span>Facebook</span>
           </div>
           <Button variant="default" className="bg-black hover:bg-black/90 text-white rounded-md px-4 py-1 h-8">
-            Link
+            {accounts.includes("facebook") ? "Unlink" : "Link"}
           </Button>
         </div>
 
@@ -73,7 +95,7 @@ export default function OAuthProviders() {
             <span>Apple</span>
           </div>
           <Button variant="default" className="bg-black hover:bg-black/90 text-white rounded-md px-4 py-1 h-8">
-            Link
+            {accounts.includes("apple") ? "Unlink" : "Link"}
           </Button>
         </div>
       </CardContent>
