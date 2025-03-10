@@ -17,6 +17,8 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { saveLink } from "@/data-access/urls";
+import { createURL } from "@/actions/create-url";
 
 const FormSchema = z.object({
   url: z.string().url({
@@ -45,7 +47,7 @@ export function InputForm() {
     },
   })
 
-  function onSubmit(data: z.infer<typeof FormSchema>) {
+  async function onSubmit(data: z.infer<typeof FormSchema>) {
     const { url } = data;
     if (!isUrlValid(url)) return;
 
@@ -56,20 +58,23 @@ export function InputForm() {
 
     // save in db
 
-    const saveObj = {
-      id: "", // auto generated in db
-      originalURL: url,
-      shortURL: shortURL,
-      code: code,
-      linkClicks: "0", // db can set this with default of 0
-      qrCodeClicks: "", // db can set this with default of 0
-      createdAt: "", // db can make this
-      userId: "123456", // this i need to provide. must get from the session., for now hardocde
-      expirationDate: "", // optional, leave as null for now
-      password: "", // optional, leave as null for now
-    }
+    // const saveObj = {
+    //   id: "", // auto generated in db
+    //   originalURL: url,
+    //   shortURL: shortURL,
+    //   code: code,
+    //   linkClicks: "0", // db can set this with default of 0
+    //   qrCodeClicks: "", // db can set this with default of 0
+    //   createdAt: "", // db can make this
+    //   userId: "123456", // this i need to provide. must get from the session., for now hardocde
+    //   expirationDate: "", // optional, leave as null for now
+    //   password: "", // optional, leave as null for now
+    // }
 
-    console.log(url, shortURL)
+    await createURL(url, shortURL, code, "123456");
+
+    // const resp = saveLink(url, shortURL, code, "123456");
+    // console.log(resp)
   }
 
   return (

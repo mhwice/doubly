@@ -20,7 +20,7 @@ exports.up = (pgm) => {
       created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
       updated_at TIMESTAMPTZ DEFAULT now() NOT NULL,
       user_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
-      expiration_date TIMESTAMPTZ,
+      expires_at TIMESTAMPTZ,
       password VARCHAR(63),
       CHECK (updated_at >= created_at)
     );
