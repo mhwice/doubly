@@ -3,11 +3,12 @@ import { betterAuth } from "better-auth";
 import { nextCookies } from "better-auth/next-js";
 import { Pool } from "pg";
 import { sendBetterPasswordResetEmail, sendBetterVerificationEmail } from "@/lib/mail";
+import { env } from "@/data-access/env";
 
 export const auth = betterAuth({
   appName: "NextAuth",
   database: new Pool({
-    connectionString: process.env.DATABASE_URL || ""
+    connectionString: env.DATABASE_URL
   }),
   account: {
     accountLinking: {
@@ -31,12 +32,12 @@ export const auth = betterAuth({
   },
   socialProviders: {
     google: {
-      clientId: process.env.GOOGLE_CLIENT_ID || "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+      clientId: env.GOOGLE_CLIENT_ID,
+      clientSecret: env.GOOGLE_CLIENT_SECRET,
     },
     github: {
-      clientId: process.env.GITHUB_CLIENT_ID || "",
-      clientSecret: process.env.GITHUB_CLIENT_SECRET || ""
+      clientId: env.GITHUB_CLIENT_ID,
+      clientSecret: env.GITHUB_CLIENT_SECRET
     }
   },
   plugins: [
