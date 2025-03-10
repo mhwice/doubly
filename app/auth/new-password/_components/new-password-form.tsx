@@ -35,14 +35,14 @@ export const NewPasswordForm = () => {
     }
   });
 
-  const onSubmit = async (values: z.infer<typeof NewPasswordSchema>) => {
+  const onSubmit = (values: z.infer<typeof NewPasswordSchema>) => {
     setError("");
     setSuccess("");
 
     if (!token) return;
 
-    startTransition(() => {
-      newPassword(values, token).then((data) => {
+    startTransition(async () => {
+      await newPassword(values, token).then((data) => {
         if (data?.error) setError(data?.error);
         if (data?.success) setSuccess(data?.success);
       });
@@ -50,30 +50,15 @@ export const NewPasswordForm = () => {
   }
 
   return (
-    <CardWrapper
-      headerLabel="Enter a new password"
-      backButtonLabel="Back to login"
-      backButtonHref="/auth/login"
-    >
+    <CardWrapper headerLabel="Enter a new password" backButtonLabel="Back to login" backButtonHref="/auth/login">
       <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-6"
-        >
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-4">
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
+            <FormField control={form.control} name="password" render={({ field }) => (
                 <FormItem>
                   <FormLabel>New password</FormLabel>
                   <FormControl>
-                    <Input
-                      {...field}
-                      disabled={isPending || !!error}
-                      placeholder="******"
-                      type="password"
-                    />
+                    <Input {...field} disabled={isPending || !!error} placeholder="******" type="password" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

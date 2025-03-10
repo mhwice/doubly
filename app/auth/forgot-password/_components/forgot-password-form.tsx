@@ -30,12 +30,12 @@ export const ForgotPasswordForm = () => {
     }
   });
 
-  const onSubmit = async (values: z.infer<typeof ResetSchema>) => {
+  const onSubmit = (values: z.infer<typeof ResetSchema>) => {
     setError("");
     setSuccess("");
 
-    startTransition(() => {
-      reset(values).then((data) => {
+    startTransition(async () => {
+      await reset(values).then((data) => {
         if (data?.error) setError(data?.error);
         if (data?.success) setSuccess(data?.success);
       });
@@ -49,24 +49,13 @@ export const ForgotPasswordForm = () => {
       backButtonHref="/auth/login"
     >
       <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-6"
-        >
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-4">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
+            <FormField control={form.control} name="email" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input
-                      {...field}
-                      disabled={isPending}
-                      placeholder="john.doe@example.com"
-                      type="email"
-                    />
+                    <Input {...field} disabled={isPending} placeholder="john.doe@example.com" type="email" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

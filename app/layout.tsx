@@ -1,17 +1,13 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
+import { Inter, Roboto, Montserrat, Lato, Fira_Sans } from 'next/font/google';
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+const roboto = Roboto({ weight: "400", subsets: ['latin'], variable: '--font-inter' });
+const montserrat = Montserrat({ subsets: ['latin'], variable: '--font-inter' });
+const lato = Lato({ weight: "400", subsets: ['latin'], variable: '--font-inter' });
+const firaSans = Fira_Sans({ weight: "400", subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -25,9 +21,7 @@ export default async function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={lato.variable}>
         <Toaster />
         {children}
       </body>
