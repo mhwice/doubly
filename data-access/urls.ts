@@ -2,62 +2,34 @@ import { neon } from '@neondatabase/serverless';
 import { env } from "@/data-access/env"
 import { z } from 'zod';
 
-export async function getData() {
-  const sql = neon(env.DATABASE_URL);
-  const response = await sql`SELECT version()`;
-  return response[0].version;
-}
+const sql = neon(env.DATABASE_URL);
 
+// export async function saveLink(originalURL: string, shortURL: string, code: string, userId: string) {
+//   const response = await sql(`
+//     INSERT INTO links (original_url, short_url, code, user_id)
+//     VALUES ($1, $2, $3, $4) RETURNING *;
+//   `, [originalURL, shortURL, code, userId]);
 
+//   return response;
+// }
 
-// i should use Zod to make sure that the data I am getting is gucci
-
-export async function saveLink(originalURL: string, shortURL: string, code: string, userId: string) {
-  const sql = neon(env.DATABASE_URL);
-  const response = await sql(`
-    INSERT INTO links (original_url, short_url, code, user_id)
-    VALUES ($1, $2, $3, $4) RETURNING *;
-  `, [originalURL, shortURL, code, userId]);
-
-  // const response = await sql(`
-  //   INSERT INTO links (original_url, short_url, code, user_id)
-  //   VALUES (${link.originalURL}, ${link.shortURL}, ${link.code}, ${link.userId}) RETURNING *;
-  // `);
-
-  return response;
-}
-
-interface Link {
-  originalURL: string,
-  shortURL: string,
-  code: string,
-  linkClicks: number,
-  qrClicks: number,
-  userId: string,
-  expirationDate?: Date,
-  password?: string
-}
-
-// CREATE TABLE links (
-//   id SERIAL PRIMARY KEY,
-//   original_url VARCHAR(255) NOT NULL,
-//   short_url VARCHAR(63) NOT NULL UNIQUE,
-//   code VARCHAR(15) NOT NULL UNIQUE,
-//   link_clicks INTEGER DEFAULT 0 NOT NULL CHECK(link_clicks >= 0),
-//   qr_clicks INTEGER DEFAULT 0 NOT NULL CHECK(link_clicks >= 0),
-//   created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
-//   updated_at TIMESTAMPTZ DEFAULT now() NOT NULL,
-//   user_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
-//   expires_at TIMESTAMPTZ,
-//   password VARCHAR(63),
-//   CHECK (updated_at >= created_at)
-// );
+// interface Link {
+//   originalURL: string,
+//   shortURL: string,
+//   code: string,
+//   linkClicks: number,
+//   qrClicks: number,
+//   userId: string,
+//   expirationDate?: Date,
+//   password?: string
+// }
 
 /*
-
-.url() is this sufficient or should I be using startsWith(http)?
-
+[QUESTION] is .url() is this sufficient or should I be using startsWith(http)?
 */
+
+type LinkTableType = z.infer<typeof linkTableSchema>;
+
 const linkTableSchema = z.object({
   originalURL: z.string().trim().min(1).max(255).url(),
   shortURL: z.string().trim().min(1).max(63).url(),
@@ -71,11 +43,14 @@ const linkTableSchema = z.object({
   password: z.string().trim().min(1).max(63).optional()
 });
 
-type LinkTableType = z.infer<typeof linkTableSchema>;
+const createLinkSchema = linkTableSchema.pick({
+  originalURL: true,
+  shortURL: true,
+  code: true,
+  userId: true
+});
 
-const createLinkSchema = linkTableSchema.pick({ originalURL: true, shortURL: true, code: true, userId: true });
-
-class LinkTable {
+export class LinkTable {
   static async createLink(params: z.infer<typeof createLinkSchema>) {
     const validatedFields = createLinkSchema.safeParse(params);
     if (!validatedFields.success) return false;
@@ -101,9 +76,63 @@ class LinkTable {
   static async getAllLinks() {}
 }
 
-// we infer the type, but we also safeParse to be sure!
-// export const login = async (values: z.infer<typeof LoginSchema>) => {
-//   const validatedFields = LoginSchema.safeParse(values);
 
 
-// LinkTable.createLink({ originalURL: "", shortURL: "", code: "", userId: "" });
+class LinkTabl2 {
+  static async createLink(params: z.infer<typeof createLinkSchema>) {
+    try {
+      const validatedFields = createLinkSchema.parse(params);
+      const { originalURL, shortURL, code, userId } = validatedFields;
+
+      const [insertedLink] = await sql`
+        INSERT INTO links (original_url, short_url, code, user_id)
+        VALUES (${originalURL}, ${shortURL}, ${code}, ${userId})
+        RETURNING *;
+      `;
+
+      return insertedLink;
+    } catch (error) {
+      console.error("Database error:", error);
+      throw new Error("Failed to create link");
+    }
+  }
+
+  static async updateLinkById(linkId: string, updates: Partial<z.infer<typeof linkTableSchema>>) {
+    try {
+      const updateFields = Object.entries(updates)
+        .map(([key, value]) => `${key} = ${value}`)
+        .join(", ");
+
+      const [updatedLink] = await sql`
+        UPDATE links
+        SET ${updateFields}, updated_at = now()
+        WHERE id = ${linkId}
+        RETURNING *;
+      `;
+
+      return updatedLink;
+    } catch (error) {
+      console.error("Failed to update link:", error);
+      throw new Error("Failed to update link");
+    }
+  }
+
+  static async deleteLinkById(linkId: string) {
+    try {
+      await sql`DELETE FROM links WHERE id = ${linkId};`;
+      return true;
+    } catch (error) {
+      console.error("Failed to delete link:", error);
+      return false;
+    }
+  }
+
+  static async getLinkById(linkId: string) {
+    const [link] = await sql`SELECT * FROM links WHERE id = ${linkId};`;
+    return link || null;
+  }
+
+  static async getAllLinks() {
+    return await sql`SELECT * FROM links;`;
+  }
+}
