@@ -2,15 +2,15 @@
 
 import { ColumnDef } from "@tanstack/react-table"
 
-import { Badge } from "@/components/ui/badge"
+// import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 
-import { labels, priorities, statuses } from "../data"
-import { Task } from "../schema"
-import { DataTableColumnHeader } from "./data-table-column-header"
-import { DataTableRowActions } from "./data-table-row-actions"
+// import { labels, priorities, statuses } from "./data"
+import { DataTableColumnHeader } from "../static-components/data-table-column-header"
+// import { DataTableRowActions } from "./data-table-row-actions"
+import type { LinkDTOSchemaType } from "@/data-access/urls"
 
-export const columns: ColumnDef<Task>[] = [
+export const columns: ColumnDef<LinkDTOSchemaType>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -36,88 +36,90 @@ export const columns: ColumnDef<Task>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "id",
+    accessorKey: "originalUrl",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Task" />
+      <DataTableColumnHeader column={column} title="originalUrl" />
     ),
-    cell: ({ row }) => <div className="w-[80px]">{row.getValue("id")}</div>,
+    cell: ({ row }) => <div className="w-[160px]">{row.getValue("originalUrl")}</div>,
     enableSorting: false,
     enableHiding: false,
   },
   {
-    accessorKey: "title",
+    accessorKey: "shortUrl",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Title" />
+      <DataTableColumnHeader column={column} title="shortUrl" />
     ),
     cell: ({ row }) => {
-      const label = labels.find((label) => label.value === row.original.label)
+      // const label = labels.find((label) => label.value === row.original.shortUrl)
 
       return (
         <div className="flex space-x-2">
-          {label && <Badge variant="outline">{label.label}</Badge>}
+          {/* {label && <Badge variant="outline">{label.label}</Badge>} */}
           <span className="max-w-[500px] truncate font-medium">
-            {row.getValue("title")}
+            {row.getValue("shortUrl")}
           </span>
         </div>
       )
     },
   },
   {
-    accessorKey: "status",
+    accessorKey: "linkClicks",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Status" />
+      <DataTableColumnHeader column={column} title="linkClicks" />
     ),
-    cell: ({ row }) => {
-      const status = statuses.find(
-        (status) => status.value === row.getValue("status")
-      )
+    cell: ({ row }) => <div className="w-[80px]">{row.getValue("linkClicks")}</div>,
+    // cell: ({ row }) => {
+    //   // const status = statuses.find(
+    //   //   (status) => status.value === row.getValue("linkClicks")
+    //   // )
 
-      if (!status) {
-        return null
-      }
+    //   // if (!status) {
+    //   //   return null
+    //   // }
 
-      return (
-        <div className="flex w-[100px] items-center">
-          {status.icon && (
-            <status.icon className="mr-2 h-4 w-4 text-muted-foreground" />
-          )}
-          <span>{status.label}</span>
-        </div>
-      )
-    },
-    filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id))
-    },
+    //   return (
+    //     <div className="flex w-[100px] items-center">
+    //       {/* {status.icon && (
+    //         <status.icon className="mr-2 h-4 w-4 text-muted-foreground" />
+    //       )} */}
+    //       <span>{status.label}</span>
+    //     </div>
+    //   )
+    // },
+    // filterFn: (row, id, value) => {
+    //   return value.includes(row.getValue(id))
+    // },
   },
   {
-    accessorKey: "priority",
+    accessorKey: "qrClicks",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Priority" />
+      <DataTableColumnHeader column={column} title="qrClicks" />
     ),
-    cell: ({ row }) => {
-      const priority = priorities.find(
-        (priority) => priority.value === row.getValue("priority")
-      )
+    cell: ({ row }) => <div className="w-[80px]">{row.getValue("qrClicks")}</div>,
+    // cell: ({ row }) => {
+    //   const priority = priorities.find(
+    //     (priority) => priority.value === row.getValue("qrClicks")
+    //   )
 
-      if (!priority) {
-        return null
-      }
+    //   if (!priority) {
+    //     return null
+    //   }
 
-      return (
-        <div className="flex items-center">
-          {priority.icon && (
-            <priority.icon className="mr-2 h-4 w-4 text-muted-foreground" />
-          )}
-          <span>{priority.label}</span>
-        </div>
-      )
-    },
-    filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id))
-    },
+    //   return (
+    //     <div className="flex items-center">
+    //       {priority.icon && (
+    //         <priority.icon className="mr-2 h-4 w-4 text-muted-foreground" />
+    //       )}
+    //       <span>{priority.label}</span>
+    //     </div>
+    //   )
+    // },
+    // filterFn: (row, id, value) => {
+    //   return value.includes(row.getValue(id))
+    // },
   },
-  {
-    id: "actions",
-    cell: ({ row }) => <DataTableRowActions row={row} />,
-  },
+  // {
+  //   id: "actions",
+  //   cell: ({ row }) => <DataTableRowActions row={row} />,
+  // },
 ]

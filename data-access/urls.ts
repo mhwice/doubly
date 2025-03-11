@@ -1,3 +1,5 @@
+// import "server-only";
+
 import { neon } from '@neondatabase/serverless';
 import { env } from "@/data-access/env"
 import { z } from 'zod';
@@ -31,6 +33,7 @@ const sql = neon(env.DATABASE_URL);
 type LinkTableType = z.infer<typeof linkTableSchema>;
 
 const linkTableSchema = z.object({
+  id: z.number().nonnegative().lt(2_147_483_648),
   originalUrl: z.string().trim().min(1).max(255).url(),
   shortUrl: z.string().trim().min(1).max(63).url(),
   code: z.string().trim().min(1).max(15),
@@ -49,6 +52,24 @@ const createLinkSchema = linkTableSchema.pick({
   code: true,
   userId: true
 });
+
+// export const linkDTOSchema = z.object({
+//   id: z.string(),
+//   originalUrl: z.string(),
+//   shortUrl: z.string(),
+//   linkClicks: z.number(),
+//   qrClicks: z.number(),
+// })
+
+export const linkDTOSchema = linkTableSchema.pick({
+  id: true,
+  originalUrl: true,
+  shortUrl: true,
+  linkClicks: true,
+  qrClicks: true
+})
+
+export type LinkDTOSchemaType = z.infer<typeof linkDTOSchema>;
 
 export class LinkTable {
   static async createLink(params: z.infer<typeof createLinkSchema>) {
@@ -120,61 +141,61 @@ password
 */
 
 
-class LinkTabl2 {
-  static async createLink(params: z.infer<typeof createLinkSchema>) {
-    try {
-      const validatedFields = createLinkSchema.parse(params);
-      const { originalURL, shortURL, code, userId } = validatedFields;
+// class LinkTabl2 {
+//   static async createLink(params: z.infer<typeof createLinkSchema>) {
+//     try {
+//       const validatedFields = createLinkSchema.parse(params);
+//       const { originalURL, shortURL, code, userId } = validatedFields;
 
-      const [insertedLink] = await sql`
-        INSERT INTO links (original_url, short_url, code, user_id)
-        VALUES (${originalURL}, ${shortURL}, ${code}, ${userId})
-        RETURNING *;
-      `;
+//       const [insertedLink] = await sql`
+//         INSERT INTO links (original_url, short_url, code, user_id)
+//         VALUES (${originalURL}, ${shortURL}, ${code}, ${userId})
+//         RETURNING *;
+//       `;
 
-      return insertedLink;
-    } catch (error) {
-      console.error("Database error:", error);
-      throw new Error("Failed to create link");
-    }
-  }
+//       return insertedLink;
+//     } catch (error) {
+//       console.error("Database error:", error);
+//       throw new Error("Failed to create link");
+//     }
+//   }
 
-  static async updateLinkById(linkId: string, updates: Partial<z.infer<typeof linkTableSchema>>) {
-    try {
-      const updateFields = Object.entries(updates)
-        .map(([key, value]) => `${key} = ${value}`)
-        .join(", ");
+//   static async updateLinkById(linkId: string, updates: Partial<z.infer<typeof linkTableSchema>>) {
+//     try {
+//       const updateFields = Object.entries(updates)
+//         .map(([key, value]) => `${key} = ${value}`)
+//         .join(", ");
 
-      const [updatedLink] = await sql`
-        UPDATE links
-        SET ${updateFields}, updated_at = now()
-        WHERE id = ${linkId}
-        RETURNING *;
-      `;
+//       const [updatedLink] = await sql`
+//         UPDATE links
+//         SET ${updateFields}, updated_at = now()
+//         WHERE id = ${linkId}
+//         RETURNING *;
+//       `;
 
-      return updatedLink;
-    } catch (error) {
-      console.error("Failed to update link:", error);
-      throw new Error("Failed to update link");
-    }
-  }
+//       return updatedLink;
+//     } catch (error) {
+//       console.error("Failed to update link:", error);
+//       throw new Error("Failed to update link");
+//     }
+//   }
 
-  static async deleteLinkById(linkId: string) {
-    try {
-      await sql`DELETE FROM links WHERE id = ${linkId};`;
-      return true;
-    } catch (error) {
-      console.error("Failed to delete link:", error);
-      return false;
-    }
-  }
+//   static async deleteLinkById(linkId: string) {
+//     try {
+//       await sql`DELETE FROM links WHERE id = ${linkId};`;
+//       return true;
+//     } catch (error) {
+//       console.error("Failed to delete link:", error);
+//       return false;
+//     }
+//   }
 
-  static async getLinkById(linkId: string) {
-    const [link] = await sql`SELECT * FROM links WHERE id = ${linkId};`;
-    return link || null;
-  }
+//   static async getLinkById(linkId: string) {
+//     const [link] = await sql`SELECT * FROM links WHERE id = ${linkId};`;
+//     return link || null;
+//   }
 
-  static async getAllLinks() {
-    return await sql`SELECT * FROM links;`;
-  }
-}
+//   static async getAllLinks() {
+//     return await sql`SELECT * FROM links;`;
+//   }
+// }
