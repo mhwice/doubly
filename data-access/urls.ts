@@ -31,11 +31,11 @@ const sql = neon(env.DATABASE_URL);
 type LinkTableType = z.infer<typeof linkTableSchema>;
 
 const linkTableSchema = z.object({
-  originalURL: z.string().trim().min(1).max(255).url(),
-  shortURL: z.string().trim().min(1).max(63).url(),
+  originalUrl: z.string().trim().min(1).max(255).url(),
+  shortUrl: z.string().trim().min(1).max(63).url(),
   code: z.string().trim().min(1).max(15),
-  linkCicks: z.number().nonnegative().lt(1 << 31),
-  qrCicks: z.number().nonnegative().lt(1 << 31),
+  linkClicks: z.number().nonnegative().lt(2_147_483_648),
+  qrClicks: z.number().nonnegative().lt(2_147_483_648),
   createdAt: z.date(),
   updatedAt: z.date(),
   userId: z.string().trim().min(1),
@@ -44,8 +44,8 @@ const linkTableSchema = z.object({
 });
 
 const createLinkSchema = linkTableSchema.pick({
-  originalURL: true,
-  shortURL: true,
+  originalUrl: true,
+  shortUrl: true,
   code: true,
   userId: true
 });
@@ -55,14 +55,14 @@ export class LinkTable {
     const validatedFields = createLinkSchema.safeParse(params);
     if (!validatedFields.success) return false;
 
-    const { originalURL, shortURL, code, userId } = validatedFields.data;
+    const { originalUrl, shortUrl, code, userId } = validatedFields.data;
 
     try {
-      const sql = neon(env.DATABASE_URL);
+      // const sql = neon(env.DATABASE_URL);
       const response = await sql(`
         INSERT INTO links (original_url, short_url, code, user_id)
         VALUES ($1, $2, $3, $4) RETURNING *;
-      `, [originalURL, shortURL, code, userId]);
+      `, [originalUrl, shortUrl, code, userId]);
     } catch (error) {
       return false;
     }
@@ -73,9 +73,51 @@ export class LinkTable {
   static async updateLinkById(linkId: string) {}
   static async deleteLinkById(linkId: string) {}
   static async getLinkById(linkId: string) {}
-  static async getAllLinks() {}
+
+  static async getAllLinks() {
+
+    const response = await sql(`
+      SELECT * FROM links;
+    `);
+
+    const result = response
+      .map((row) => toCamelCase(row))
+      .map((row) => mapNullToUndefined(row))
+      .map((row) => linkTableSchema.parse(row));
+
+    return result;
+  }
 }
 
+function mapNullToUndefined(row: Record<string, unknown>) {
+  return Object.fromEntries(Object.entries(row).map(([k, v]) => [k, v === null ? undefined : v]));
+}
+
+function toCamelCase<T extends Record<string, unknown>>(obj: T): Record<string, unknown> {
+  return Object.fromEntries(
+    Object.entries(obj).map(
+      ([key, value]) => [key.replace(/_([a-z])/g, (_, char) => char.toUpperCase()), value]
+    )
+  );
+}
+
+/*
+What columns to display in the table?
+
+
+original_url
+short_url
+link_clicks
+qr_clicks
+
+created_at
+updated_at
+expires_at
+password
+
+
+
+*/
 
 
 class LinkTabl2 {
