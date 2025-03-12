@@ -95,6 +95,13 @@ export class LinkTable {
   static async deleteLinkById(linkId: string) {}
   static async getLinkById(linkId: string) {}
 
+  static async getLinkByCode(code: string) {
+
+    // TODO - implement this
+
+    return "https://leetcode.com/u/LarryNY/";
+  }
+
   static async getAllLinks() {
 
     const response = await sql(`

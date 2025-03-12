@@ -7,20 +7,15 @@ export async function middleware(request: NextRequest) {
 
   /*
 
-  TODO:
+  someone here can either be trying to convert a shortUrl into a long one,
+  or,
 
-  Right now just allow anything, come back to this later.
+  they are trying to access another page such as login, dashboard, settings, homepage, etc.
 
-  There should be a few kinds of routes.
+  I should try to do the short-long redirects first.
+  How can I do this quickly?
 
-  1. Signed-in
-    Only a signed-in user can access /settings, /dashboard, etc.
-  2. Signed-out
-    Only a signed-out user can access /login, /register
-  3. Everyone
-    Anyone can view /
-  4. No one
-    Not really sure about this one..
+  can I have multiple middlewares???
 
   */
 
