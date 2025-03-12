@@ -103,7 +103,14 @@ export class LinkTable {
     `, [link.linkClicks, link.id]);
   }
 
-  static async getLinkByCode(code: string) {
+  static async recordQRClick(link: z.infer<typeof linkTableSchema>) {
+    // [TODO]: maybe add a transaction, or get some response?
+    await sql(`
+      UPDATE links SET qr_clicks = $1 + 1 WHERE id = $2;
+    `, [link.qrClicks, link.id]);
+  }
+
+  static async getLinkByCode(code: string, source: string | null) {
     const response = await sql(`
       SELECT * FROM links WHERE code = $1;
     `, [code]);
@@ -117,7 +124,13 @@ export class LinkTable {
 
     const link = result[0];
 
-    LinkTable.recordLinkClick(link);
+    // need to see if its a url or a qr code.
+    if (source === "qr") {
+      LinkTable.recordQRClick(link);
+    } else {
+      LinkTable.recordLinkClick(link);
+    }
+
     return link.originalUrl;
   }
 

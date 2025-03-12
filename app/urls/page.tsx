@@ -22,7 +22,8 @@ async function makeQRCode(url: string) {
 
 export default async function Page() {
 
-  const url = await makeQRCode("https://leetcode.com/u/espr3ss0/");
+  const shortLink = "http://localhost:3000/GFUW17?source=qr";
+  const url = await makeQRCode(shortLink);
 
   return (
     <Image
