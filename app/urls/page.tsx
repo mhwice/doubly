@@ -1,40 +1,18 @@
+import { generateQRCode } from "@/utils/qr-code";
 import { InputForm } from "./url-form";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import Image from "next/image";
 import { redirect } from "next/navigation";
-
-import QRCode from "qrcode";
-
-const qrCodeOptions = {
-  width: 300,
-  margin: 2,
-  color: {
-    dark: "#000000",
-    light: "#ffffff",
-  }
-}
-
-async function makeQRCode(url: string) {
-  const dataUrl = await QRCode.toDataURL(url, qrCodeOptions);
-  return dataUrl;
-}
+import { QRCode } from "@/components/qr-code";
 
 export default async function Page() {
 
   const shortLink = "http://localhost:3000/GFUW17?source=qr";
-  const url = await makeQRCode(shortLink);
+  const { data: url, error } = await generateQRCode(shortLink);
+  if (!url) throw new Error();
 
-  return (
-    <Image
-      src={url}
-      alt="qr"
-      width={300}
-      height={300}
-      className="border rounded-md"
-      unoptimized
-    />
-  );
+  return <QRCode qrCodeDataUrl={url} />
 
   // const session = await auth.api.getSession({
   //   headers: await headers()

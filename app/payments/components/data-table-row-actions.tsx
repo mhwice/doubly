@@ -1,0 +1,85 @@
+"use client"
+
+import { Row } from "@tanstack/react-table"
+import { MoreHorizontal } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { QRCodeModal } from "@/components/qr-modal"
+
+import { useState } from "react";
+import { DeleteLinkModal } from "@/components/delete-link-modal"
+import type { LinkDTOSchemaType } from "@/data-access/urls"
+
+
+// interface DataTableRowActionsProps<TData> {
+//   row: Row<TData>
+// }
+
+interface DataTableRowActionsProps {
+  row: Row<LinkDTOSchemaType>
+}
+
+export function DataTableRowActions({ row }: DataTableRowActionsProps) {
+
+  const [showQRModal, setShowQRModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  const [url, setUrl] = useState("");
+
+  const onViewQRClicked = () => {
+    const { shortUrl } = row.original;
+    setUrl(shortUrl);
+    setShowQRModal(true);
+  }
+
+  const onDeleteClicked = () => {
+    const { id } = row.original;
+    setShowDeleteModal(true);
+  }
+
+  return (
+    <>
+    <QRCodeModal
+      isOpen={showQRModal}
+      onOpenChange={setShowQRModal}
+      shortUrl={url}
+      code="123456"
+    />
+    <DeleteLinkModal isOpen={showDeleteModal} onOpenChange={setShowDeleteModal} />
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
+        >
+          <MoreHorizontal />
+          <span className="sr-only">Open menu</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-[160px]">
+        <DropdownMenuItem>Edit</DropdownMenuItem>
+        <DropdownMenuItem onClick={onViewQRClicked}>View QR Code</DropdownMenuItem>
+        <DropdownMenuItem>Copy Short Url</DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={onDeleteClicked}>
+          Delete
+          <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+    </>
+  )
+}
