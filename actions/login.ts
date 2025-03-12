@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { LoginSchema } from "@/schema";
-import { auth } from "@/utils/auth";
+import { auth } from "@/lib/auth";
 import { APIError } from "better-auth/api";
 import { redirect } from "next/navigation";
 

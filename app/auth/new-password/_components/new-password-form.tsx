@@ -7,7 +7,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { newPassword } from "@/actions/better-new-password";
+import { newPassword } from "@/actions/new-password";
 import { NewPasswordSchema } from "@/schema";
 
 import { CardWrapper } from "@/components/auth/card-wrapper";

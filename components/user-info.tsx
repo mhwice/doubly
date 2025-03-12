@@ -8,7 +8,7 @@ import {
 //   Badge
 // } from "./ui/badge";
 
-import type { User } from "@/utils/auth";
+import type { User } from "@/lib/auth";
 
 interface UserInfoProps {
   user?: User,

@@ -1,5 +1,5 @@
 import { UserInfo } from "@/components/user-info";
-import { auth } from "@/utils/auth";
+import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 
 export default async function ServerPage() {

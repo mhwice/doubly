@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { login } from "@/actions/better-login";
+import { login } from "@/actions/login";
 import { LoginSchema } from "@/schema";
 
 import { CardWrapper } from "@/components/auth/card-wrapper";

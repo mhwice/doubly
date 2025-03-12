@@ -1,7 +1,7 @@
 import { columns } from "./components/columns"
 import { DataTable } from "./components/data-table"
 import { linkDTOSchema, LinkTable } from "@/data-access/urls"
-import { auth } from "@/utils/auth";
+import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 

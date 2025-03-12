@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
 import { ResetSchema } from "@/schema";
-import { reset } from "@/actions/better-reset";
+import { reset } from "@/actions/reset";
 
 import { CardWrapper } from "@/components/auth/card-wrapper";
 import { Input } from "@/components/ui/input";

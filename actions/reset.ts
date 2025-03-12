@@ -2,7 +2,7 @@
 
 import { ResetSchema } from "@/schema";
 import * as z from "zod";
-import { auth } from "@/utils/auth";
+import { auth } from "@/lib/auth";
 import { APIError } from "better-auth/api";
 
 export const reset = async (values: z.infer<typeof ResetSchema>) => {

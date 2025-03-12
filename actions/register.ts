@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { RegisterSchema } from "@/schema";
-import { auth } from "@/utils/auth";
+import { auth } from "@/lib/auth";
 import { APIError } from "better-auth/api";
 
 export const register = async (values: z.infer<typeof RegisterSchema>) => {

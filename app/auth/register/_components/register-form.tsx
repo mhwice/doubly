@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { register } from "@/actions/better-register";
+import { register } from "@/actions/register";
 import { RegisterSchema } from "@/schema";
 
 import { CardWrapper } from "@/components/auth/card-wrapper";

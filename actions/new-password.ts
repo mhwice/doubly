@@ -2,7 +2,7 @@
 
 import { NewPasswordSchema } from "@/schema";
 import * as z from "zod";
-import { auth } from "@/utils/auth";
+import { auth } from "@/lib/auth";
 
 export const newPassword = async (values: z.infer<typeof NewPasswordSchema>, token?: string | null) => {
 
