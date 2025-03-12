@@ -95,11 +95,29 @@ export class LinkTable {
   static async deleteLinkById(linkId: string) {}
   static async getLinkById(linkId: string) {}
 
+  static async recordLinkClick(link: z.infer<typeof linkTableSchema>) {
+    // [TODO]: maybe add a transaction, or get some response?
+    await sql(`
+      UPDATE links SET link_clicks = $1 + 1 WHERE id = $2;
+    `, [link.linkClicks, link.id]);
+  }
+
   static async getLinkByCode(code: string) {
+    const response = await sql(`
+      SELECT * FROM links WHERE code = $1;
+    `, [code]);
 
-    // TODO - implement this
+    if (response.length === 0) return null;
 
-    return "https://leetcode.com/u/LarryNY/";
+    const result = response
+      .map((row) => toCamelCase(row))
+      .map((row) => mapNullToUndefined(row))
+      .map((row) => linkTableSchema.parse(row));
+
+    const link = result[0];
+
+    LinkTable.recordLinkClick(link);
+    return link.originalUrl;
   }
 
   static async getAllLinks() {
