@@ -13,7 +13,7 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
   try {
     await auth.api.signUpEmail({
       // this callbackURL is where I get sent when I verify my email address.
-      body: { email, password, name, callbackURL: "/better-settings" },
+      body: { email, password, name, callbackURL: "/payments" },
     });
 
   } catch (error: unknown) {
