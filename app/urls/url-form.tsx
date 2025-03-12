@@ -39,7 +39,9 @@ function makeCode() {
   return nanoid(6);
 }
 
-export function InputForm() {
+// [TODO] - this params should be inferred, not hardcoded
+export function InputForm({ userId }: { userId: string }) {
+
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -51,30 +53,10 @@ export function InputForm() {
     const { url } = data;
     if (!isUrlValid(url)) return;
 
-    // need to shorten
-    // need random 7 digit code
     const code = makeCode();
     const shortURL = `http://localhost:3000/${code}`;
 
-    // save in db
-
-    // const saveObj = {
-    //   id: "", // auto generated in db
-    //   originalURL: url,
-    //   shortURL: shortURL,
-    //   code: code,
-    //   linkClicks: "0", // db can set this with default of 0
-    //   qrCodeClicks: "", // db can set this with default of 0
-    //   createdAt: "", // db can make this
-    //   userId: "123456", // this i need to provide. must get from the session., for now hardocde
-    //   expirationDate: "", // optional, leave as null for now
-    //   password: "", // optional, leave as null for now
-    // }
-
-    await createURL(url, shortURL, code, "123456");
-
-    // const resp = saveLink(url, shortURL, code, "123456");
-    // console.log(resp)
+    await createURL(url, shortURL, code, userId);
   }
 
   return (

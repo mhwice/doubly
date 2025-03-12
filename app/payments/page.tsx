@@ -1,9 +1,20 @@
 import { columns } from "./components/columns"
 import { DataTable } from "./components/data-table"
 import { linkDTOSchema, LinkTable } from "@/data-access/urls"
+import { auth } from "@/utils/auth";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 export default async function DemoPage() {
-  const links = await LinkTable.getAllLinks();
+
+  const session = await auth.api.getSession({
+    headers: await headers()
+  });
+
+  if (!session?.session) redirect("/");
+  const userId = session.user.id;
+
+  const links = await LinkTable.getAllLinks(userId);
   const dtoLinks = links.map((link) => linkDTOSchema.parse(link));
 
   return (

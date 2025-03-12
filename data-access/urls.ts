@@ -72,6 +72,7 @@ export const linkDTOSchema = linkTableSchema.pick({
 export type LinkDTOSchemaType = z.infer<typeof linkDTOSchema>;
 
 export class LinkTable {
+
   static async createLink(params: z.infer<typeof createLinkSchema>) {
     const validatedFields = createLinkSchema.safeParse(params);
     if (!validatedFields.success) return false;
@@ -120,11 +121,11 @@ export class LinkTable {
     return link.originalUrl;
   }
 
-  static async getAllLinks() {
+  static async getAllLinks(userId: string) {
 
     const response = await sql(`
-      SELECT * FROM links;
-    `);
+      SELECT * FROM links WHERE user_id = $1;
+    `, [userId]);
 
     const result = response
       .map((row) => toCamelCase(row))
