@@ -21,6 +21,7 @@ import { QRCodeModal } from "@/components/qr-modal"
 
 import { useState } from "react";
 import { DeleteLinkModal } from "@/components/delete-link-modal"
+import { EditLinkModal } from "@/components/edit-link-modal"
 import type { LinkDTOSchemaType } from "@/data-access/urls"
 
 
@@ -36,6 +37,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
 
   const [showQRModal, setShowQRModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const [url, setUrl] = useState("");
 
@@ -50,36 +52,42 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
     setShowDeleteModal(true);
   }
 
+  const onEditClicked = () => {
+    const { id } = row.original;
+    setShowEditModal(true);
+  }
+
   return (
     <>
-    <QRCodeModal
-      isOpen={showQRModal}
-      onOpenChange={setShowQRModal}
-      shortUrl={url}
-      code="123456"
-    />
-    <DeleteLinkModal isOpen={showDeleteModal} onOpenChange={setShowDeleteModal} />
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
-        >
-          <MoreHorizontal />
-          <span className="sr-only">Open menu</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-[160px]">
-        <DropdownMenuItem>Edit</DropdownMenuItem>
-        <DropdownMenuItem onClick={onViewQRClicked}>View QR Code</DropdownMenuItem>
-        <DropdownMenuItem>Copy Short Url</DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={onDeleteClicked}>
-          Delete
-          <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+      <QRCodeModal
+        isOpen={showQRModal}
+        onOpenChange={setShowQRModal}
+        shortUrl={url}
+        code="123456"
+      />
+      <DeleteLinkModal isOpen={showDeleteModal} onOpenChange={setShowDeleteModal} />
+      <EditLinkModal isOpen={showEditModal} onOpenChange={setShowEditModal} linkData={row.original} />
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
+          >
+            <MoreHorizontal />
+            <span className="sr-only">Open menu</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-[160px]">
+          <DropdownMenuItem onClick={onEditClicked}>Edit</DropdownMenuItem>
+          <DropdownMenuItem onClick={onViewQRClicked}>View QR Code</DropdownMenuItem>
+          <DropdownMenuItem>Copy Short Url</DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={onDeleteClicked}>
+            Delete
+            <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </>
   )
 }
