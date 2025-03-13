@@ -2,35 +2,13 @@
 
 import { neon } from '@neondatabase/serverless';
 import { env } from "@/data-access/env"
-import { z } from 'zod';
+import { z, ZodError } from 'zod';
 
 const sql = neon(env.DATABASE_URL);
-
-// export async function saveLink(originalURL: string, shortURL: string, code: string, userId: string) {
-//   const response = await sql(`
-//     INSERT INTO links (original_url, short_url, code, user_id)
-//     VALUES ($1, $2, $3, $4) RETURNING *;
-//   `, [originalURL, shortURL, code, userId]);
-
-//   return response;
-// }
-
-// interface Link {
-//   originalURL: string,
-//   shortURL: string,
-//   code: string,
-//   linkClicks: number,
-//   qrClicks: number,
-//   userId: string,
-//   expirationDate?: Date,
-//   password?: string
-// }
 
 /*
 [QUESTION] is .url() is this sufficient or should I be using startsWith(http)?
 */
-
-type LinkTableType = z.infer<typeof linkTableSchema>;
 
 const linkTableSchema = z.object({
   id: z.number().nonnegative().lt(2_147_483_648),
@@ -50,114 +28,194 @@ const createLinkSchema = linkTableSchema.pick({
   originalUrl: true,
   shortUrl: true,
   code: true,
+  userId: true,
+  expiresAt: true,
+  password: true
+});
+
+const deleteLinkSchema = linkTableSchema.pick({
+  id: true,
   userId: true
 });
 
-// export const linkDTOSchema = z.object({
-//   id: z.string(),
-//   originalUrl: z.string(),
-//   shortUrl: z.string(),
-//   linkClicks: z.number(),
-//   qrClicks: z.number(),
-// })
+export type CreateLinkType = z.infer<typeof createLinkSchema>;
 
 export const linkDTOSchema = linkTableSchema.pick({
   id: true,
   originalUrl: true,
   shortUrl: true,
   linkClicks: true,
-  qrClicks: true
+  qrClicks: true,
 })
+
+const linkLookupSchema = linkTableSchema.pick({
+  code: true
+}).extend({
+  source: z.enum(["qr", "link"])
+});
+
+const getAllLinksSchema = linkTableSchema.pick({
+  userId: true
+});
 
 export type LinkDTOSchemaType = z.infer<typeof linkDTOSchema>;
 
 export class LinkTable {
 
   static async createLink(params: z.infer<typeof createLinkSchema>) {
-    const validatedFields = createLinkSchema.safeParse(params);
-    if (!validatedFields.success) return false;
-
-    const { originalUrl, shortUrl, code, userId } = validatedFields.data;
 
     try {
-      // const sql = neon(env.DATABASE_URL);
-      const response = await sql(`
-        INSERT INTO links (original_url, short_url, code, user_id)
-        VALUES ($1, $2, $3, $4) RETURNING *;
-      `, [originalUrl, shortUrl, code, userId]);
-    } catch (error) {
-      return false;
-    }
+      const {
+        originalUrl,
+        shortUrl,
+        code,
+        userId,
+        expiresAt,
+        password
+      } = createLinkSchema.parse(params);
 
-    return true;
+      const tableData: { column: string, value: string | Date }[] = [
+        { column: "original_url", value: originalUrl },
+        { column: "short_url", value: shortUrl },
+        { column: "code", value: code },
+        { column: "user_id", value: userId },
+      ];
+
+      if (expiresAt) tableData.push({ column: "expires_at", value: expiresAt });
+      if (password) tableData.push({ column: "password", value: password });
+
+      const placeholders = tableData.map((_, i) => `$${i+1}`).join(", ");
+      const columns = tableData.map(({ column }) => column).join(", ");
+      const values = tableData.map(({ value }) => value);
+
+      const query = `
+        INSERT INTO links (${columns})
+        VALUES (${placeholders})
+        RETURNING *;
+      `;
+
+      const response = await sql(query, values);
+
+      return { data: response };
+
+    } catch (error: unknown) {
+      if (error instanceof ZodError) return { error: "Error parsing data" };
+      return { error: "Database error" };
+    }
   }
 
-  static async updateLinkById(linkId: string) {}
-
-  static async deleteLinkById(linkId: number) {
+  static async deleteLinkById(params: z.infer<typeof deleteLinkSchema>) {
     try {
-      await sql(`
-        DELETE FROM links WHERE id = $1;
-      `, [linkId]);
-    } catch (error) {
-      return false;
+      const { id, userId } = deleteLinkSchema.parse(params);
+      const query = `
+        DELETE FROM links
+        WHERE id = $1 AND userId = $2;
+      `;
+      await sql(query, [id, userId]);
+      return { data: id };
+    } catch (error: unknown) {
+      if (error instanceof ZodError) return { error: "Error parsing data" };
+      return { error: "Database error" };
     }
-
-    return true;
   }
 
-  static async getLinkById(linkId: string) {}
+  static async recordLinkClick(params: z.infer<typeof linkTableSchema>) {
 
-  static async recordLinkClick(link: z.infer<typeof linkTableSchema>) {
-    // [TODO]: maybe add a transaction, or get some response?
-    await sql(`
-      UPDATE links SET link_clicks = $1 + 1 WHERE id = $2;
-    `, [link.linkClicks, link.id]);
-  }
+    try {
+      const { id } = linkTableSchema.parse(params);
+      const query = `
+        UPDATE links
+        SET link_clicks = link_clicks + 1
+        WHERE id = $1;
+      `;
 
-  static async recordQRClick(link: z.infer<typeof linkTableSchema>) {
-    // [TODO]: maybe add a transaction, or get some response?
-    await sql(`
-      UPDATE links SET qr_clicks = $1 + 1 WHERE id = $2;
-    `, [link.qrClicks, link.id]);
-  }
+      await sql(query, [id]);
+      return { data: id };
 
-  static async getLinkByCode(code: string, source: string | null) {
-    const response = await sql(`
-      SELECT * FROM links WHERE code = $1;
-    `, [code]);
-
-    if (response.length === 0) return null;
-
-    const result = response
-      .map((row) => toCamelCase(row))
-      .map((row) => mapNullToUndefined(row))
-      .map((row) => linkTableSchema.parse(row));
-
-    const link = result[0];
-
-    // need to see if its a url or a qr code.
-    if (source === "qr") {
-      LinkTable.recordQRClick(link);
-    } else {
-      LinkTable.recordLinkClick(link);
+    } catch (error: unknown) {
+      if (error instanceof ZodError) return { error: "Error parsing data" };
+      return { error: "Database error" };
     }
-
-    return link.originalUrl;
   }
 
-  static async getAllLinks(userId: string) {
+  static async recordQRClick(params: z.infer<typeof linkTableSchema>) {
 
-    const response = await sql(`
-      SELECT * FROM links WHERE user_id = $1;
-    `, [userId]);
+    try {
+      const { id } = linkTableSchema.parse(params);
+      const query = `
+        UPDATE links
+        SET qr_clicks = qr_clicks + 1
+        WHERE id = $1;
+      `;
 
-    const result = response
-      .map((row) => toCamelCase(row))
-      .map((row) => mapNullToUndefined(row))
-      .map((row) => linkTableSchema.parse(row));
+      await sql(query, [id]);
+      return { data: id };
 
-    return result;
+    } catch (error: unknown) {
+      if (error instanceof ZodError) return { error: "Error parsing data" };
+      return { error: "Database error" };
+    }
+  }
+
+  static async getLinkByCode(params: z.infer<typeof linkLookupSchema>) {
+
+    try {
+      const { code, source } = linkLookupSchema.parse(params);
+
+      const query = `
+        SELECT *
+        FROM links
+        WHERE code = $1;
+      `;
+      const response = await sql(query, [code]);
+
+      // its not an error, there just doesn't exist any link
+      if (response.length === 0) return { data: null, error: undefined };
+
+      const result = response
+        .map((row) => toCamelCase(row))
+        .map((row) => mapNullToUndefined(row))
+        .map((row) => linkTableSchema.parse(row));
+
+      const link = result[0];
+
+      if (source === "link") {
+        return await LinkTable.recordLinkClick(link);
+      }
+
+      if (source === "qr") {
+        return await LinkTable.recordQRClick(link);
+      }
+
+    } catch (error: unknown) {
+      if (error instanceof ZodError) return { error: "Error parsing data" };
+      return { error: "Database error" };
+    }
+  }
+
+  static async getAllLinks(params: z.infer<typeof getAllLinksSchema>) {
+
+    try {
+      const { userId } = getAllLinksSchema.parse(params);
+
+      const query = `
+        SELECT *
+        FROM links
+        WHERE user_id = $1;
+      `;
+      const response = await sql(query, [userId]);
+
+      const result = response
+        .map((row) => toCamelCase(row))
+        .map((row) => mapNullToUndefined(row))
+        .map((row) => linkTableSchema.parse(row));
+
+      return { data: result };
+
+    } catch (error: unknown) {
+      if (error instanceof ZodError) return { error: "Error parsing data" };
+      return { error: "Database error" };
+    }
   }
 }
 
@@ -172,81 +230,3 @@ function toCamelCase<T extends Record<string, unknown>>(obj: T): Record<string, 
     )
   );
 }
-
-/*
-What columns to display in the table?
-
-
-original_url
-short_url
-link_clicks
-qr_clicks
-
-created_at
-updated_at
-expires_at
-password
-
-
-
-*/
-
-
-// class LinkTabl2 {
-//   static async createLink(params: z.infer<typeof createLinkSchema>) {
-//     try {
-//       const validatedFields = createLinkSchema.parse(params);
-//       const { originalURL, shortURL, code, userId } = validatedFields;
-
-//       const [insertedLink] = await sql`
-//         INSERT INTO links (original_url, short_url, code, user_id)
-//         VALUES (${originalURL}, ${shortURL}, ${code}, ${userId})
-//         RETURNING *;
-//       `;
-
-//       return insertedLink;
-//     } catch (error) {
-//       console.error("Database error:", error);
-//       throw new Error("Failed to create link");
-//     }
-//   }
-
-//   static async updateLinkById(linkId: string, updates: Partial<z.infer<typeof linkTableSchema>>) {
-//     try {
-//       const updateFields = Object.entries(updates)
-//         .map(([key, value]) => `${key} = ${value}`)
-//         .join(", ");
-
-//       const [updatedLink] = await sql`
-//         UPDATE links
-//         SET ${updateFields}, updated_at = now()
-//         WHERE id = ${linkId}
-//         RETURNING *;
-//       `;
-
-//       return updatedLink;
-//     } catch (error) {
-//       console.error("Failed to update link:", error);
-//       throw new Error("Failed to update link");
-//     }
-//   }
-
-//   static async deleteLinkById(linkId: string) {
-//     try {
-//       await sql`DELETE FROM links WHERE id = ${linkId};`;
-//       return true;
-//     } catch (error) {
-//       console.error("Failed to delete link:", error);
-//       return false;
-//     }
-//   }
-
-//   static async getLinkById(linkId: string) {
-//     const [link] = await sql`SELECT * FROM links WHERE id = ${linkId};`;
-//     return link || null;
-//   }
-
-//   static async getAllLinks() {
-//     return await sql`SELECT * FROM links;`;
-//   }
-// }
