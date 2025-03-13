@@ -88,7 +88,7 @@ export default function Dashboard() {
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive>
-                  <Link href="/dashboard/links">
+                  <Link href="/sidebar/links">
                     <LinkIcon className="h-4 w-4" />
                     <span>Links</span>
                   </Link>
@@ -96,7 +96,7 @@ export default function Dashboard() {
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Link href="/dashboard/analytics">
+                  <Link href="/sidebar/analytics">
                     <PieChart className="h-4 w-4" />
                     <span>Analytics</span>
                   </Link>
