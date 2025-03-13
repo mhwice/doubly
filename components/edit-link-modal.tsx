@@ -47,6 +47,10 @@ export function EditLinkModal({ title, description, isOpen, onOpenChange, linkDa
     setIsExpirationToggledOn(checked);
   }
 
+  const handleButtonClick = () => {
+    console.log("save or edit link")
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -106,7 +110,7 @@ export function EditLinkModal({ title, description, isOpen, onOpenChange, linkDa
         </div>
         <DialogFooter className="sm:justify-start">
           <DialogClose asChild>
-            <Button type="button" variant="default">
+            <Button type="button" variant="default" onClick={handleButtonClick}>
               Save
             </Button>
           </DialogClose>

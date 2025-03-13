@@ -3,10 +3,10 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { Inter, Roboto, Montserrat, Lato, Fira_Sans } from 'next/font/google';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
-const roboto = Roboto({ weight: "400", subsets: ['latin'], variable: '--font-inter' });
-const montserrat = Montserrat({ subsets: ['latin'], variable: '--font-inter' });
-const lato = Lato({ weight: "400", subsets: ['latin'], variable: '--font-inter' });
+// const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+// const roboto = Roboto({ weight: "400", subsets: ['latin'], variable: '--font-inter' });
+// const montserrat = Montserrat({ subsets: ['latin'], variable: '--font-inter' });
+// const lato = Lato({ weight: "400", subsets: ['latin'], variable: '--font-inter' });
 const firaSans = Fira_Sans({ weight: "400", subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
@@ -21,7 +21,7 @@ export default async function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={lato.variable}>
+      <body className={firaSans.variable}>
         <Toaster />
         {children}
       </body>
