@@ -93,7 +93,19 @@ export class LinkTable {
   }
 
   static async updateLinkById(linkId: string) {}
-  static async deleteLinkById(linkId: string) {}
+
+  static async deleteLinkById(linkId: number) {
+    try {
+      await sql(`
+        DELETE FROM links WHERE id = $1;
+      `, [linkId]);
+    } catch (error) {
+      return false;
+    }
+
+    return true;
+  }
+
   static async getLinkById(linkId: string) {}
 
   static async recordLinkClick(link: z.infer<typeof linkTableSchema>) {

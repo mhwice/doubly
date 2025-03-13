@@ -1,3 +1,4 @@
+import { deleteURL } from "@/actions/delete-url";
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -9,18 +10,23 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { LinkDTOSchemaType } from "@/data-access/urls";
 
 interface ModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
+  linkData: LinkDTOSchemaType
 }
 
-export function DeleteLinkModal({ isOpen, onOpenChange }: ModalProps) {
+export function DeleteLinkModal({ isOpen, onOpenChange, linkData }: ModalProps) {
+
+  const handleOnDelete = async () => {
+    // call a deleteLink action
+    await deleteURL(linkData.id);
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      {/* <DialogTrigger asChild>
-        <Button variant="outline">Share</Button>
-      </DialogTrigger> */}
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Delete Link</DialogTitle>
@@ -30,7 +36,7 @@ export function DeleteLinkModal({ isOpen, onOpenChange }: ModalProps) {
         </DialogHeader>
         <DialogFooter className="sm:justify-start">
           <DialogClose asChild>
-            <Button type="button" variant="destructive">
+            <Button type="button" variant="destructive" onClick={handleOnDelete}>
               Delete
             </Button>
           </DialogClose>

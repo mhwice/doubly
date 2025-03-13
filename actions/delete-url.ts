@@ -1,0 +1,8 @@
+"use server";
+
+import { LinkTable } from "@/data-access/urls";
+
+export const deleteURL = async (id: number) => {
+  const success = await LinkTable.deleteLinkById(id);
+  return success;
+}
