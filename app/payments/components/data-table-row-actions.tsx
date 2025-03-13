@@ -66,7 +66,13 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
         code="123456"
       />
       <DeleteLinkModal isOpen={showDeleteModal} onOpenChange={setShowDeleteModal} linkData={row.original}/>
-      <EditLinkModal isOpen={showEditModal} onOpenChange={setShowEditModal} linkData={row.original} />
+      <EditLinkModal
+        title="Edit link"
+        description="What would you like to change?"
+        isOpen={showEditModal}
+        onOpenChange={setShowEditModal}
+        linkData={row.original}
+      />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button

@@ -26,12 +26,14 @@ import type { LinkDTOSchemaType } from "@/data-access/urls"
 import { useState } from "react"
 
 interface ModalProps {
+  title: string;
+  description: string;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  linkData: LinkDTOSchemaType
+  linkData: LinkDTOSchemaType | undefined
 }
 
-export function EditLinkModal({ isOpen, onOpenChange, linkData }: ModalProps) {
+export function EditLinkModal({ title, description, isOpen, onOpenChange, linkData }: ModalProps) {
 
   const [isPasswordToggleOn, setIsPasswordToggledOn] = useState(false);
   const [isExpirationToggleOn, setIsExpirationToggledOn] = useState(false);
@@ -49,15 +51,15 @@ export function EditLinkModal({ isOpen, onOpenChange, linkData }: ModalProps) {
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Edit Link</DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
-            What do you want to change?
+            {description}
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <Label htmlFor="name" className="text-left">Original Link</Label>
           <div className="grid grid-cols-4 items-center gap-4">
-            <Input id="name" defaultValue={linkData.originalUrl} className="col-span-4" />
+            <Input id="name" defaultValue={linkData?.originalUrl || ""} className="col-span-4" />
           </div>
           <div className="flex items-center justify-between">
             <Label htmlFor="enable-feature" className="cursor-pointer">

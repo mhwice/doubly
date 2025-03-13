@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { StatsHeader } from "./stats-header";
 import type { LinkDTOSchemaType } from "@/data-access/urls";
+import { NewLinkButton } from "./new-link-button";
 
 // TODO - it might be a better idea to query this from the db directly
 function makeStats(links: LinkDTOSchemaType[]) {
@@ -37,8 +38,11 @@ export default async function DemoPage() {
 
   return (
     <div className="container mx-auto py-10">
-      <div className="mb-8">
+      <div className="mb-14">
         <StatsHeader stats={stats} />
+      </div>
+      <div className="flex justify-end mb-3">
+        <NewLinkButton />
       </div>
       <DataTable data={dtoLinks} columns={columns} />
     </div>
