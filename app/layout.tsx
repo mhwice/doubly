@@ -6,8 +6,8 @@ import { Inter, Roboto, Montserrat, Lato, Fira_Sans } from 'next/font/google';
 // const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 // const roboto = Roboto({ weight: "400", subsets: ['latin'], variable: '--font-inter' });
 // const montserrat = Montserrat({ subsets: ['latin'], variable: '--font-inter' });
-// const lato = Lato({ weight: "400", subsets: ['latin'], variable: '--font-inter' });
-const firaSans = Fira_Sans({ weight: "400", subsets: ['latin'], variable: '--font-inter' });
+const lato = Lato({ weight: "400", subsets: ['latin'], variable: '--font-inter' });
+// const firaSans = Fira_Sans({ weight: "400", subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -21,7 +21,7 @@ export default async function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={firaSans.variable}>
+      <body className={lato.variable}>
         <Toaster />
         {children}
       </body>

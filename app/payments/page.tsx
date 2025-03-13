@@ -42,7 +42,7 @@ export default async function DemoPage() {
         <StatsHeader stats={stats} />
       </div>
       <div className="flex justify-end mb-3">
-        <NewLinkButton />
+        <NewLinkButton userId={userId} />
       </div>
       <DataTable data={dtoLinks} columns={columns} />
     </div>
