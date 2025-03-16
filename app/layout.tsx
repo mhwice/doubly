@@ -1,13 +1,17 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
-import { Inter, Roboto, Montserrat, Lato, Fira_Sans } from 'next/font/google';
+import { Inter, Roboto, Montserrat, Lato, Fira_Sans, Raleway, Poppins, DM_Sans, Rubik } from 'next/font/google';
 
-// const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
-// const roboto = Roboto({ weight: "400", subsets: ['latin'], variable: '--font-inter' });
-// const montserrat = Montserrat({ subsets: ['latin'], variable: '--font-inter' });
-const lato = Lato({ weight: "400", subsets: ['latin'], variable: '--font-inter' });
-// const firaSans = Fira_Sans({ weight: "400", subsets: ['latin'], variable: '--font-inter' });
+// const font = Inter({ subsets: ['latin'], variable: '--font-inter' });
+// const font = Roboto({ weight: "400", subsets: ['latin'], variable: '--font-inter' });
+// const font = Montserrat({ subsets: ['latin'], variable: '--font-inter' });
+// const font = Lato({ weight: "400", subsets: ['latin'], variable: '--font-inter' });
+// const font = Fira_Sans({ weight: "400", subsets: ['latin'], variable: '--font-inter' });
+// const font = Raleway({ weight: "400", subsets: ['latin'], variable: '--font-inter' });
+// const font = Poppins({ weight: "400", subsets: ['latin'], variable: '--font-inter' });
+const font = DM_Sans({ weight: "400", subsets: ['latin'], variable: '--font-inter' });
+// const font = Rubik({ weight: "400", subsets: ["latin"], variable: '--font-inter' });
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -21,7 +25,7 @@ export default async function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={lato.variable}>
+      <body className={font.variable}>
         <Toaster />
         {children}
       </body>

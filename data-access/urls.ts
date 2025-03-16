@@ -1,92 +1,38 @@
-// import "server-only";
-
-import { neon } from '@neondatabase/serverless';
-import { env } from "@/data-access/env"
-import { z, ZodError } from 'zod';
-
-const sql = neon(env.DATABASE_URL);
+import "server-only";
 
 /*
 [QUESTION] is .url() is this sufficient or should I be using startsWith(http)?
 */
 
-const linkTableSchema = z.object({
-  id: z.number().nonnegative().lt(2_147_483_648),
-  originalUrl: z.string().trim().min(1).max(255).url(),
-  shortUrl: z.string().trim().min(1).max(63).url(),
-  code: z.string().trim().min(1).max(15),
-  linkClicks: z.number().nonnegative().lt(2_147_483_648),
-  qrClicks: z.number().nonnegative().lt(2_147_483_648),
-  createdAt: z.date(),
-  updatedAt: z.date(),
-  userId: z.string().trim().min(1),
-  expiresAt: z.date().optional(),
-  password: z.string().trim().min(1).max(63).optional()
-});
+import { env } from "@/data-access/env";
+import { neon } from '@neondatabase/serverless';
+import { ZodError } from 'zod';
+import { mapFieldsToInsert, parseQueryResponse, type QueryResponse } from "@/utils/helper";
+import { LinkSchemas, type LinkTypes } from "@/lib/zod/links";
 
-const createLinkSchema = linkTableSchema.pick({
-  originalUrl: true,
-  shortUrl: true,
-  code: true,
-  userId: true,
-  expiresAt: true,
-  password: true
-});
+const sql = neon(env.DATABASE_URL);
 
-const deleteLinkSchema = linkTableSchema.pick({
-  id: true,
-  userId: true
-});
+const ERROR_MESSAGES = {
+  PARSING: "Error parsing data",
+  DB_ERROR: "Database error",
+  NOT_FOUND: "Link not found"
+};
 
-export type CreateLinkType = z.infer<typeof createLinkSchema>;
-
-export const linkDTOSchema = linkTableSchema.pick({
-  id: true,
-  originalUrl: true,
-  shortUrl: true,
-  linkClicks: true,
-  qrClicks: true,
-})
-
-const linkLookupSchema = linkTableSchema.pick({
-  code: true
-}).extend({
-  source: z.enum(["qr", "link"])
-});
-
-const getAllLinksSchema = linkTableSchema.pick({
-  userId: true
-});
-
-export type LinkDTOSchemaType = z.infer<typeof linkDTOSchema>;
+type DALResponse<T> = { data: T; error?: undefined } | { error: string; data?: undefined };
 
 export class LinkTable {
 
-  static async createLink(params: z.infer<typeof createLinkSchema>) {
+  static async createLink(params: LinkTypes.Create): Promise<DALResponse<LinkTypes.Link>> {
 
     try {
-      const {
-        originalUrl,
-        shortUrl,
-        code,
-        userId,
-        expiresAt,
-        password
-      } = createLinkSchema.parse(params);
 
-      const tableData: { column: string, value: string | Date }[] = [
-        { column: "original_url", value: originalUrl },
-        { column: "short_url", value: shortUrl },
-        { column: "code", value: code },
-        { column: "user_id", value: userId },
-      ];
+      const parsedData = LinkSchemas.Create.parse(params);
+      const filteredData = Object.fromEntries(Object.entries(parsedData).filter(([_, value]) => value !== undefined));
+      const tableData = mapFieldsToInsert(filteredData);
 
-      if (expiresAt) tableData.push({ column: "expires_at", value: expiresAt });
-      if (password) tableData.push({ column: "password", value: password });
-
-      const placeholders = tableData.map((_, i) => `$${i+1}`).join(", ");
-      const columns = tableData.map(({ column }) => column).join(", ");
-      const values = tableData.map(({ value }) => value);
+      const columns = Object.keys(tableData);
+      const placeholders = columns.map((_, i) => `$${i+1}`).join(", ");
+      const values = Object.values(tableData);
 
       const query = `
         INSERT INTO links (${columns})
@@ -94,38 +40,51 @@ export class LinkTable {
         RETURNING *;
       `;
 
-      const response = await sql(query, values);
+      const response: QueryResponse = await sql(query, values);
+      const result = parseQueryResponse(response, LinkSchemas.Table);
 
-      return { data: response };
+      if (result.length !== 1) throw new Error();
+
+      return { data: result[0] };
 
     } catch (error: unknown) {
-      if (error instanceof ZodError) return { error: "Error parsing data" };
-      return { error: "Database error" };
+      if (error instanceof ZodError) return { error: ERROR_MESSAGES.PARSING };
+      return { error: ERROR_MESSAGES.DB_ERROR };
     }
   }
 
-  static async deleteLinkById(params: z.infer<typeof deleteLinkSchema>) {
+  static async deleteLinkById(params: LinkTypes.Delete): Promise<DALResponse<LinkTypes.Id>> {
     try {
-      const { id, userId } = deleteLinkSchema.parse(params);
+      const { id, userId } = LinkSchemas.Delete.parse(params);
+
       const query = `
         DELETE FROM links
-        WHERE id = $1 AND userId = $2;
+        WHERE id = $1 AND user_id = $2;
+        RETURNING id;
       `;
-      await sql(query, [id, userId]);
+
+      const response: QueryResponse = await sql(query, [id, userId]);
+      const result = parseQueryResponse(response, LinkSchemas.Delete);
+
+      if (result.length !== 1) return { error: ERROR_MESSAGES.NOT_FOUND };
+
       return { data: id };
+
     } catch (error: unknown) {
-      if (error instanceof ZodError) return { error: "Error parsing data" };
-      return { error: "Database error" };
+      if (error instanceof ZodError) return { error: ERROR_MESSAGES.PARSING };
+      return { error: ERROR_MESSAGES.DB_ERROR };
     }
   }
 
-  static async recordLinkClick(params: z.infer<typeof linkTableSchema>) {
-
+  static async #recordClick(params: LinkTypes.Link, source: "qr" | "link"): Promise<DALResponse<LinkTypes.Id>> {
+    // don't need to validate here since this method is private and data is already validated
     try {
-      const { id } = linkTableSchema.parse(params);
+      const { id } = params;
+      const field = source === "qr" ? "qr_clicks" : "link_clicks";
+
       const query = `
         UPDATE links
-        SET link_clicks = link_clicks + 1
+        SET ${field} = ${field} + 1
         WHERE id = $1;
       `;
 
@@ -133,82 +92,51 @@ export class LinkTable {
       return { data: id };
 
     } catch (error: unknown) {
-      if (error instanceof ZodError) return { error: "Error parsing data" };
-      return { error: "Database error" };
+      return { error: ERROR_MESSAGES.DB_ERROR };
     }
   }
 
-  static async recordQRClick(params: z.infer<typeof linkTableSchema>) {
+  static async getLinkByCode(params: LinkTypes.Lookup): Promise<DALResponse<LinkTypes.Link | null>> {
 
     try {
-      const { id } = linkTableSchema.parse(params);
-      const query = `
-        UPDATE links
-        SET qr_clicks = qr_clicks + 1
-        WHERE id = $1;
-      `;
-
-      await sql(query, [id]);
-      return { data: id };
-
-    } catch (error: unknown) {
-      if (error instanceof ZodError) return { error: "Error parsing data" };
-      return { error: "Database error" };
-    }
-  }
-
-  static async getLinkByCode(params: z.infer<typeof linkLookupSchema>) {
-
-    try {
-      const { code, source } = linkLookupSchema.parse(params);
+      const { code, source } = LinkSchemas.Lookup.parse(params);
 
       const query = `
         SELECT *
         FROM links
         WHERE code = $1;
       `;
-      const response = await sql(query, [code]);
+
+      const response: QueryResponse = await sql(query, [code]);
+      const result = parseQueryResponse(response, LinkSchemas.Table);
 
       // its not an error, there just doesn't exist any link
-      if (response.length === 0) return { data: null, error: undefined };
-
-      const result = response
-        .map((row) => toCamelCase(row))
-        .map((row) => mapNullToUndefined(row))
-        .map((row) => linkTableSchema.parse(row));
+      if (result.length === 0) return { data: null, error: undefined };
 
       const link = result[0];
 
-      if (source === "link") {
-        return await LinkTable.recordLinkClick(link);
-      }
-
-      if (source === "qr") {
-        return await LinkTable.recordQRClick(link);
-      }
+      await LinkTable.#recordClick(link, source);
+      return { data: link };
 
     } catch (error: unknown) {
-      if (error instanceof ZodError) return { error: "Error parsing data" };
-      return { error: "Database error" };
+      if (error instanceof ZodError) return { error: ERROR_MESSAGES.PARSING };
+      return { error: ERROR_MESSAGES.DB_ERROR };
     }
   }
 
-  static async getAllLinks(params: z.infer<typeof getAllLinksSchema>) {
+  static async getAllLinks(params: LinkTypes.GetAll): Promise<DALResponse<LinkTypes.Link[]>> {
 
     try {
-      const { userId } = getAllLinksSchema.parse(params);
+      const { userId } = LinkSchemas.GetAll.parse(params);
 
       const query = `
         SELECT *
         FROM links
         WHERE user_id = $1;
       `;
-      const response = await sql(query, [userId]);
 
-      const result = response
-        .map((row) => toCamelCase(row))
-        .map((row) => mapNullToUndefined(row))
-        .map((row) => linkTableSchema.parse(row));
+      const response: QueryResponse = await sql(query, [userId]);
+      const result = parseQueryResponse(response, LinkSchemas.Table);
 
       return { data: result };
 
@@ -219,14 +147,20 @@ export class LinkTable {
   }
 }
 
-function mapNullToUndefined(row: Record<string, unknown>) {
-  return Object.fromEntries(Object.entries(row).map(([k, v]) => [k, v === null ? undefined : v]));
-}
+/*
 
-function toCamelCase<T extends Record<string, unknown>>(obj: T): Record<string, unknown> {
-  return Object.fromEntries(
-    Object.entries(obj).map(
-      ([key, value]) => [key.replace(/_([a-z])/g, (_, char) => char.toUpperCase()), value]
-    )
-  );
-}
+TODO: In the future, the two databse operations in LinkTable.getLinkByCode() should be
+      consolodated into a single transaction. I am not doing this right now, because
+      I might use Redis for these in the future.
+
+const result = await sql.transaction(async (tx) => {
+  const response: QueryResponse = await tx(query, [code]);
+  if (response.length === 0) return null;
+
+  const link = parseQueryResponse(response, LinkSchemas.Table)[0];
+  await LinkTable.#recordClick(link, source);
+
+  return link;
+});
+
+*/
