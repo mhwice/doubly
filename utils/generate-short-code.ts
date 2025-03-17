@@ -1,3 +1,4 @@
+import { env } from "@/data-access/env";
 import { nanoid } from "nanoid";
 
 export function makeCode() {
@@ -5,5 +6,5 @@ export function makeCode() {
 }
 
 export function makeShortUrl(code: string) {
-  return `http://localhost:3000/${code}`;
+  return `${env.APP_URL}/${code}`;
 }
