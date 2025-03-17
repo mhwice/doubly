@@ -18,7 +18,9 @@ const ERROR_MESSAGES = {
   NOT_FOUND: "Link not found"
 };
 
-type DALResponse<T> = { data: T; error?: undefined } | { error: string; data?: undefined };
+type DALSuccess<T> = { data: T; error?: undefined };
+type DALError = { data?: undefined; error: string; };
+type DALResponse<T> = DALSuccess<T> | DALError;
 
 export class LinkTable {
 
@@ -138,6 +140,7 @@ export class LinkTable {
       const response: QueryResponse = await sql(query, [userId]);
       const result = parseQueryResponse(response, LinkSchemas.Table);
 
+      // this should only return the dto, not full list of links
       return { data: result };
 
     } catch (error: unknown) {
@@ -162,5 +165,10 @@ const result = await sql.transaction(async (tx) => {
 
   return link;
 });
+
+TODO: If a method requires only 1-2 properties from the link table, it might be better
+      to extract their type using:
+      type UserID = LinkTable['userId']
+      and then parse from that, rather than creating a new schema....not sure.
 
 */

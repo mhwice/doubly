@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { CalendarIcon } from "lucide-react"
 
-import type { LinkDTOSchemaType } from "@/data-access/urls"
+import { type LinkTypes } from "@/lib/zod/links";
 import { useState } from "react"
 
 interface ModalProps {
@@ -30,7 +30,7 @@ interface ModalProps {
   description: string;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  linkData: LinkDTOSchemaType | undefined
+  linkData: LinkTypes.DTO | undefined
 }
 
 export function EditLinkModal({ title, description, isOpen, onOpenChange, linkData }: ModalProps) {

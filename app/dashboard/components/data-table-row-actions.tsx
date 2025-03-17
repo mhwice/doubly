@@ -22,7 +22,7 @@ import { QRCodeModal } from "@/components/qr-modal"
 import { useState } from "react";
 import { DeleteLinkModal } from "@/components/delete-link-modal"
 import { EditLinkModal } from "@/components/edit-link-modal"
-import type { LinkDTOSchemaType } from "@/data-access/urls"
+import { type LinkTypes } from "@/lib/zod/links";
 
 
 // interface DataTableRowActionsProps<TData> {
@@ -30,7 +30,7 @@ import type { LinkDTOSchemaType } from "@/data-access/urls"
 // }
 
 interface DataTableRowActionsProps {
-  row: Row<LinkDTOSchemaType>
+  row: Row<LinkTypes.DTO>
 }
 
 export function DataTableRowActions({ row }: DataTableRowActionsProps) {

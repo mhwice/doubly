@@ -8,9 +8,9 @@ import { Checkbox } from "@/components/ui/checkbox"
 // import { labels, priorities, statuses } from "./data"
 import { DataTableColumnHeader } from "../static-components/data-table-column-header"
 import { DataTableRowActions } from "./data-table-row-actions"
-import type { LinkDTOSchemaType } from "@/data-access/urls"
+import { type LinkTypes } from "@/lib/zod/links"
 
-export const columns: ColumnDef<LinkDTOSchemaType>[] = [
+export const columns: ColumnDef<LinkTypes.DTO>[] = [
   {
     id: "select",
     header: ({ table }) => (

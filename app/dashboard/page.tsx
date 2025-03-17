@@ -5,11 +5,11 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { StatsHeader } from "./stats-header";
-import type { LinkDTOSchemaType } from "@/data-access/urls";
+import { type LinkTypes, LinkSchemas } from "@/lib/zod/links";
 import { NewLinkButton } from "./new-link-button";
 
 // TODO - it might be a better idea to query this from the db directly
-function makeStats(links: LinkDTOSchemaType[]) {
+function makeStats(links: LinkTypes.DTO[]) {
   let numUrls = 0;
   let numLinkClicks = 0;
   let numQRClicks = 0;
@@ -31,10 +31,10 @@ export default async function DemoPage() {
   if (!session?.session) redirect("/");
   const userId = session.user.id;
 
-  const links = await LinkTable.getAllLinks(userId);
-  const dtoLinks = links.map((link) => linkDTOSchema.parse(link));
+  const { data: links, error } = await LinkTable.getAllLinks({ userId });
+  if (error !== undefined) throw new Error(error);
 
-  const stats = makeStats(dtoLinks);
+  const stats = makeStats(links);
 
   return (
     <div className="container mx-auto py-10">
@@ -44,7 +44,7 @@ export default async function DemoPage() {
       <div className="flex justify-end mb-3">
         <NewLinkButton userId={userId} />
       </div>
-      <DataTable data={dtoLinks} columns={columns} />
+      <DataTable data={links} columns={columns} />
     </div>
   )
 }

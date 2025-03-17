@@ -10,18 +10,19 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { LinkDTOSchemaType } from "@/data-access/urls";
+import { type LinkTypes } from "@/lib/zod/links";
 
 interface ModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  linkData: LinkDTOSchemaType
+  linkData: LinkTypes.DTO
 }
 
 export function DeleteLinkModal({ isOpen, onOpenChange, linkData }: ModalProps) {
 
   const handleOnDelete = async () => {
     // call a deleteLink action
+    // IMPORTANT! this needs the user id as well.
     await deleteURL(linkData.id);
   }
 
