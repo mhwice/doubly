@@ -86,16 +86,16 @@ export class LinkTable {
 
       const query = `
         DELETE FROM links
-        WHERE id = $1 AND user_id = $2;
-        RETURNING id;
+        WHERE id = $1 AND user_id = $2
+        RETURNING *;
       `;
 
       const response: QueryResponse = await sql(query, [id, userId]);
-      const result = parseQueryResponse(response, LinkSchemas.Delete);
+      const result = parseQueryResponse(response, LinkSchemas.Table);
 
       if (result.length !== 1) return { error: ERROR_MESSAGES.NOT_FOUND };
 
-      return { data: id };
+      return { data: result[0].id };
 
     } catch (error: unknown) {
       if (error instanceof ZodError) return { error: ERROR_MESSAGES.PARSING };
