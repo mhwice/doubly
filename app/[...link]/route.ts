@@ -2,6 +2,10 @@ import { LinkTable } from "@/data-access/urls";
 import { permanentRedirect, redirect } from "next/navigation";
 import { NextRequest, NextResponse, userAgent } from 'next/server'
 
+export const config = {
+  runtime: 'edge', // Mark this as an Edge Function
+};
+
 // [TODO] this fails in the case of many slashes
 // ie. localhost:3000/one/two/three
 function parseRequest(request: NextRequest) {
@@ -11,6 +15,14 @@ function parseRequest(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ link: string[] }> }) {
+
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0] || "Unknown";
+  const country = request.headers.get("x-vercel-ip-country") || "Unknown";
+  const region = request.headers.get("x-vercel-ip-country-region") || "Unknown";
+  const city = request.headers.get("x-vercel-ip-city") || "Unknown";
+  console.log({ ip, country, region, city });
+
+  // console.log("api", {request});
 
   const source = request.nextUrl.searchParams.get("source");
   // console.log({ source });
