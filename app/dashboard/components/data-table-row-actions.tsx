@@ -27,6 +27,8 @@ import { CustomDialog } from "@/components/custom-dialog"
 import { EditLinkForm } from "@/components/edit-link-form"
 
 
+
+
 // interface DataTableRowActionsProps<TData> {
 //   row: Row<TData>
 // }
@@ -42,6 +44,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   const [showEditModal, setShowEditModal] = useState(false);
 
   const [url, setUrl] = useState("");
+  const [id, setId] = useState<number | undefined>(undefined);
 
   const onViewQRClicked = () => {
     const { shortUrl } = row.original;
@@ -51,16 +54,16 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
 
   const onDeleteClicked = () => {
     const { id } = row.original;
+    setId(id);
     setShowDeleteModal(true);
   }
 
   const onEditClicked = () => {
     const { id, originalUrl } = row.original;
+    setId(id);
     setUrl(originalUrl);
     setShowEditModal(true);
   }
-
-
 
   return (
     <>
@@ -84,7 +87,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
         isOpen={showEditModal}
         onOpenChange={setShowEditModal}
       >
-        <EditLinkForm userId="" setIsOpen={setShowEditModal} link={url} isEditing />
+        <EditLinkForm setIsOpen={setShowEditModal} link={url} isEditing id={id} />
       </CustomDialog>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>

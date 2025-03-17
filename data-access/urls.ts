@@ -55,8 +55,29 @@ export class LinkTable {
     }
   }
 
-  static async editLink(params: LinkTypes.Edit): Promise<DALResponse<LinkTypes.Id>> {
-    return { data: 5 };
+  static async editLink(params: LinkTypes.Edit): Promise<DALResponse<LinkTypes.Link>> {
+
+    try {
+      const { userId, id, updates: { originalUrl } } = LinkSchemas.Edit.parse(params);
+
+      const query = `
+        UPDATE links
+        SET original_url = $1
+        WHERE id = $2 AND user_id = $3
+        RETURNING *;
+      `;
+
+      const response = await sql(query, [originalUrl, id, userId]);
+      const result = parseQueryResponse(response, LinkSchemas.Table);
+
+      if (result.length !== 1) return { error: ERROR_MESSAGES.NOT_FOUND };
+
+      return { data: result[0] };
+
+    } catch (error: unknown) {
+      if (error instanceof ZodError) return { error: ERROR_MESSAGES.PARSING };
+      return { error: ERROR_MESSAGES.DB_ERROR };
+    }
   }
 
   static async deleteLinkById(params: LinkTypes.Delete): Promise<DALResponse<LinkTypes.Id>> {

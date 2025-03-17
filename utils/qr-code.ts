@@ -19,7 +19,7 @@ const qrCodeOptions = {
 
 export async function generateQRCode(url: string) {
   try {
-    const dataUrl = await QRCode.toDataURL(url, qrCodeOptions);
+    const dataUrl = await QRCode.toDataURL(url + "?source=qr", qrCodeOptions);
     return { data: dataUrl };
   } catch (error: unknown) {
     return { error: "Failed to generate QR Code" };

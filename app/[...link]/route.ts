@@ -12,7 +12,7 @@ function parseRequest(request: NextRequest) {
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ link: string[] }> }) {
 
-  const source = request.nextUrl.searchParams.get("source")
+  const source = request.nextUrl.searchParams.get("source");
   // console.log({ source });
 
   // We can use this way to manage many / easily
@@ -22,6 +22,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
   // or we can use this way, and someone figure out how to handle the extra values - maybe throw an error.
   const code = parseRequest(request);
+  // console.log({ code });
+
 
   /*
 
@@ -39,7 +41,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const { ua, browser, engine, os, device, cpu, isBot } = userAgent(request);
   // console.log({ ua, browser, engine, os, device, cpu, isBot });
 
-  const url = await LinkTable.getLinkByCode(code, source);
-  if (url) permanentRedirect(url);
+
+  const response = await LinkTable.getLinkByCode({ code, source: source === "qr" ? "qr" : "link" });
+  if (response.data?.originalUrl) permanentRedirect(response.data.originalUrl);
   redirect("/");
 }
