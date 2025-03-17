@@ -11,18 +11,21 @@ import { Input } from "@/components/ui/input";
 import { FormError } from "@/components/form-error";
 import { LoadingButton } from "@/components/auth/loading-button";
 import { createURL } from "@/actions/create-url";
+import { editURL } from "@/actions/edit-url";
 
 const LinkSchema = z.object({
-  link: z.string().min(1, { message: "link is required" }),
-  password: z.string().min(1, { message: "pass is required" }),
+  link: z.string().trim().url().min(1, { message: "link is required" }),
+  // password: z.string().min(1, { message: "pass is required" }),
 });
 
 interface EditLinkFormProps {
   userId: string,
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>
+  link?: string,
+  isEditing: boolean
 }
 
-export const EditLinkForm = ({ userId, setIsOpen }: EditLinkFormProps) => {
+export const EditLinkForm = ({ userId, setIsOpen, link, isEditing }: EditLinkFormProps) => {
 
   const [error, setError] = useState<string | undefined>();
   const [isPending, startTransition] = useTransition();
@@ -30,25 +33,32 @@ export const EditLinkForm = ({ userId, setIsOpen }: EditLinkFormProps) => {
   const form = useForm<z.infer<typeof LinkSchema>>({
     resolver: zodResolver(LinkSchema),
     defaultValues: {
-      link: "",
-      password: ""
+      link: link || ""
     }
   });
 
   const onSubmit = (values: z.infer<typeof LinkSchema>) => {
-    setError("");
-    console.log(values)
 
-    // todo: validate with zod
+    const validatedFields = LinkSchema.safeParse(values);
+    if (!validatedFields.success) return { error: "invalid fields" };
+
+    const { link } = validatedFields.data;
+
+    setError("");
 
     startTransition(async () => {
-      await createURL({
-        url: values.link,
-        password: values.password,
-        userId
-      }).then((data) => {
-        setIsOpen(false);
-      });
+      let error: string | undefined = undefined;
+      if (isEditing) {
+        const updates = { originalUrl: link };
+        const response = await editURL({ userId, id: 5, updates });
+        error = response.error;
+      } else {
+        const response = await createURL({ url: link, userId });
+        error = response.error;
+      }
+
+      if (error) setError(error);
+      else setIsOpen(false);
     });
   }
 
@@ -65,7 +75,7 @@ export const EditLinkForm = ({ userId, setIsOpen }: EditLinkFormProps) => {
               <FormMessage />
             </FormItem>
           )} />
-          <FormField control={form.control} name="password" render={({ field }) => (
+          {/* <FormField control={form.control} name="password" render={({ field }) => (
             <FormItem>
               <FormLabel>Password</FormLabel>
               <FormControl>
@@ -73,10 +83,10 @@ export const EditLinkForm = ({ userId, setIsOpen }: EditLinkFormProps) => {
               </FormControl>
               <FormMessage />
             </FormItem>
-          )} />
+          )} /> */}
         </div>
         <FormError message={error} />
-        <LoadingButton loading={isPending}>Create</LoadingButton>
+        <LoadingButton loading={isPending}>{isEditing ? "Update" : "Create"}</LoadingButton>
       </form>
     </Form>
   );

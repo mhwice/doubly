@@ -23,6 +23,8 @@ import { useState } from "react";
 import { DeleteLinkModal } from "@/components/delete-link-modal"
 import { EditLinkModal } from "@/components/edit-link-modal"
 import { type LinkTypes } from "@/lib/zod/links";
+import { CustomDialog } from "@/components/custom-dialog"
+import { EditLinkForm } from "@/components/edit-link-form"
 
 
 // interface DataTableRowActionsProps<TData> {
@@ -53,9 +55,12 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   }
 
   const onEditClicked = () => {
-    const { id } = row.original;
+    const { id, originalUrl } = row.original;
+    setUrl(originalUrl);
     setShowEditModal(true);
   }
+
+
 
   return (
     <>
@@ -66,13 +71,21 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
         code="123456"
       />
       <DeleteLinkModal isOpen={showDeleteModal} onOpenChange={setShowDeleteModal} linkData={row.original}/>
-      <EditLinkModal
+      {/* <EditLinkModal
         title="Edit link"
         description="What would you like to change?"
         isOpen={showEditModal}
         onOpenChange={setShowEditModal}
         linkData={row.original}
-      />
+      /> */}
+      <CustomDialog
+        title="Edit link"
+        description="Enter a new url"
+        isOpen={showEditModal}
+        onOpenChange={setShowEditModal}
+      >
+        <EditLinkForm userId="" setIsOpen={setShowEditModal} link={url} isEditing />
+      </CustomDialog>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button

@@ -40,7 +40,7 @@ export function NewLinkButton({ userId }: NewButtonProps) {
         isOpen={isModalOpen}
         onOpenChange={setIsModalOpen}
       >
-        <EditLinkForm userId={userId} setIsOpen={setIsModalOpen}/>
+        <EditLinkForm userId={userId} setIsOpen={setIsModalOpen} isEditing={false} />
       </CustomDialog>
     </>
   );

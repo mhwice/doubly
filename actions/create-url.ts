@@ -14,6 +14,6 @@ export const createURL = async ({ url, password, userId }: CreateUrlProps) => {
   const code = makeCode();
   const shortUrl = makeShortUrl(code);
 
-  const success = await LinkTable.createLink({ originalUrl: url, shortUrl, code, userId });
-  return success;
+  return await LinkTable.createLink({ originalUrl: url, shortUrl, code, userId });
+  // return success;
 }

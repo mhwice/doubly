@@ -55,6 +55,10 @@ export class LinkTable {
     }
   }
 
+  static async editLink(params: LinkTypes.Edit): Promise<DALResponse<LinkTypes.Id>> {
+    return { data: 5 };
+  }
+
   static async deleteLinkById(params: LinkTypes.Delete): Promise<DALResponse<LinkTypes.Id>> {
     try {
       const { id, userId } = LinkSchemas.Delete.parse(params);
