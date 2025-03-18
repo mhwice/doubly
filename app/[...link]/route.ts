@@ -20,6 +20,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const country = request.headers.get("x-vercel-ip-country") || "Unknown";
   const region = request.headers.get("x-vercel-ip-country-region") || "Unknown";
   const city = request.headers.get("x-vercel-ip-city") || "Unknown";
+  const continent = request.headers.get("x-vercel-ip-continent") || "Unknown";
+  const latitude = request.headers.get("x-vercel-ip-latitude");
+  const longitude = request.headers.get("x-vercel-ip-longitude");
+  // const postalCode = request.headers.get("x-vercel-ip-postal-code");
   console.log({ ip, country, region, city });
 
   // console.log("api", {request});
