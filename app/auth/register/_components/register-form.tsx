@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { FormError } from "@/components/form-error";
 import { FormSuccess } from "@/components/form-success";
 import { LoadingButton } from "@/components/auth/loading-button";
+import { PasswordInput } from "@/components/password-input";
 
 export const RegisterForm = () => {
 
@@ -72,7 +73,8 @@ export const RegisterForm = () => {
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input {...field} disabled={isPending} placeholder="******" type="password" />
+                    {/* <Input {...field} disabled={isPending} placeholder="******" type="password" /> */}
+                    <PasswordInput {...field} disabled={isPending} placeholder="******" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

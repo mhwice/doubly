@@ -61,7 +61,7 @@ export const LoginForm = () => {
                   <FormLabel>Password</FormLabel>
                   <FormControl>
                     {/* <Input {...field} disabled={isPending} placeholder="******" type="password" /> */}
-                    <PasswordInput {...field} disabled={isPending} placeholder="Password" />
+                    <PasswordInput {...field} disabled={isPending} placeholder="******" />
                   </FormControl>
                   <Button size="sm" variant="link" asChild className="px-0 font-normal">
                     <Link href="/auth/forgot-password">Forgot password?</Link>
