@@ -65,6 +65,11 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
     setShowEditModal(true);
   }
 
+  const onCopyClicked = () => {
+    const { shortUrl } = row.original;
+    navigator.clipboard.writeText(shortUrl);
+  }
+
   return (
     <>
       <QRCodeModal
@@ -102,7 +107,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
         <DropdownMenuContent align="end" className="w-[160px]">
           <DropdownMenuItem onClick={onEditClicked}>Edit</DropdownMenuItem>
           <DropdownMenuItem onClick={onViewQRClicked}>View QR Code</DropdownMenuItem>
-          <DropdownMenuItem>Copy Short Url</DropdownMenuItem>
+          <DropdownMenuItem onClick={onCopyClicked}>Copy Short Url</DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={onDeleteClicked}>
             Delete

@@ -1,13 +1,14 @@
-import { columns } from "./components/columns"
-import { DataTable } from "./components/data-table"
+import { columns } from "./components/columns";
+import { DataTable } from "./components/data-table";
 import { LinkTable } from "@/data-access/urls"
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { StatsHeader } from "./stats-header";
+import { StatsHeader } from "@/app/dashboard/stats-header";
 import { type LinkTypes } from "@/lib/zod/links";
-import { NewLinkButton } from "./new-link-button";
+import { NewLinkButton } from "@/app/dashboard/new-link-button";
 import { UserProvider } from "./UserContext";
+import { TableHeader } from "./table-header";
 
 // TODO - it might be a better idea to query this from the db directly
 function makeStats(links: LinkTypes.DTO[]) {
@@ -43,9 +44,7 @@ export default async function DemoPage() {
         <div className="mb-14">
           <StatsHeader stats={stats} />
         </div>
-        <div className="flex justify-end mb-3">
-          <NewLinkButton userId={userId} />
-        </div>
+        <TableHeader userId={userId} />
         <DataTable data={links} columns={columns} />
       </div>
     </UserProvider>
