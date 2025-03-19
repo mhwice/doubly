@@ -1,3 +1,4 @@
+import { ClickEvents } from "@/data-access/clicks";
 import { LinkTable } from "@/data-access/urls";
 import { permanentRedirect, redirect } from "next/navigation";
 import { NextRequest, NextResponse, userAgent } from 'next/server'
@@ -16,19 +17,25 @@ function parseRequest(request: NextRequest) {
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ link: string[] }> }) {
 
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0] || "Unknown";
-  const country = request.headers.get("x-vercel-ip-country") || "Unknown";
-  const region = request.headers.get("x-vercel-ip-country-region") || "Unknown";
-  const city = request.headers.get("x-vercel-ip-city") || "Unknown";
-  const continent = request.headers.get("x-vercel-ip-continent") || "Unknown";
-  const latitude = request.headers.get("x-vercel-ip-latitude");
-  const longitude = request.headers.get("x-vercel-ip-longitude");
-  // const postalCode = request.headers.get("x-vercel-ip-postal-code");
-  console.log({ ip, country, region, city });
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0] || undefined;
+  const country = request.headers.get("x-vercel-ip-country") || undefined;
+  const region = request.headers.get("x-vercel-ip-country-region") || undefined;
+  const city = request.headers.get("x-vercel-ip-city") || undefined;
+  const continent = request.headers.get("x-vercel-ip-continent") || undefined;
+  const latitude = request.headers.get("x-vercel-ip-latitude") || undefined;
+  const parsedLatitude = latitude === undefined ? undefined : parseFloat(latitude);
+
+  const longitude = request.headers.get("x-vercel-ip-longitude") || undefined;
+  const parsedLongitude = longitude === undefined ? undefined : parseFloat(longitude);
+  // console.log({ ip, country, region, city });
+
+  const source = request.nextUrl.searchParams.get("source");
+
+
 
   // console.log("api", {request});
 
-  const source = request.nextUrl.searchParams.get("source");
+
   // console.log({ source });
 
   // We can use this way to manage many / easily
@@ -59,6 +66,20 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
 
   const response = await LinkTable.getLinkByCode({ code, source: source === "qr" ? "qr" : "link" });
-  if (response.data?.originalUrl) permanentRedirect(response.data.originalUrl);
-  redirect("/");
+  if (!response.data) permanentRedirect("/");
+
+  const link = response.data;
+
+  const clickResponse = await ClickEvents.recordClick({
+    linkId: link.id,
+    source: source === "qr" ? "qr" : "link",
+    city,
+    continent,
+    country,
+    latitude: parsedLatitude,
+    longitude: parsedLongitude,
+    region
+  });
+
+  permanentRedirect(response.data.originalUrl);
 }

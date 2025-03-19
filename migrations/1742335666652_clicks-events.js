@@ -21,8 +21,8 @@ exports.up = (pgm) => {
       city VARCHAR(63),
       region VARCHAR(3),
       continent VARCHAR(2),
-      lat REAL CHECK(lat IS NULL OR (lat >= -90 AND lat <= 90)),
-      lng REAL CHECK (lng IS NULL OR (lng >= -180 AND lng <= 180))
+      latitude REAL CHECK(latitude IS NULL OR (latitude >= -90 AND latitude <= 90)),
+      longitude REAL CHECK (longitude IS NULL OR (longitude >= -180 AND longitude <= 180))
     );
   `);
 };
@@ -34,7 +34,7 @@ exports.up = (pgm) => {
  */
 exports.down = (pgm) => {
   pgm.sql(`
-    DROP TYPE source_type;
+    DROP TYPE source_type CASCADE;
     DROP TABLE click_events;
   `);
 };

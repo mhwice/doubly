@@ -192,9 +192,9 @@ export class LinkTable {
 
   static async getAllLinks(params: LinkTypes.GetAll): Promise<DALResponse<LinkTypes.Link[]>> {
 
-    if (env.ENV === "dev") {
-      return this.#getMockData();
-    }
+    // if (env.ENV === "dev") {
+    //   return this.#getMockData();
+    // }
 
     try {
       const { userId } = LinkSchemas.GetAll.parse(params);
