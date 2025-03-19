@@ -192,9 +192,9 @@ export class LinkTable {
 
   static async getAllLinks(params: LinkTypes.GetAll): Promise<DALResponse<LinkTypes.Link[]>> {
 
-    // if (env.ENV === "dev") {
-    //   return this.#getMockData();
-    // }
+    if (env.ENV === "dev") {
+      return this.#getMockData();
+    }
 
     try {
       const { userId } = LinkSchemas.GetAll.parse(params);
@@ -212,8 +212,8 @@ export class LinkTable {
       return { data: result };
 
     } catch (error: unknown) {
-      if (error instanceof ZodError) return { error: "Error parsing data" };
-      return { error: "Database error" };
+      if (error instanceof ZodError) return { error: ERROR_MESSAGES.PARSING };
+      return { error: ERROR_MESSAGES.DB_ERROR };
     }
   }
 }

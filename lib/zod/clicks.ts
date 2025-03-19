@@ -6,6 +6,7 @@ const ClickEventSchema = z.object({
   id: z.number().nonnegative().lt(2_147_483_648),
   linkId: z.number().nonnegative().lt(2_147_483_648),
   source: z.enum(["qr", "link"]),
+  createdAt: z.date(),
   country: z.string().trim().length(2).optional(),
   continent: z.string().trim().length(2).optional(),
   region: z.string().trim().min(1).max(3).optional(),
@@ -18,12 +19,18 @@ const ClickEventCreateSchema = ClickEventSchema.omit({
   id: true
 });
 
+const ClickEventGetAllSchema = ClickEventSchema.pick({
+  linkId: true
+});
+
 export namespace ClickEventSchemas {
   export const Click = ClickEventSchema;
   export const Create = ClickEventCreateSchema;
+  export const GetAll = ClickEventGetAllSchema;
 }
 
 export namespace ClickEventTypes {
   export type Click = z.infer<typeof ClickEventSchema>;
   export type Create = z.infer<typeof ClickEventCreateSchema>;
+  export type GetAll = z.infer<typeof ClickEventGetAllSchema>;
 }

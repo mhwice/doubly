@@ -53,6 +53,11 @@ const LinkEditSchema = LinkTableSchema.pick({
   updates: LinkTableSchema.pick({ originalUrl: true })
 });
 
+const LinkClickEventSchema = LinkTableSchema.pick({
+  id: true,
+  userId: true
+});
+
 export namespace LinkSchemas {
   export const Table = LinkTableSchema;
   export const Create = LinkCreateSchema;
@@ -61,6 +66,7 @@ export namespace LinkSchemas {
   export const DTO = LinkDTOSchema;
   export const GetAll = LinkGetAllSchema;
   export const Lookup = LinkLookupSchema;
+  export const ClickEvent = LinkClickEventSchema;
 }
 
 export namespace LinkTypes {
@@ -72,4 +78,5 @@ export namespace LinkTypes {
   export type Id = Delete["id"];
   export type Lookup = z.infer<typeof LinkLookupSchema>;
   export type GetAll = z.infer<typeof LinkGetAllSchema>;
+  export type ClickEvent = z.infer<typeof LinkClickEventSchema>;
 }
