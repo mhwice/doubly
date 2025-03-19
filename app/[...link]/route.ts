@@ -17,7 +17,7 @@ function parseRequest(request: NextRequest) {
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ link: string[] }> }) {
 
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0] || undefined;
+  // const ip = request.headers.get("x-forwarded-for")?.split(",")[0] || undefined;
   const country = request.headers.get("x-vercel-ip-country") || undefined;
   const region = request.headers.get("x-vercel-ip-country-region") || undefined;
   const city = request.headers.get("x-vercel-ip-city") || undefined;
@@ -62,13 +62,24 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   */
 
   const { ua, browser, engine, os, device, cpu, isBot } = userAgent(request);
-  // console.log({ ua, browser, engine, os, device, cpu, isBot });
+  console.log({ ua, browser, engine, os, device, cpu, isBot });
 
 
   const response = await LinkTable.getLinkByCode({ code, source: source === "qr" ? "qr" : "link" });
   if (!response.data) permanentRedirect("/");
 
   const link = response.data;
+
+  console.log({
+    linkId: link.id,
+    source: source === "qr" ? "qr" : "link",
+    city,
+    continent,
+    country,
+    latitude: parsedLatitude,
+    longitude: parsedLongitude,
+    region
+  });
 
   const clickResponse = await ClickEvents.recordClick({
     linkId: link.id,
