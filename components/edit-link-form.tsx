@@ -13,7 +13,7 @@ import { LoadingButton } from "@/components/auth/loading-button";
 import { createURL } from "@/actions/create-url";
 import { editURL } from "@/actions/edit-url";
 
-import { useUser } from "@/app/dashboard/UserContext";
+// import { useUser } from "@/app/dashboard/UserContext";
 
 const LinkSchema = z.object({
   link: z.string().trim().url().min(1, { message: "link is required" }),
@@ -32,7 +32,7 @@ export const EditLinkForm = ({ setIsOpen, link, isEditing, id }: EditLinkFormPro
   const [error, setError] = useState<string | undefined>();
   const [isPending, startTransition] = useTransition();
 
-  const { userId } = useUser();
+  // const { userId } = useUser();
 
   const form = useForm<z.infer<typeof LinkSchema>>({
     resolver: zodResolver(LinkSchema),
@@ -57,12 +57,12 @@ export const EditLinkForm = ({ setIsOpen, link, isEditing, id }: EditLinkFormPro
         if (id === undefined) {
           error = "no id provided"
         } else {
-          const response = await editURL({ userId, id, updates });
+          const response = await editURL({ id, updates });
           console.log({ response })
           error = response.error;
         }
       } else {
-        const response = await createURL({ url: link, userId });
+        const response = await createURL({ url: link });
         error = response.error;
       }
 
