@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components//ui/button";
 import { FormError } from "@/components/form-error";
 import { LoadingButton } from "@/components/auth/loading-button";
+import { PasswordInput } from "@/components/password-input";
 
 export const LoginForm = () => {
 
@@ -59,7 +60,8 @@ export const LoginForm = () => {
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input {...field} disabled={isPending} placeholder="******" type="password" />
+                    {/* <Input {...field} disabled={isPending} placeholder="******" type="password" /> */}
+                    <PasswordInput {...field} disabled={isPending} placeholder="******" />
                   </FormControl>
                   <Button size="sm" variant="link" asChild className="px-0 font-normal">
                     <Link href="/auth/forgot-password">Forgot password?</Link>

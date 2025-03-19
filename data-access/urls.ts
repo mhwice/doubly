@@ -151,7 +151,50 @@ export class LinkTable {
     }
   }
 
+  static async #getMockData(): Promise<DALResponse<LinkTypes.Link[]>> {
+    const links: LinkTypes.Link[] = [
+      {
+        id: 1,
+        originalUrl: "https://www.google.com",
+        shortUrl: "https://localhost:3000/jhb23xj",
+        code: "jhb23xj",
+        linkClicks: 331,
+        qrClicks: 892,
+        createdAt: new Date(Date.now()),
+        updatedAt: new Date(Date.now()),
+        userId: ""
+      },
+      {
+        id: 2,
+        originalUrl: "https://www.leetcode.com",
+        shortUrl: "https://localhost:3000/JdsidHu",
+        code: "JdsidHu",
+        linkClicks: 7,
+        qrClicks: 3,
+        createdAt: new Date(Date.now()),
+        updatedAt: new Date(Date.now()),
+        userId: ""
+      },
+      {
+        id: 3,
+        originalUrl: "https://www.reddit.com",
+        shortUrl: "https://localhost:3000/lsd9nk",
+        code: "lsd9nk",
+        linkClicks: 55,
+        qrClicks: 0,
+        createdAt: new Date(Date.now()),
+        updatedAt: new Date(Date.now()),
+        userId: ""
+      }
+    ];
+    return { data: links };
+  }
+
   static async getAllLinks(params: LinkTypes.GetAll): Promise<DALResponse<LinkTypes.Link[]>> {
+
+    // if (env.ENV === "dev") {
+    //   return this.#getMockData();
+    // }
 
     try {
       const { userId } = LinkSchemas.GetAll.parse(params);

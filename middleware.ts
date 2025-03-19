@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSessionCookie } from "better-auth/cookies";
 
 export async function middleware(request: NextRequest) {
-  console.log("middleware", {request});
+  // console.log("middleware", {request});
 
   // const geo = process.env.VERCEL === "1" ? geolocation(request) : undefined;
 

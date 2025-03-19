@@ -5,6 +5,7 @@ import { CustomDialog } from "@/components/custom-dialog";
 import { EditLinkForm } from "@/components/edit-link-form";
 import { EditLinkModal } from "@/components/edit-link-modal";
 import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 import { useState } from "react";
 
 interface NewButtonProps {
@@ -26,7 +27,10 @@ export function NewLinkButton({ userId }: NewButtonProps) {
 
   return (
     <>
-      <Button onClick={handleOnClick}>New Link</Button>
+      <Button className="whitespace-nowrap" onClick={handleOnClick}>
+        <Plus className="h-4 w-4 mr-1" />
+        Create Link
+      </Button>
       {/* <EditLinkModal
         title="Create a new link"
         description="Enter the url of something you'd like to track"
