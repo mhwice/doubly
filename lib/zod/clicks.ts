@@ -23,14 +23,32 @@ const ClickEventGetAllSchema = ClickEventSchema.pick({
   linkId: true
 });
 
+const FakeClickEventSchema = z.object({
+  id: z.number().nonnegative().lt(2_147_483_648),
+  linkId: z.number().nonnegative().lt(2_147_483_648),
+  source: z.enum(["qr", "link"]),
+  createdAt: z.string(),
+  country: z.string(),
+  countryCode: z.string(),
+  shortUrl: z.string(),
+  originalUrl: z.string(),
+  continent: z.string(),
+  region: z.string(),
+  city: z.string(),
+  latitude: z.number().gte(-90).lte(90),
+  longitude: z.number().gte(-180).lte(180)
+});
+
 export namespace ClickEventSchemas {
   export const Click = ClickEventSchema;
   export const Create = ClickEventCreateSchema;
   export const GetAll = ClickEventGetAllSchema;
+  export const Fake = FakeClickEventSchema;
 }
 
 export namespace ClickEventTypes {
   export type Click = z.infer<typeof ClickEventSchema>;
   export type Create = z.infer<typeof ClickEventCreateSchema>;
   export type GetAll = z.infer<typeof ClickEventGetAllSchema>;
+  export type Fake = z.infer<typeof FakeClickEventSchema>;
 }
