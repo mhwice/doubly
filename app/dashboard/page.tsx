@@ -9,7 +9,7 @@ import { TableHeader } from "./table-header";
 import { getSession } from "@/lib/get-session";
 import { ClickEvents } from "@/data-access/clicks";
 import { ClickEventTypes } from "@/lib/zod/clicks";
-import { ChartAreaInteractive } from "../sidebar/analytics/chat-area-interactive";
+import { ChartAreaInteractive } from "./chart-area-interactive";
 
 // TODO - it might be a better idea to query this from the db directly
 function makeStats(links: LinkTypes.DTO[]) {

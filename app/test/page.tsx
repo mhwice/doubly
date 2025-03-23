@@ -18,7 +18,7 @@ export default async function AnalyticsPage() {
 
   async function getClicks() {
     const data = await fs.readFile(
-      path.join(process.cwd(), "app/sidebar/analytics/updated_dummy_data.json")
+      path.join(process.cwd(), "app/test/updated_dummy_data.json")
     );
 
     const clicks = JSON.parse(data.toString());
@@ -44,7 +44,7 @@ export default async function AnalyticsPage() {
   const clicks = await getClicks();
 
   return (
-    <div>
+    <div className="container mx-auto py-10">
       <h1>Click Events</h1>
       <DataTable columns={columns} data={clicks} />
       {/* {response.data && JSON.stringify(response.data)} */}

@@ -45,6 +45,9 @@ export const columns: ColumnDef<ClickEventTypes.Fake>[] = [
   // },
   {
     accessorKey: "shortUrl",
+    // maxSize: 20,
+    // size: 300,
+    // minSize: 300,
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Short URL" />
     ),
@@ -53,7 +56,8 @@ export const columns: ColumnDef<ClickEventTypes.Fake>[] = [
       if (!shortUrl) return null;
 
       return (
-        <div className="flex items-center">
+        // <div className="flex items-center bg-blue-100">
+        <div className="flex items-center bg-blue-100">
           {/* {originalUrl.icon && (
             <originalUrl.icon className="mr-2 h-4 w-4 text-muted-foreground" />
           )} */}
@@ -78,7 +82,7 @@ export const columns: ColumnDef<ClickEventTypes.Fake>[] = [
       if (!originalUrl) return null;
 
       return (
-        <div className="flex items-center">
+        <div className="flex items-center bg-green-100">
           {/* {originalUrl.icon && (
             <originalUrl.icon className="mr-2 h-4 w-4 text-muted-foreground" />
           )} */}
@@ -103,7 +107,7 @@ export const columns: ColumnDef<ClickEventTypes.Fake>[] = [
       if (!source) return null;
 
       return (
-        <div className="flex items-center">
+        <div className="flex items-center bg-red-100">
           {source.icon && (
             <source.icon className="mr-2 h-4 w-4 text-muted-foreground" />
           )}
@@ -133,7 +137,7 @@ export const columns: ColumnDef<ClickEventTypes.Fake>[] = [
       }
 
       return (
-        <div className="flex items-center">
+        <div className="flex items-center bg-orange-100">
           {/* {continent.icon && (
             <continent.icon className="mr-2 h-4 w-4 text-muted-foreground" />
           )} */}
@@ -150,6 +154,7 @@ export const columns: ColumnDef<ClickEventTypes.Fake>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Country" />
     ),
+    // size: 10,
     cell: ({ row }) => {
       const country = countries.find(
         (country) => country.value === row.getValue("country")
@@ -160,7 +165,7 @@ export const columns: ColumnDef<ClickEventTypes.Fake>[] = [
       }
 
       return (
-        <div className="flex items-center">
+        <div className="flex items-center bg-yellow-100">
 
           {country.code && (
             <div className="overflow-hidden rounded-[3px] shadow-sm mr-2">
@@ -191,7 +196,7 @@ export const columns: ColumnDef<ClickEventTypes.Fake>[] = [
       }
 
       return (
-        <div className="flex items-center">
+        <div className="flex items-center bg-purple-100">
           {/* {city.icon && (
             <city.icon className="mr-2 h-4 w-4 text-muted-foreground" />
           )} */}
