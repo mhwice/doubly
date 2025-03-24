@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useRef, KeyboardEvent } from "react"
 import { Check, ChevronsUpDown } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -19,15 +19,41 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 
-import { data as filterFields } from "./data";
 import { Badge } from "@/components/ui/badge"
+import { Kbd } from "./kbd"
+import { useHotKey } from "./use-hot-key"
 
-export function Combobox() {
+/*
+
+ref on Command, CommandInput, PopoverTrigger, PopoverContent, Button doesn't work
+
+
+
+*/
+
+export function Combobox({ filterFields }: any) {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
   const [inputValue, setInputValue] = useState("");
   const [page, setPage] = useState<string>("root");
   const [selectedValues, setSelectedValues] = useState<string[]>([]);
+
+  // const ref = useRef<HTMLDivElement | null>(null);
+  // const ref = useRef<HTMLButtonElement | null>(null);
+  // const ref = useRef<HTMLButtonElement>(null);
+  // const triggerRef = useRef<HTMLButtonElement | null>(null);
+  // const inputRef = useRef<HTMLInputElement | null>(null);
+
+  // useEffect(() => {
+  //   if (open) {
+  //     inputRef.current?.focus();
+  //   } else {
+  //     // Optionally, blur the trigger when closing.
+  //     triggerRef.current?.blur();
+  //   }
+  // }, [open]);
+
+  useHotKey(() => setOpen((open) => !open), "e");
 
   const renderMainMenu = () => {
     const menu = findSubmenu(page, filterFields);
@@ -36,24 +62,30 @@ export function Combobox() {
         <CommandGroup heading={value || ""}>
           {menu && menu.map((field) => {
             return (
-              <CommandItem key={field.label} onSelect={(val) => {
+              <CommandItem
+                key={field.label}
+                onSelect={(val) => {
                   if (field.sub === undefined) {
-                    // console.log("selected", field.label)
                     setSelectedValues((currVals) => {
                       if (currVals.includes(field.label)) return currVals;
                       return [...currVals, field.label];
-                    })
+                    });
+
+                    setInputValue("");
+                    setPage("root");
                   } else {
                     setInputValue("");
-                    setValue(val);
+                    setValue(field.label);
                     setPage(field.label);
                   }
               }}>
                 {field.label}
+                <span className="ml-auto font-mono text-muted-foreground">{field.count}</span>
               </CommandItem>
             );
           })}
-          {page !== "root" && <CommandItem onSelect={() => {
+          {page !== "root" && <CommandItem
+          onSelect={() => {
             setValue("");
             setPage("root")
           }}>
@@ -83,10 +115,22 @@ export function Combobox() {
           <Button variant="outline" role="combobox" aria-expanded={open} className="w-[200px] justify-between" >
             Filter
             <ChevronsUpDown className="opacity-50" />
+            <Kbd className="ml-auto text-muted-foreground group-hover:text-accent-foreground">
+              <span className="mr-1">⌘</span>
+              <span>E</span>
+            </Kbd>
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[200px] p-0">
-          <Command>
+          <Command
+            onKeyDown={(e) => {
+            if (e.key === "Escape") {
+              // TODO this is a little janky, for a split second we can see the root menu layout
+              setPage("root");
+              setInputValue("");
+              setValue("");
+            }
+          }}>
             <CommandInput
               placeholder="search..."
               className="h-9"
@@ -120,6 +164,7 @@ const badgeStyle = (color: string) => ({
 
 type MenuItem = {
   label: string;
+  count: number;
   sub?: MenuItem[];
 };
 
