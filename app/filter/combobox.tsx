@@ -44,14 +44,17 @@ export function Combobox({ filterFields }: any) {
   // const triggerRef = useRef<HTMLButtonElement | null>(null);
   // const inputRef = useRef<HTMLInputElement | null>(null);
 
-  // useEffect(() => {
-  //   if (open) {
-  //     inputRef.current?.focus();
-  //   } else {
-  //     // Optionally, blur the trigger when closing.
-  //     triggerRef.current?.blur();
-  //   }
-  // }, [open]);
+  useEffect(() => {
+    if (open) {
+      // inputRef.current?.focus();
+    } else {
+      // Optionally, blur the trigger when closing.
+      // triggerRef.current?.blur();
+      setPage("root");
+      setInputValue("");
+      setValue("");
+    }
+  }, [open]);
 
   // do the filtering here
   useEffect(() => {
@@ -202,18 +205,21 @@ export function Combobox({ filterFields }: any) {
             console.log("onEscapeKeyDown")
           }}
           onCloseAutoFocus={(e) => {
-            e.preventDefault();
+            e.preventDefault(); // THIS IS THE KEY TO FIXING THE FOCUS BUG!
             console.log("onCloseAutoFocus")
           }}
 
         >
           <Command
+            loop
             onKeyDown={(e) => {
             if (e.key === "Escape") {
               // TODO this is a little janky, for a split second we can see the root menu layout
-              setPage("root");
-              setInputValue("");
-              setValue("");
+              // the reason is that this runs before the close animation finishes.
+              // instead, maybe do this in a useEffect when the menu closes - yup that worked!
+              // setPage("root");
+              // setInputValue("");
+              // setValue("");
             }
           }}>
             <CommandInput
