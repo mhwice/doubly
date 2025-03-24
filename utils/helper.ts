@@ -12,8 +12,10 @@ export async function sleep(delay: number) {
 }
 
 export function formatDBResponse(record: SQLRecord) {
-  return Object.fromEntries(
+  const res = Object.fromEntries(
     Object.entries(record).map(([key, value]) => {
+
+      // console.log(key, value)
 
       if (Array.isArray(value)) {
         return [camelCase(key), value.map((entry) => entry === null ? undefined : entry)];
@@ -31,12 +33,36 @@ export function formatDBResponse(record: SQLRecord) {
       return [camelCase(key), value === null ? undefined : value];
     })
   );
+
+  // console.log(res)
+  return res;
+}
+
+export function formatDBFilterResponse(record: SQLRecord) {
+  const res = Object.fromEntries(
+    Object.entries(record).map(([key, value]) => {
+      if (key === "field" && typeof value === "string") return [key, camelCase(value)];
+      if (key === "count" && typeof value === "string") return [key, parseInt(value)];
+      return [key, value === null ? undefined : value];
+    })
+  );
+
+  // console.log(res)
+  return res;
 }
 
 export function mapFieldsToInsert(record: SQLRecord): SQLRecord {
   return Object.fromEntries(
     Object.entries(record).map(([key, value]) => [snakeCase(key), value])
   );
+}
+
+export function parseFilterQueryResponse<T>(response: QueryResponse, zodSchema: z.ZodSchema<T>) {
+  return response.map((row) => {
+    const formatted = formatDBFilterResponse(row);
+    // console.log("wow", formatted)
+    return zodSchema.parse(formatted);
+  });
 }
 
 export function parseQueryResponse<T>(response: QueryResponse, zodSchema: z.ZodSchema<T>) {

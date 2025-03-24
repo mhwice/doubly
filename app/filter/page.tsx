@@ -17,6 +17,8 @@ export default async function Filter() {
   const { data, error } = await ClickEvents.getFilterMenuData({ userId });
   if (error !== undefined) throw new Error(error);
 
+  // console.log(data)
+
   // can now pass data to menu?
   const menu = buildMenu(data);
 
@@ -35,18 +37,29 @@ type MenuItem = {
   sub?: MenuItem[];
 };
 
-function buildMenu(filterFields: ClickEventTypes.Filter): MenuItem {
+function buildMenu(dbResponse: ClickEventTypes.Filter[]): MenuItem {
   const menu: MenuItem = { label: "root", count: -1, sub: [] };
 
-  for (const [k, v] of Object.entries(filterFields)) {
-    if (Array.isArray(v) && menu.sub) {
-      const item: MenuItem = {
-        label: k,
-        count: v.length,
-        sub: v.map((x) => ({ label: x === undefined ? "unknown" : String(x), count: 0 })),
-      };
+  const map = new Map<string, [string, number][]>();
+  for (const { field, value, count } of dbResponse) {
+    if (!map.has(field)) map.set(field, []);
+    map.get(field)!.push([value ?? "unknown", count]);
+  }
+  for (const [field, items] of map) {
+    if (menu.sub) {
+      const menuItem: MenuItem = {
+        label: field,
+        count: items.length,
+      }
 
-      menu.sub.push(item);
+      if (items.length > 0) {
+        menuItem.sub = items.map(([label, count]) =>({
+          label,
+          count
+        }));
+      }
+
+      menu.sub.push(menuItem);
     }
   }
 

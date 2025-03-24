@@ -27,31 +27,30 @@ const ClickEventGetAllSchema = ClickEventSchema.pick({
 /*
 
 {
-  sources: '{qr,link}',
-  countries: [ 'CA', 'RO', null ],
-  continents: [ 'EU', 'NA', null ],
-  city: [ 'Bucharest', 'Duncan', null ],
-  region: [ 'B', 'BC', null ],
-  original_url: [
-    'https://codepen.io/aaroniker/pens/popular?cursor=ZD0xJm89MCZwPTEmdj03OTQx',
-    'https://www.westjet.com/en-ca'
-  ],
-  short_url: [
-    'http://localhost:3000/lOvZLu',
-    'https://uurl-inky.vercel.app/Jvs3z0'
-  ]
-}
+[
+  { field: 'source', value: 'link', count: '7' },
+  { field: 'source', value: 'qr', count: '3' },
+  { field: 'country', value: null, count: '7' },
+  { field: 'country', value: 'RO', count: '1' },
+  { field: 'country', value: 'CA', count: '2' },
+  { field: 'continent', value: null, count: '7' },
+  { field: 'continent', value: 'NA', count: '2' },
+  { field: 'continent', value: 'EU', count: '1' },
+  { field: 'city', value: 'Duncan', count: '2' },
+  { field: 'city', value: null, count: '7' },
+  { field: 'city', value: 'Bucharest', count: '1' },
+  {
+    field: 'short_url',
+    value: 'http://localhost:3000/lOvZLu',
+    count: '1'
+  },
 
 */
 
 const ClickFilterSchema = z.object({
-  source: ClickEventSchema.shape.source.array(),
-  country: ClickEventSchema.shape.country.array(),
-  continent: ClickEventSchema.shape.continent.array(),
-  city: ClickEventSchema.shape.city.array(),
-  region: ClickEventSchema.shape.region.array(),
-  originalUrl: LinkSchemas.Table.shape.originalUrl.array(),
-  shortUrl: LinkSchemas.Table.shape.shortUrl.array(),
+  field: z.string(), //z.enum(["source", "continent", "country", "city", "originalUrl", "shortUrl"]),
+  value: z.string().optional(),//.trim().min(1).max(255).optional(),
+  count: z.number()//z.preprocess(Number, z.number())
 })
 
 const FakeClickEventSchema = z.object({

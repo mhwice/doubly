@@ -3,7 +3,7 @@ import "server-only";
 import { env } from "@/data-access/env";
 import { neon } from '@neondatabase/serverless';
 import { ZodError } from 'zod';
-import { mapFieldsToInsert, parseQueryResponse, type QueryResponse } from "@/utils/helper";
+import { mapFieldsToInsert, parseFilterQueryResponse, parseQueryResponse, type QueryResponse } from "@/utils/helper";
 import { ClickEventSchemas, type ClickEventTypes } from "@/lib/zod/clicks";
 import { LinkSchemas, LinkTypes } from "@/lib/zod/links";
 
@@ -117,37 +117,46 @@ export class ClickEvents {
     continent: [europe, south america, ...],
 
   */
-  static async getFilterMenuData(params: LinkTypes.GetAll) {
+  static async getFilterMenuData(params: LinkTypes.GetAll): Promise<DALResponse<ClickEventTypes.Filter[]>> {
     try {
       const { userId } = LinkSchemas.GetAll.parse(params);
 
       const query = `
-        SELECT
-          ARRAY_AGG(DISTINCT ce.source) AS source,
-          ARRAY_AGG(DISTINCT ce.country) AS country,
-          ARRAY_AGG(DISTINCT ce.continent) AS continent,
-          ARRAY_AGG(DISTINCT ce.city) AS city,
-          ARRAY_AGG(DISTINCT ce.region) AS region,
-          ARRAY_AGG(DISTINCT fl.original_url) AS original_url,
-          ARRAY_AGG(DISTINCT fl.short_url) AS short_url
-        FROM click_events AS ce
-        JOIN (
+        WITH user_links AS (
           SELECT *
           FROM links
           WHERE user_id = $1
-        ) AS fl ON fl.id = ce.link_id;
+        ), your_table AS (
+          SELECT *
+          FROM click_events AS ce
+          JOIN user_links ON user_links.id = ce.link_id
+        )
+
+        SELECT 'source' AS field, source::TEXT AS value, COUNT(*) AS count FROM your_table GROUP BY source
+        UNION ALL
+        SELECT 'country' AS field, country::TEXT AS value, COUNT(*) FROM your_table GROUP BY country
+        UNION ALL
+        SELECT 'continent' AS field, continent::TEXT AS value, COUNT(*) FROM your_table GROUP BY continent
+        UNION ALL
+        SELECT 'city' AS field, city::TEXT AS value, COUNT(*) FROM your_table GROUP BY city
+        UNION ALL
+        SELECT 'short_url' AS field, short_url::TEXT AS value, COUNT(*) FROM your_table GROUP BY short_url
+        UNION ALL
+        SELECT 'original_url' AS field, original_url::TEXT AS value, COUNT(*) FROM your_table GROUP BY original_url;
       `;
 
       const response: QueryResponse = await sql(query, [userId]);
-      const result = parseQueryResponse(response, ClickEventSchemas.Filter);
+      // console.log(response)
+      const result = parseFilterQueryResponse(response, ClickEventSchemas.Filter);
+      // console.log("here", result)
 
 
       // TODO
       // I am not 100% that this is correct.
       // If there is no click data, what is the result?
-      if (result.length !== 1) throw new Error();
+      // if (result.length !== 1) throw new Error();
 
-      return { data: result[0] };
+      return { data: result };
 
     } catch (error: unknown) {
       if (error instanceof ZodError) return { error: ERROR_MESSAGES.PARSING };
