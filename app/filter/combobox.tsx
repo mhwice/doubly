@@ -36,7 +36,7 @@ export function Combobox({ filterFields }: any) {
   const [value, setValue] = useState("");
   const [inputValue, setInputValue] = useState("");
   const [page, setPage] = useState<string>("root");
-  const [selectedValues, setSelectedValues] = useState<string[]>([]);
+  const [selectedValues, setSelectedValues] = useState<Array<Array<string>>>([]);
 
   // const ref = useRef<HTMLDivElement | null>(null);
   // const ref = useRef<HTMLButtonElement | null>(null);
@@ -53,6 +53,66 @@ export function Combobox({ filterFields }: any) {
   //   }
   // }, [open]);
 
+  // do the filtering here
+  useEffect(() => {
+    console.log(selectedValues)
+
+    // if client-side filtering, we already have all the data, and can do JS filtering on the rows.
+    // say our rows are in a variable called 'rows'
+    /*
+      and lets assume
+
+      selectedValues = [
+        ["country", "canada"],
+        ["country", "mexico"],
+        ["source", "qr"],
+        ["continent", "europe"],
+      ]
+
+      How do we filter our rows?
+      Most efficient to do a raw forlet loop
+
+      remember, my selected values mean
+
+      country = canada || mexico
+      &&
+      source = qr
+      &&
+      continent = europe
+
+      So we can turn our selectedValues into:
+
+      map = {
+        country: [canada, mexico],
+        source: [qr]
+        continent: [europe]
+      }
+
+      and for each rule in map, the current row must hit at least one item (can actually be a set)
+
+
+      const good = [];
+      looking: for (let i = 0, n = rows.length; i < n; i += 1) {
+        const row = row[i];
+        for (const [k, vs] of map) {
+          if (!vs.has(row[k])) continue looking;
+        }
+
+        good.push(row);
+      }
+
+      return good;
+
+      but this only works client-side.
+      if doing server-side we dont actually do any filtering, we just ask the db for the correct data
+      using a serverAction.
+
+      and instead of 'fetching' the data, we can bubble this up to the server component who can refetch what we need
+
+    */
+
+  }, [selectedValues]);
+
   useHotKey(() => setOpen((open) => !open), "e");
 
   const renderMainMenu = () => {
@@ -66,9 +126,22 @@ export function Combobox({ filterFields }: any) {
                 key={field.label}
                 onSelect={(val) => {
                   if (field.sub === undefined) {
-                    setSelectedValues((currVals) => {
-                      if (currVals.includes(field.label)) return currVals;
-                      return [...currVals, field.label];
+
+                    // console.log("selected", value, field.label);
+
+                    setSelectedValues((currentlSelected) => {
+                      let seen = false;
+                      for (const [k, v] of currentlSelected) {
+                        if (k === value && v === field.label) {
+                          seen = true;
+                          break;
+                        }
+                      }
+
+                      if (seen) return currentlSelected;
+                      return [...currentlSelected, [value, field.label]];
+                      // if (currVals.includes(field.label)) return currVals;
+                      // return [...currVals, field.label];
                     });
 
                     setInputValue("");
@@ -99,19 +172,21 @@ export function Combobox({ filterFields }: any) {
   return (
     <div className="flex flex-col">
       <div className="w-[200px]">
-        {selectedValues.map((item) => (
+        {selectedValues.map(([k, v]) => (
           <Badge
-            key={item}
+            key={`${k},${v}`}
             variant="outline"
             style={badgeStyle("#ef4444")}
             className="mb-2 mr-2"
           >
-            {item}
+            {k + ": " + v}
           </Badge>
         ))}
       </div>
       <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
+        <PopoverTrigger asChild onFocus={() => {
+          console.log("trigger focused")
+        }}>
           <Button variant="outline" role="combobox" aria-expanded={open} className="w-[200px] justify-between" >
             Filter
             <ChevronsUpDown className="opacity-50" />
@@ -121,7 +196,17 @@ export function Combobox({ filterFields }: any) {
             </Kbd>
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[200px] p-0">
+        <PopoverContent
+          className="w-[200px] p-0"
+          onEscapeKeyDown={(e) => {
+            console.log("onEscapeKeyDown")
+          }}
+          onCloseAutoFocus={(e) => {
+            e.preventDefault();
+            console.log("onCloseAutoFocus")
+          }}
+
+        >
           <Command
             onKeyDown={(e) => {
             if (e.key === "Escape") {
