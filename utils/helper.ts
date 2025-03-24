@@ -13,7 +13,23 @@ export async function sleep(delay: number) {
 
 export function formatDBResponse(record: SQLRecord) {
   return Object.fromEntries(
-    Object.entries(record).map(([key, value]) => [camelCase(key), value === null ? undefined : value])
+    Object.entries(record).map(([key, value]) => {
+
+      if (Array.isArray(value)) {
+        return [camelCase(key), value.map((entry) => entry === null ? undefined : entry)];
+      }
+
+      /*
+      Hack! node-pg returns enums as a string instead of an array.
+      so our source enum returns as {'qr','link'} instead of ['qr', 'link']
+      this fixes that
+      */
+      if (typeof value === "string" && value.length >= 2 && value.at(0) === "{" && value.at(-1) === "}") {
+        return [camelCase(key), value.slice(1, -1).split(",")];
+      }
+
+      return [camelCase(key), value === null ? undefined : value];
+    })
   );
 }
 

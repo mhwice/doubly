@@ -12,7 +12,8 @@ export const unlinkSocial = async (provider: "github" | "google" | "apple") => {
 
     const res = await auth.api.unlinkAccount({
       body: {
-        providerId: provider
+        providerId: provider,
+        accountId: ""
       },
       headers: await headers()
     });

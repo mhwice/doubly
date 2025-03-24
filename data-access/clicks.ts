@@ -103,4 +103,55 @@ export class ClickEvents {
       return { error: ERROR_MESSAGES.DB_ERROR };
     }
   }
+
+  /*
+    Given some filter criteria, we need to return all of the unique items and their count, so we can
+    use this in combobox filter.
+
+    To start, lets apply no filters, and simply return all of the data for all clicks.
+
+    So I want:
+
+    source: [link, qr],
+    country: [cananda, mexicon, italy, ...],
+    continent: [europe, south america, ...],
+
+  */
+  static async getFilterMenuData(params: LinkTypes.GetAll) {
+    try {
+      const { userId } = LinkSchemas.GetAll.parse(params);
+
+      const query = `
+        SELECT
+          ARRAY_AGG(DISTINCT ce.source) AS source,
+          ARRAY_AGG(DISTINCT ce.country) AS country,
+          ARRAY_AGG(DISTINCT ce.continent) AS continent,
+          ARRAY_AGG(DISTINCT ce.city) AS city,
+          ARRAY_AGG(DISTINCT ce.region) AS region,
+          ARRAY_AGG(DISTINCT fl.original_url) AS original_url,
+          ARRAY_AGG(DISTINCT fl.short_url) AS short_url
+        FROM click_events AS ce
+        JOIN (
+          SELECT *
+          FROM links
+          WHERE user_id = $1
+        ) AS fl ON fl.id = ce.link_id;
+      `;
+
+      const response: QueryResponse = await sql(query, [userId]);
+      const result = parseQueryResponse(response, ClickEventSchemas.Filter);
+
+
+      // TODO
+      // I am not 100% that this is correct.
+      // If there is no click data, what is the result?
+      if (result.length !== 1) throw new Error();
+
+      return { data: result[0] };
+
+    } catch (error: unknown) {
+      if (error instanceof ZodError) return { error: ERROR_MESSAGES.PARSING };
+      return { error: ERROR_MESSAGES.DB_ERROR };
+    }
+  }
 }

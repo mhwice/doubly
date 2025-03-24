@@ -24,14 +24,14 @@ import { Kbd } from "./kbd"
 import { useHotKey } from "./use-hot-key"
 
 /*
-
 ref on Command, CommandInput, PopoverTrigger, PopoverContent, Button doesn't work
-
-
-
 */
 
-export function Combobox({ filterFields }: any) {
+type ComboboxProps = {
+  filterFields: MenuItem;
+};
+
+export function Combobox({ filterFields }: ComboboxProps) {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
   const [inputValue, setInputValue] = useState("");
@@ -111,6 +111,9 @@ export function Combobox({ filterFields }: any) {
       using a serverAction.
 
       and instead of 'fetching' the data, we can bubble this up to the server component who can refetch what we need
+
+      TODO: use TS ReadonlyArray
+
 
     */
 
@@ -258,6 +261,38 @@ type MenuItem = {
   count: number;
   sub?: MenuItem[];
 };
+
+/*
+
+const data = {
+  label: "root",
+  sub: [
+    {
+      label: "continents",
+      sub: [
+        {
+          label: "north america",
+          sub: [
+            {
+              label: "canada",
+              sub: [
+                {
+                  label: "bc",
+                },
+                {
+                  label: "ontario",
+                },
+              ]
+            },
+            {
+              label: "usa",
+            },
+            {
+              label: "mexico"
+            },
+          ]
+
+*/
 
 function findSubmenu(label: string, menu: MenuItem): MenuItem[] | null {
   if (menu.label === label) {
