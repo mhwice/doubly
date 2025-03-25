@@ -122,8 +122,10 @@ export class ClickEvents {
   */
   static async getFilterMenuData(params: LinkTypes.GetAll): Promise<DALResponse<ClickEventTypes.Filter[]>> {
     try {
-      const { userId, options } = LinkSchemas.GetAll.parse(params);
-      // console.log({options})
+      const { userId, options, dateRange } = LinkSchemas.GetAll.parse(params);
+
+      // note the dateRange values are still strings here
+      console.log({userId, options, dateRange})
 
       // ["source", "qr"],
       // ["source", "link"],

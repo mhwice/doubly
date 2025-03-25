@@ -7,11 +7,19 @@ import { NextRequest, NextResponse } from "next/server";
   Question. Should I load the user data here, or should I get it as an argument from the frontend?
 
 */
+
+interface RequestType {
+  selectedData: [string, string][],
+  dateRange: [Date, Date]
+}
+
 export async function POST(request: NextRequest) {
-  const res: [string,string][] = await request.json();
+  // console.log(await request.json())
+  // return NextResponse.json("done");
+  const res: RequestType = await request.json();
 
   const map = new Map();
-  for (const [k, v] of res || []) {
+  for (const [k, v] of res?.selectedData || []) {
     map.set(k, (map.get(k) || new Set()).add(v));
   }
 
@@ -25,7 +33,8 @@ export async function POST(request: NextRequest) {
 
   // now I need to send these to the clickevents function
   // should I pass the userId from the client?
-  const { data, error } = await ClickEvents.getFilterMenuData({ userId, options: map });
+  const payload = { userId, options: map, dateRange: res?.dateRange ? { start: res.dateRange[0], end: res.dateRange[1] } : undefined };
+  const { data, error } = await ClickEvents.getFilterMenuData(payload);
   // for (const [k, v] of res) {
   //   console.log(k, v);
   // }

@@ -3,48 +3,32 @@
 import { useEffect, useState } from "react";
 import { Combobox } from "./combobox";
 import { ClickEventTypes } from "@/lib/zod/clicks";
+import { TimePicker } from "./time-picker";
 
 export function ClientWrapper({userId}: { userId: string}) {
 
+  const [dateRange, setDateRange] = useState<[Date, Date] | undefined>();
   const [selectedValues, setSelectedValues] = useState<Array<Array<string>>>([]);
   const [data, setData] = useState<MenuItem>();
 
   useEffect(() => {
-    console.log({ selectedValues });
+    // console.log(dateRange)
+  }, [dateRange]);
 
-    /*
+  // commented out so i dont query db
+  useEffect(() => {
 
-    The next thing we want todo is use our 'selectedValues' to control what gets queried.
-    Specifically, the following needs to happen:
-    1. We need to give our API the selectedValues.
-    2. Inside our API we need to pass the selectedValues to our ClickEvents.getFilterMenuData() function
-    3. Inside our ClickEvents.getFilterMenuData() function we need to use these selectedValues in our SQL query to
-       fetch the appropriate information.
+    const body = {
+      selectedValues: selectedValues,
+      dateRange: dateRange
+    }
 
-
-    Step 1 - Get the data into our API. The way todo this is to put the information in our query params.
-             Something like:
-
-             /api/filter?source=link&country=canada&device=mobile
-
-    It seems that DUB uses query params rather than passing in the request body.
-    They can do this becuase they only allow one of each field to be selected at a given time,
-    for example, only one country can be selected.
-
-    I think I need to decide if that is the route I want to go.
-    Also, I need to think about how caching works.
-
-    If I use request body, does that mean that caching wont work anymore?
-
-
-    https://app.dub.co/next-auth/analytics?interval=30d&domain=dub.sh&key=DCWjjdF&country=JP
-
-    */
+    // console.log(JSON.stringify(body))
 
     fetch("/api/filter", {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(selectedValues),
+      body: JSON.stringify(body),
     })
       .then((res) => {
         // console.log("1", { res });
@@ -53,20 +37,11 @@ export function ClientWrapper({userId}: { userId: string}) {
       .then((res) => {
         console.log("2", { res });
 
-        const d = res.data;
-        setData(buildMenu(d));
+        // const d = res.data;
+        // setData(buildMenu(d));
       })
 
-  }, [selectedValues]);
-
-  // useEffect(() => {
-  //   fetch('/api/profile-data')
-  //     .then((res) => res.json())
-  //     .then((data) => {
-  //       setData(data)
-  //       setLoading(false)
-  //     })
-  // }, [])
+  }, [selectedValues, dateRange]);
 
   return (
     <div>
@@ -76,6 +51,10 @@ export function ClientWrapper({userId}: { userId: string}) {
         selectedValues={selectedValues}
         setSelectedValues={setSelectedValues}
       />}
+      <TimePicker
+        dateRange={dateRange}
+        setDateRange={setDateRange}
+      />
     </div>
   );
 }

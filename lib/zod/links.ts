@@ -72,7 +72,11 @@ const LinkGetAllSchema = LinkTableSchema.pick({
   options: z.map(
     z.enum(["source", "continent", "country", "city", "originalUrl", "shortUrl"]),
     z.string().trim().min(1).array()
-  )
+  ),
+  dateRange: z.object({
+    start: z.string().datetime(),
+    end: z.string().datetime()
+  }).optional()
 });
 
 const LinkEditSchema = LinkTableSchema.pick({
