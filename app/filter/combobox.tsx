@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo, useRef, KeyboardEvent } from "react"
+import { useState, useEffect, useMemo, useRef, KeyboardEvent, Dispatch, SetStateAction } from "react"
 import { Check, ChevronsUpDown } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -29,14 +29,16 @@ ref on Command, CommandInput, PopoverTrigger, PopoverContent, Button doesn't wor
 
 type ComboboxProps = {
   filterFields: MenuItem;
+  selectedValues: string[][],
+  setSelectedValues: Dispatch<SetStateAction<string[][]>>
 };
 
-export function Combobox({ filterFields }: ComboboxProps) {
+export function Combobox({ filterFields, selectedValues, setSelectedValues }: ComboboxProps) {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
   const [inputValue, setInputValue] = useState("");
   const [page, setPage] = useState<string>("root");
-  const [selectedValues, setSelectedValues] = useState<Array<Array<string>>>([]);
+  // const [selectedValues, setSelectedValues] = useState<Array<Array<string>>>([]);
 
   // const ref = useRef<HTMLDivElement | null>(null);
   // const ref = useRef<HTMLButtonElement | null>(null);
@@ -57,8 +59,8 @@ export function Combobox({ filterFields }: ComboboxProps) {
   }, [open]);
 
   // do the filtering here
-  useEffect(() => {
-    console.log(selectedValues)
+  // useEffect(() => {
+    // console.log(selectedValues)
 
     // if client-side filtering, we already have all the data, and can do JS filtering on the rows.
     // say our rows are in a variable called 'rows'
@@ -117,7 +119,7 @@ export function Combobox({ filterFields }: ComboboxProps) {
 
     */
 
-  }, [selectedValues]);
+  // }, [selectedValues]);
 
   useHotKey(() => setOpen((open) => !open), "e");
 

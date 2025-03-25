@@ -119,9 +119,23 @@ export class ClickEvents {
   */
   static async getFilterMenuData(params: LinkTypes.GetAll): Promise<DALResponse<ClickEventTypes.Filter[]>> {
     try {
-      const { userId } = LinkSchemas.GetAll.parse(params);
+      const { userId, options } = LinkSchemas.GetAll.parse(params);
+      console.log(options)
 
-      const query = `
+      // ["source", "qr"],
+      // ["source", "link"],
+      // ["country", "canada"],
+
+      // [
+      //   { key: "source", values: ["qr", "link"]},
+      //   { key: "country", values: ["canada"]},
+      // ]
+
+      // let dummyOptions = [["source", "qr"], ["country", "canada"]];
+
+      // all i want to do is filter the source by qr
+
+      const query1 = `
         WITH user_links AS (
           SELECT *
           FROM links
@@ -145,7 +159,94 @@ export class ClickEvents {
         SELECT 'original_url' AS field, original_url::TEXT AS value, COUNT(*) FROM your_table GROUP BY original_url;
       `;
 
-      const response: QueryResponse = await sql(query, [userId]);
+      /*
+
+      const columns = Object.keys(tableData);
+      const placeholders = columns.map((_, i) => `$${i+1}`).join(", ");
+      const values = Object.values(tableData);
+
+      const query = `
+        INSERT INTO links (${columns})
+        VALUES (${placeholders})
+        RETURNING *;
+      `;
+
+      */
+
+     // [TODO SUPER IMPORTANT!] use Zod to make sure that the key is one of source, country, continuent, etc.
+     // otherwise open to sql injections!
+
+     // WHERE source IN ('qr') AND country IN ('CA', 'RO')
+
+      const ex = [
+        { key: "source", values: ["qr"] },
+        { key: "country", values: ["CA", "RO"] },
+      ];
+
+      const conditions = [];
+      const queryParams = [userId];
+      let placeholderIndex = 2;
+
+      for (const { key, values } of ex) {
+        if (values.length === 0) continue;
+
+        const placeholders = values.map(() => `$${placeholderIndex++}`).join(", ");
+        conditions.push(`${key} IN (${placeholders})`);
+
+        queryParams.push(...values);
+      }
+
+      const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+
+      const query = `
+        WITH filtered_clicks AS (
+          SELECT *
+          FROM click_events AS ce
+          JOIN (
+            SELECT *
+            FROM links
+            WHERE user_id = $1
+          ) AS user_links ON user_links.id = ce.link_id
+          -- WHERE source IN ('qr') AND country IN ('CA', 'RO')
+          ${whereClause}
+        )
+
+        SELECT 'source' AS field, source::TEXT AS value, COUNT(*) AS count
+        FROM filtered_clicks
+        GROUP BY source
+
+        UNION ALL
+
+        SELECT 'country' AS field, country::TEXT AS value, COUNT(*)
+        FROM filtered_clicks
+        GROUP BY country
+
+        UNION ALL
+
+        SELECT 'continent' AS field, continent::TEXT AS value, COUNT(*)
+        FROM filtered_clicks
+        GROUP BY continent
+
+        UNION ALL
+
+        SELECT 'city' AS field, city::TEXT AS value, COUNT(*)
+        FROM filtered_clicks
+        GROUP BY city
+
+        UNION ALL
+
+        SELECT 'short_url' AS field, short_url::TEXT AS value, COUNT(*)
+        FROM filtered_clicks
+        GROUP BY short_url
+
+        UNION ALL
+
+        SELECT 'original_url' AS field, original_url::TEXT AS value, COUNT(*)
+        FROM filtered_clicks
+        GROUP BY original_url;
+      `;
+
+      const response: QueryResponse = await sql(query, queryParams);
       // console.log(response)
       const result = parseFilterQueryResponse(response, ClickEventSchemas.Filter);
       // console.log("here", result)

@@ -44,6 +44,11 @@ const LinkLookupSchema = LinkTableSchema.pick({
 
 const LinkGetAllSchema = LinkTableSchema.pick({
   userId: true
+}).extend({
+  options: z.tuple([
+    z.string().trim().min(1), // key
+    z.string().trim().min(1)  // value
+  ]).array().optional()
 });
 
 const LinkEditSchema = LinkTableSchema.pick({
