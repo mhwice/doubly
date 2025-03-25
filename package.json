@@ -1,5 +1,6 @@
 {
   "name": "next-auth",
+  "type": "module",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -8,7 +9,8 @@
     "start": "next start",
     "lint": "next lint",
     "analyze": "ANALYZE=true npm run build",
-    "migrate": "node-pg-migrate"
+    "migrate": "node-pg-migrate",
+    "countries": "node ./utils/country-code-script.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

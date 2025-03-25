@@ -42,13 +42,37 @@ const LinkLookupSchema = LinkTableSchema.pick({
   source: z.enum(["qr", "link"])
 });
 
+// I want to have a tighter bound on the key here.
+// It must be one of ["source", "continent", "country", "city", "originalUrl", "shortUrl"]
+// can I make it into:
+
+/*
+
+const ex = [
+  { key: "source", values: ["qr"] },
+  { key: "country", values: ["CA", "RO"] },
+];
+
+array of objects, where key is an enum, and values are an array of strings?
+*/
+
+
+// const LinkGetAllSchema = LinkTableSchema.pick({
+//   userId: true
+// }).extend({
+//   options: z.tuple([
+//     z.string().trim().min(1), // key
+//     z.string().trim().min(1)  // value
+//   ]).array().optional()
+// });
+
 const LinkGetAllSchema = LinkTableSchema.pick({
   userId: true
 }).extend({
-  options: z.tuple([
-    z.string().trim().min(1), // key
-    z.string().trim().min(1)  // value
-  ]).array().optional()
+  options: z.map(
+    z.enum(["source", "continent", "country", "city", "originalUrl", "shortUrl"]),
+    z.string().trim().min(1).array()
+  )
 });
 
 const LinkEditSchema = LinkTableSchema.pick({

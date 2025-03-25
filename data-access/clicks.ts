@@ -1,11 +1,14 @@
 import "server-only";
 
+import { promises as fs } from "fs";
 import { env } from "@/data-access/env";
 import { neon } from '@neondatabase/serverless';
 import { ZodError } from 'zod';
 import { mapFieldsToInsert, parseFilterQueryResponse, parseQueryResponse, type QueryResponse } from "@/utils/helper";
 import { ClickEventSchemas, type ClickEventTypes } from "@/lib/zod/clicks";
 import { LinkSchemas, LinkTypes } from "@/lib/zod/links";
+import { snakeCase } from "change-case";
+import path from "path";
 
 const sql = neon(env.DATABASE_URL);
 
@@ -120,11 +123,22 @@ export class ClickEvents {
   static async getFilterMenuData(params: LinkTypes.GetAll): Promise<DALResponse<ClickEventTypes.Filter[]>> {
     try {
       const { userId, options } = LinkSchemas.GetAll.parse(params);
-      console.log(options)
+      // console.log({options})
 
       // ["source", "qr"],
       // ["source", "link"],
       // ["country", "canada"],
+
+      // this makes sure we have unique kv pairs.
+
+      // const map = new Map();
+      // for (const [k, v] of options || []) {
+      //   map.set(k, (map.get(k) || new Set()).add(v));
+      // }
+
+      // for (const [k, vs] of map) {
+      //   map.set(k, Array.from(vs));
+      // }
 
       // [
       //   { key: "source", values: ["qr", "link"]},
@@ -183,15 +197,52 @@ export class ClickEvents {
         { key: "country", values: ["CA", "RO"] },
       ];
 
+      // const data = await fs.readFile(path.join(process.cwd(), "./utils/countries.json"));
+      // const parsed = JSON.parse(data.toString());
+
       const conditions = [];
       const queryParams = [userId];
       let placeholderIndex = 2;
 
-      for (const { key, values } of ex) {
+      for (let [key, values] of options) {
         if (values.length === 0) continue;
+        const formattedKey = snakeCase(key);
+
+        /*
+
+        TODO
+
+        In my edge function, Vercel gives me the 2 digit country code.
+        To keep the function fast, I just save that in the db - no extra work.
+
+        But now in my analytics page, I want to fetch something like "Canada" not "CA", but the db only knows "CA".
+        So I can have a new table in the DB that just maps country codes to names.
+        Then I can do a join in the db to get the country names back.
+
+        This is a good idea, but I am going to wait until I know how Redis comes into play.
+        So for now, the countries list will be their 2 digit code
+
+        */
+
+        // if (key === "country") {
+        //   // console.log(key, values)
+        //   const ccs = [];
+        //   looking: for (const cname of values) {
+        //     for (const { name, code } of parsed) {
+        //       console.log(cname, name, code)
+        //       if (cname === name) {
+        //         ccs.push(code);
+        //         continue looking;
+        //       }
+        //     }
+        //   }
+
+        //   if (ccs.length === 0) continue;
+        //   values = ccs;
+        // }
 
         const placeholders = values.map(() => `$${placeholderIndex++}`).join(", ");
-        conditions.push(`${key} IN (${placeholders})`);
+        conditions.push(`${formattedKey} IN (${placeholders})`);
 
         queryParams.push(...values);
       }
@@ -205,6 +256,8 @@ export class ClickEvents {
           JOIN (
             SELECT *
             FROM links
+            -- TODO, if I filter our short_url and original_url here, then this becomes more efficient
+            -- as we aren't doing a join on as many records, and the subsequent steps are faster
             WHERE user_id = $1
           ) AS user_links ON user_links.id = ce.link_id
           -- WHERE source IN ('qr') AND country IN ('CA', 'RO')
@@ -246,8 +299,13 @@ export class ClickEvents {
         GROUP BY original_url;
       `;
 
+      // console.log(query, queryParams)
+
+      // i need to return both the country code AND the country name.
+
+
       const response: QueryResponse = await sql(query, queryParams);
-      // console.log(response)
+      // console.log({response})
       const result = parseFilterQueryResponse(response, ClickEventSchemas.Filter);
       // console.log("here", result)
 

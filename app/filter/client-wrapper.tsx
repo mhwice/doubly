@@ -44,17 +44,17 @@ export function ClientWrapper({userId}: { userId: string}) {
     fetch("/api/filter", {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify([...selectedValues, ["country", "canada"], ["source", "qr"]]),
+      body: JSON.stringify(selectedValues),
     })
       .then((res) => {
-        console.log("1", { res });
+        // console.log("1", { res });
         return res.json()
       })
       .then((res) => {
         console.log("2", { res });
 
-        // const d = res.data;
-        // setData(buildMenu(d));
+        const d = res.data;
+        setData(buildMenu(d));
       })
 
   }, [selectedValues]);
@@ -70,7 +70,7 @@ export function ClientWrapper({userId}: { userId: string}) {
 
   return (
     <div>
-      {JSON.stringify(data)}
+      {/* {JSON.stringify(data)} */}
       {data && <Combobox
         filterFields={data}
         selectedValues={selectedValues}
