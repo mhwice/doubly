@@ -1,5 +1,6 @@
 import { ClickEvents } from "@/data-access/clicks";
 import { getSession } from "@/lib/get-session";
+import { LinkTypes } from "@/lib/zod/links";
 import { redirect } from "next/navigation";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -10,7 +11,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 interface RequestType {
   selectedData: [string, string][],
-  dateRange: [Date, Date]
+  dateRange: [string, string]
 }
 
 export async function POST(request: NextRequest) {
@@ -33,7 +34,7 @@ export async function POST(request: NextRequest) {
 
   // now I need to send these to the clickevents function
   // should I pass the userId from the client?
-  const payload = { userId, options: map, dateRange: res?.dateRange ? { start: res.dateRange[0], end: res.dateRange[1] } : undefined };
+  const payload: LinkTypes.GetAll = { userId, options: map, dateRange: res?.dateRange ? { start: res.dateRange[0], end: res.dateRange[1] } : undefined };
   const { data, error } = await ClickEvents.getFilterMenuData(payload);
   // for (const [k, v] of res) {
   //   console.log(k, v);

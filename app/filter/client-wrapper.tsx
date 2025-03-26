@@ -35,7 +35,7 @@ export function ClientWrapper({userId}: { userId: string}) {
         return res.json()
       })
       .then((res) => {
-        console.log("2", { res });
+        console.log({ res });
 
         // const d = res.data;
         // setData(buildMenu(d));

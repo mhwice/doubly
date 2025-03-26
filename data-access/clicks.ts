@@ -4,7 +4,7 @@ import { promises as fs } from "fs";
 import { env } from "@/data-access/env";
 import { neon } from '@neondatabase/serverless';
 import { ZodError } from 'zod';
-import { mapFieldsToInsert, parseFilterQueryResponse, parseQueryResponse, type QueryResponse } from "@/utils/helper";
+import { mapFieldsToInsert, parseChartQueryResponse, parseFilterQueryResponse, parseQueryResponse, type QueryResponse } from "@/utils/helper";
 import { ClickEventSchemas, type ClickEventTypes } from "@/lib/zod/clicks";
 import { LinkSchemas, LinkTypes } from "@/lib/zod/links";
 import { snakeCase } from "change-case";
@@ -21,6 +21,11 @@ const ERROR_MESSAGES = {
 type DALSuccess<T> = { data: T; error?: undefined };
 type DALError = { data?: undefined; error: string; };
 type DALResponse<T> = DALSuccess<T> | DALError;
+
+type FilterRepsonse = {
+  filter: ClickEventTypes.Filter[],
+  chart: ClickEventTypes.Chart[]
+}
 
 export class ClickEvents {
   static async recordClick(params: ClickEventTypes.Create): Promise<DALResponse<ClickEventTypes.Click>> {
@@ -120,12 +125,12 @@ export class ClickEvents {
     continent: [europe, south america, ...],
 
   */
-  static async getFilterMenuData(params: LinkTypes.GetAll): Promise<DALResponse<ClickEventTypes.Filter[]>> {
+  static async getFilterMenuData(params: LinkTypes.GetAll): Promise<DALResponse<FilterRepsonse>> {
     try {
       const { userId, options, dateRange } = LinkSchemas.GetAll.parse(params);
 
       // note the dateRange values are still strings here
-      console.log({userId, options, dateRange})
+      // console.log({userId, options, dateRange})
 
       // ["source", "qr"],
       // ["source", "link"],
@@ -151,29 +156,29 @@ export class ClickEvents {
 
       // all i want to do is filter the source by qr
 
-      const query1 = `
-        WITH user_links AS (
-          SELECT *
-          FROM links
-          WHERE user_id = $1
-        ), your_table AS (
-          SELECT *
-          FROM click_events AS ce
-          JOIN user_links ON user_links.id = ce.link_id
-        )
+      // const query1 = `
+      //   WITH user_links AS (
+      //     SELECT *
+      //     FROM links
+      //     WHERE user_id = $1
+      //   ), your_table AS (
+      //     SELECT *
+      //     FROM click_events AS ce
+      //     JOIN user_links ON user_links.id = ce.link_id
+      //   )
 
-        SELECT 'source' AS field, source::TEXT AS value, COUNT(*) AS count FROM your_table GROUP BY source
-        UNION ALL
-        SELECT 'country' AS field, country::TEXT AS value, COUNT(*) FROM your_table GROUP BY country
-        UNION ALL
-        SELECT 'continent' AS field, continent::TEXT AS value, COUNT(*) FROM your_table GROUP BY continent
-        UNION ALL
-        SELECT 'city' AS field, city::TEXT AS value, COUNT(*) FROM your_table GROUP BY city
-        UNION ALL
-        SELECT 'short_url' AS field, short_url::TEXT AS value, COUNT(*) FROM your_table GROUP BY short_url
-        UNION ALL
-        SELECT 'original_url' AS field, original_url::TEXT AS value, COUNT(*) FROM your_table GROUP BY original_url;
-      `;
+      //   SELECT 'source' AS field, source::TEXT AS value, COUNT(*) AS count FROM your_table GROUP BY source
+      //   UNION ALL
+      //   SELECT 'country' AS field, country::TEXT AS value, COUNT(*) FROM your_table GROUP BY country
+      //   UNION ALL
+      //   SELECT 'continent' AS field, continent::TEXT AS value, COUNT(*) FROM your_table GROUP BY continent
+      //   UNION ALL
+      //   SELECT 'city' AS field, city::TEXT AS value, COUNT(*) FROM your_table GROUP BY city
+      //   UNION ALL
+      //   SELECT 'short_url' AS field, short_url::TEXT AS value, COUNT(*) FROM your_table GROUP BY short_url
+      //   UNION ALL
+      //   SELECT 'original_url' AS field, original_url::TEXT AS value, COUNT(*) FROM your_table GROUP BY original_url;
+      // `;
 
       /*
 
@@ -264,7 +269,14 @@ export class ClickEvents {
 
       const query = `
         WITH filtered_clicks AS (
-          SELECT *
+          SELECT
+            ce.source AS source,
+            ce.city AS city,
+            ce.country AS country,
+            ce.continent AS continent,
+            user_links.short_url AS short_url,
+            user_links.original_url AS original_url,
+            ce.created_at AS created_at
           FROM click_events AS ce
           JOIN (
             SELECT *
@@ -312,14 +324,62 @@ export class ClickEvents {
         GROUP BY original_url;
       `;
 
-      // console.log(query, queryParams)
 
-      // i need to return both the country code AND the country name.
 
+      // this query is aimed at getting the data for the charts/graphs
+      // cares about the bucketed rows
+      // same cte, but then the rest is a bit different
+      // for each valid row I want the, I split into 2 groups by source (qr, link)
+      // then, i want to group that by some 'bucket' for now it will be days, and return
+      // [day, linkCount, qrCount]
+      // and I want this sorted by day
+      const query2 = `
+        WITH filtered_clicks AS (
+          SELECT
+            ce.source AS source,
+            ce.city AS city,
+            ce.country AS country,
+            ce.continent AS continent,
+            user_links.short_url AS short_url,
+            user_links.original_url AS original_url,
+            ce.created_at AS created_at
+          FROM click_events AS ce
+          JOIN (
+            SELECT *
+            FROM links
+            -- TODO, if I filter our short_url and original_url here, then this becomes more efficient
+            -- as we aren't doing a join on as many records, and the subsequent steps are faster
+            WHERE user_id = $1
+          ) AS user_links ON user_links.id = ce.link_id
+          -- WHERE source IN ('qr') AND country IN ('CA', 'RO')
+          ${whereClause}
+        )
+
+        SELECT
+          date_trunc('day', created_at) AS date,
+          SUM(
+            CASE
+              WHEN source = 'qr' THEN 1
+              ELSE 0
+            END
+          ) AS qr_count,
+          SUM(
+            CASE
+              WHEN source = 'link' THEN 1
+              ELSE 0
+            END
+          ) AS link_count
+        FROM filtered_clicks
+        GROUP BY date;
+      `;
 
       const response: QueryResponse = await sql(query, queryParams);
-      // console.log({response})
       const result = parseFilterQueryResponse(response, ClickEventSchemas.Filter);
+
+      const response2: QueryResponse = await sql(query2, queryParams);
+      // console.log({response2})
+      const result2 = parseChartQueryResponse(response2, ClickEventSchemas.Chart);
+      // console.log({response})
       // console.log("here", result)
 
 
@@ -328,7 +388,12 @@ export class ClickEvents {
       // If there is no click data, what is the result?
       // if (result.length !== 1) throw new Error();
 
-      return { data: result };
+      return {
+        data: {
+          filter: result,
+          chart: result2
+        }
+      };
 
     } catch (error: unknown) {
       if (error instanceof ZodError) return { error: ERROR_MESSAGES.PARSING };

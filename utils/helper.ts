@@ -51,10 +51,30 @@ export function formatDBFilterResponse(record: SQLRecord) {
   return res;
 }
 
+export function formatDBChartResponse(record: SQLRecord) {
+  const res = Object.fromEntries(
+    Object.entries(record).map(([key, value]) => {
+      if ((key === "qr_count" || key === "link_count") && typeof value === "string") return [camelCase(key), parseInt(value)];
+      return [key, value === null ? undefined : value];
+    })
+  );
+
+  // console.log(res)
+  return res;
+}
+
 export function mapFieldsToInsert(record: SQLRecord): SQLRecord {
   return Object.fromEntries(
     Object.entries(record).map(([key, value]) => [snakeCase(key), value])
   );
+}
+
+export function parseChartQueryResponse<T>(response: QueryResponse, zodSchema: z.ZodSchema<T>) {
+  return response.map((row) => {
+    const formatted = formatDBChartResponse(row);
+    // console.log("wow", formatted)
+    return zodSchema.parse(formatted);
+  });
 }
 
 export function parseFilterQueryResponse<T>(response: QueryResponse, zodSchema: z.ZodSchema<T>) {
