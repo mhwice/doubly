@@ -194,10 +194,10 @@ export class ClickEvents {
 
      // WHERE source IN ('qr') AND country IN ('CA', 'RO')
 
-      const ex = [
-        { key: "source", values: ["qr"] },
-        { key: "country", values: ["CA", "RO"] },
-      ];
+      // const ex = [
+      //   { key: "source", values: ["qr"] },
+      //   { key: "country", values: ["CA", "RO"] },
+      // ];
 
       // const data = await fs.readFile(path.join(process.cwd(), "./utils/countries.json"));
       // const parsed = JSON.parse(data.toString());
@@ -249,7 +249,18 @@ export class ClickEvents {
         queryParams.push(...values);
       }
 
+      // WHERE created_at >= startDate AND created_at <= endDate
+      if (dateRange) {
+        const { start, end } = dateRange;
+        conditions.push(`ce.created_at >= $${placeholderIndex++}`);
+        conditions.push(`ce.created_at <= $${placeholderIndex++}`);
+        queryParams.push(start);
+        queryParams.push(end);
+      }
+
       const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+      // console.log(whereClause)
+      // console.log(queryParams)
 
       const query = `
         WITH filtered_clicks AS (
