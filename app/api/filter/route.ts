@@ -3,6 +3,7 @@ import { getSession } from "@/lib/get-session";
 import { LinkTypes } from "@/lib/zod/links";
 import { redirect } from "next/navigation";
 import { NextRequest, NextResponse } from "next/server";
+import { serialize } from 'superjson';
 
 /*
   Question. Should I load the user data here, or should I get it as an argument from the frontend?
@@ -16,6 +17,9 @@ interface RequestType {
 
 export async function POST(request: NextRequest) {
   // console.log(await request.json())
+
+  // await ClickEvents.getCoords();
+
   // return NextResponse.json("done");
   const res: RequestType = await request.json();
 
@@ -41,5 +45,8 @@ export async function POST(request: NextRequest) {
   // }
 
   if (error !== undefined) throw new Error(error);
+
+  return NextResponse.json(serialize(data));
+
   return NextResponse.json({ data });
 }

@@ -1,6 +1,9 @@
 import { camelCase, snakeCase } from "change-case";
 import { z } from "zod";
 
+// var types = require('pg').types
+// import types from "pg-types";
+
 export type SQLRecord = {
   [key: string]: unknown
 }

@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { Combobox } from "./combobox";
 import { ClickEventTypes } from "@/lib/zod/clicks";
 import { TimePicker } from "./time-picker";
+import { deserialize } from "superjson";
+import { FilterRepsonse } from "@/data-access/clicks";
 
 export function ClientWrapper({userId}: { userId: string}) {
 
@@ -31,16 +33,19 @@ export function ClientWrapper({userId}: { userId: string}) {
       body: JSON.stringify(body),
     })
       .then((res) => {
-        // console.log("1", { res });
+        // console.log(res)
         return res.json()
       })
       .then((res) => {
-        console.log({ res });
+        // console.log(res)
+        const out: FilterRepsonse = deserialize(res);
 
-        // const d = res.data;
-        // setData(buildMenu(d));
+        const d = out.chart[0].date;
+        // console.log(d instanceof Date)
       })
 
+      // const d = res.data;
+      // setData(buildMenu(d));
   }, [selectedValues, dateRange]);
 
   return (

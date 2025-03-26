@@ -10,6 +10,16 @@ import { LinkSchemas, LinkTypes } from "@/lib/zod/links";
 import { snakeCase } from "change-case";
 import path from "path";
 
+import { types } from "pg";
+
+types.setTypeParser(types.builtins.FLOAT4, (val) => {
+  return parseFloat(val);
+});
+
+// types.setTypeParser(types.builtins.TIMESTAMPTZ, (val) => {
+//   return new Date(val);
+// });
+
 const sql = neon(env.DATABASE_URL);
 
 const ERROR_MESSAGES = {
@@ -22,12 +32,36 @@ type DALSuccess<T> = { data: T; error?: undefined };
 type DALError = { data?: undefined; error: string; };
 type DALResponse<T> = DALSuccess<T> | DALError;
 
-type FilterRepsonse = {
+export type FilterRepsonse = {
   filter: ClickEventTypes.Filter[],
   chart: ClickEventTypes.Chart[]
 }
 
 export class ClickEvents {
+
+  static async getCoords() {
+    try {
+
+      const query = `
+        SELECT COUNT(*)
+        FROM click_events
+      `;
+
+      const response = await sql(query, []);
+      console.log(response);
+      // const x = response[2].latitude;
+      // const result = parseQueryResponse(response, ClickEventSchemas.Click);
+
+      // if (result.length !== 1) throw new Error();
+
+      return { data: "done" };
+
+    } catch (error: unknown) {
+      if (error instanceof ZodError) return { error: ERROR_MESSAGES.PARSING };
+      return { error: ERROR_MESSAGES.DB_ERROR };
+    }
+  }
+
   static async recordClick(params: ClickEventTypes.Create): Promise<DALResponse<ClickEventTypes.Click>> {
     try {
       const parsedData = ClickEventSchemas.Create.parse(params);
