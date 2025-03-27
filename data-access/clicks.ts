@@ -32,10 +32,10 @@ type DALSuccess<T> = { data: T; error?: undefined };
 type DALError = { data?: undefined; error: string; };
 type DALResponse<T> = DALSuccess<T> | DALError;
 
-export type FilterRepsonse = {
-  filter: ClickEventTypes.Filter[],
-  chart: ClickEventTypes.Chart[]
-}
+// export type FilterRepsonse = {
+//   filter: ClickEventTypes.Filter[],
+//   chart: ClickEventTypes.Chart[]
+// }
 
 export class ClickEvents {
 
@@ -159,7 +159,7 @@ export class ClickEvents {
     continent: [europe, south america, ...],
 
   */
-  static async getFilterMenuData(params: LinkTypes.GetAll): Promise<DALResponse<FilterRepsonse>> {
+  static async getFilterMenuData(params: LinkTypes.GetAll): Promise<DALResponse<ClickEventTypes.ClickResponse>> {
     try {
       const { userId, options, dateRange } = LinkSchemas.GetAll.parse(params);
 
@@ -407,15 +407,20 @@ export class ClickEvents {
         GROUP BY date;
       `;
 
+      /*
+
+      TODO
+      I am not yet sure if these queries will be done by PG or maybe Redis.
+      But if it ends up being PG, then these 2 queries should be combined into one.
+      This will require changing the Zod schemas...
+
+      */
+
       const response: QueryResponse = await sql(query, queryParams);
-      const result = parseFilterQueryResponse(response, ClickEventSchemas.Filter);
+      const result = parseQueryResponse(response, ClickEventSchemas.Filter, ["field"]);
 
       const response2: QueryResponse = await sql(query2, queryParams);
-      // console.log({response2})
-      const result2 = parseChartQueryResponse(response2, ClickEventSchemas.Chart);
-      // console.log({response})
-      // console.log("here", result)
-
+      const result2 = parseQueryResponse(response2, ClickEventSchemas.Chart);
 
       // TODO
       // I am not 100% that this is correct.

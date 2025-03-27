@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Combobox } from "./combobox";
-import { ClickEventTypes } from "@/lib/zod/clicks";
+import { ClickEventSchemas, ClickEventTypes } from "@/lib/zod/clicks";
 import { TimePicker } from "./time-picker";
 import { deserialize } from "superjson";
 import { FilterRepsonse } from "@/data-access/clicks";
@@ -33,15 +33,19 @@ export function ClientWrapper({userId}: { userId: string}) {
       body: JSON.stringify(body),
     })
       .then((res) => {
-        // console.log(res)
         return res.json()
       })
       .then((res) => {
-        // console.log(res)
-        const out: FilterRepsonse = deserialize(res);
+        const deserialized = deserialize(res);
 
-        const d = out.chart[0].date;
-        // console.log(d instanceof Date)
+        const { data, error } = ClickEventSchemas.ClickResponse.safeParse(deserialized);
+        if (!error) {
+          // We now know all the types of data, and they have been validated!
+          console.log(data);
+        }
+
+        // TODO validate 'deserialized' with Zod.
+        // thankfully, now the data should match what came from the API so I should be able to reuse the schemas.
       })
 
       // const d = res.data;

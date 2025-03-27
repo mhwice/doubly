@@ -7,6 +7,7 @@ import { getSession } from "@/lib/get-session";
 import { redirect } from "next/navigation";
 import { ClickEventTypes } from "@/lib/zod/clicks";
 import { ClientWrapper } from "./client-wrapper";
+import { safeConvert } from "@/utils/helper";
 
 export default async function Filter() {
 

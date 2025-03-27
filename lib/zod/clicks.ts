@@ -59,6 +59,11 @@ const ClickChartSchema = z.object({
   linkCount: z.number()
 })
 
+const FilterRepsonseSchema = z.object({
+  filter: ClickFilterSchema.array(),
+  chart: ClickChartSchema.array(),
+})
+
 const FakeClickEventSchema = z.object({
   id: z.number().nonnegative().lt(2_147_483_648),
   linkId: z.number().nonnegative().lt(2_147_483_648),
@@ -82,6 +87,7 @@ export namespace ClickEventSchemas {
   export const Fake = FakeClickEventSchema;
   export const Filter = ClickFilterSchema;
   export const Chart = ClickChartSchema;
+  export const ClickResponse = FilterRepsonseSchema;
 }
 
 export namespace ClickEventTypes {
@@ -91,4 +97,5 @@ export namespace ClickEventTypes {
   export type Fake = z.infer<typeof FakeClickEventSchema>;
   export type Filter = z.infer<typeof ClickFilterSchema>;
   export type Chart = z.infer<typeof ClickChartSchema>;
+  export type ClickResponse = z.infer<typeof FilterRepsonseSchema>;
 }
