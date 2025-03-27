@@ -4,8 +4,7 @@ import { useEffect, useState } from "react";
 import { Combobox } from "./combobox";
 import { ClickEventSchemas, ClickEventTypes } from "@/lib/zod/clicks";
 import { TimePicker } from "./time-picker";
-import { deserialize } from "superjson";
-import { FilterRepsonse } from "@/data-access/clicks";
+import { deserialize, serialize, stringify } from "superjson";
 
 export function ClientWrapper({userId}: { userId: string}) {
 
@@ -21,35 +20,40 @@ export function ClientWrapper({userId}: { userId: string}) {
   useEffect(() => {
 
     const body = {
-      selectedValues: selectedValues,
+      selectedValues: [...selectedValues, ['country','CA'],['source','qr'],['country','CA']],
       dateRange: dateRange
     }
 
-    // console.log(JSON.stringify(body))
+    // console.log("body", stringify(body))
 
     fetch("/api/filter", {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+      body: stringify(body),
     })
       .then((res) => {
         return res.json()
       })
       .then((res) => {
         const deserialized = deserialize(res);
+        console.log({deserialized})
 
-        const { data, error } = ClickEventSchemas.ClickResponse.safeParse(deserialized);
+        const { data: out, error } = ClickEventSchemas.ClickResponse.safeParse(deserialized);
         if (!error) {
           // We now know all the types of data, and they have been validated!
-          console.log(data);
+          console.log("no err", {out});
+          setData(buildMenu(out.filter));
+        } else {
+          console.log("error", error);
         }
+
+
 
         // TODO validate 'deserialized' with Zod.
         // thankfully, now the data should match what came from the API so I should be able to reuse the schemas.
       })
 
-      // const d = res.data;
-      // setData(buildMenu(d));
+
   }, [selectedValues, dateRange]);
 
   return (

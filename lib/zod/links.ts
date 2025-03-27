@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { FilterEnum, z } from 'zod';
 
 const LinkTableSchema = z.object({
   id: z.number().nonnegative().lt(2_147_483_648),
@@ -66,18 +66,59 @@ array of objects, where key is an enum, and values are an array of strings?
 //   ]).array().optional()
 // });
 
+const FilterEnum = z.enum(["source", "continent", "country", "city", "originalUrl", "shortUrl"]);
+export type FilterEnumType = z.infer<typeof FilterEnum>;
+
 const LinkGetAllSchema = LinkTableSchema.pick({
   userId: true
 }).extend({
   options: z.map(
-    z.enum(["source", "continent", "country", "city", "originalUrl", "shortUrl"]),
+    FilterEnum,
     z.string().trim().min(1).array()
   ),
-  dateRange: z.object({
-    start: z.string().datetime(),
-    end: z.string().datetime()
-  }).optional()
+  dateRange: z.tuple([
+    z.date(),
+    z.date()
+  ]).optional()
 });
+
+export const APIContents = z.object({
+  selectedValues: z.tuple([
+    FilterEnum,
+    z.string().trim().min(1)
+  ]).array().refine((val) => {
+    const map: Map<FilterEnumType, Set<string>> = new Map();
+    for (const [k, v] of val) {
+      if (map.has(k)) {
+        if (map.get(k)?.has(v)) return false;
+        map.get(k)?.add(v);
+      } else {
+        map.set(k, new Set([v]));
+      }
+    }
+    return true;
+  }, { message: "a filter pair must be unique" }),
+  dateRange: z.tuple([
+    z.date(),
+    z.date()
+  ]).refine(([start, end]) => {
+    return start <= end;
+  }, { message: "range start date must be before range end data" }).optional()
+});
+
+// function refineFn(val: [string,string][]) {
+//   const map = new Map();
+//   for (const [k, v] of val) {
+//     if (map.has(k)) {
+//       if (map.get(k).has(v)) return false;
+//       map.get(k).add(v);
+//     } else {
+//       map.set(k, [v]);
+//     }
+//   }
+
+//   return true;
+// }
 
 const LinkEditSchema = LinkTableSchema.pick({
   userId: true,

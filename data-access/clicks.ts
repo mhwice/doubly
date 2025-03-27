@@ -1,28 +1,16 @@
 import "server-only";
 
-import { promises as fs } from "fs";
 import { env } from "@/data-access/env";
 import { neon } from '@neondatabase/serverless';
 import { ZodError } from 'zod';
-import { mapFieldsToInsert, parseChartQueryResponse, parseFilterQueryResponse, parseQueryResponse, type QueryResponse } from "@/utils/helper";
+import { mapFieldsToInsert, parseQueryResponse, type QueryResponse } from "@/utils/helper";
 import { ClickEventSchemas, type ClickEventTypes } from "@/lib/zod/clicks";
 import { LinkSchemas, LinkTypes } from "@/lib/zod/links";
 import { snakeCase } from "change-case";
-import path from "path";
-
-import { types } from "pg";
-
-types.setTypeParser(types.builtins.FLOAT4, (val) => {
-  return parseFloat(val);
-});
-
-// types.setTypeParser(types.builtins.TIMESTAMPTZ, (val) => {
-//   return new Date(val);
-// });
 
 const sql = neon(env.DATABASE_URL);
 
-const ERROR_MESSAGES = {
+export const ERROR_MESSAGES = {
   PARSING: "Error parsing data",
   DB_ERROR: "Database error",
   NOT_FOUND: "Link not found"
@@ -43,16 +31,12 @@ export class ClickEvents {
     try {
 
       const query = `
-        SELECT COUNT(*)
+        SELECT latitude
         FROM click_events
       `;
 
       const response = await sql(query, []);
       console.log(response);
-      // const x = response[2].latitude;
-      // const result = parseQueryResponse(response, ClickEventSchemas.Click);
-
-      // if (result.length !== 1) throw new Error();
 
       return { data: "done" };
 
@@ -163,84 +147,6 @@ export class ClickEvents {
     try {
       const { userId, options, dateRange } = LinkSchemas.GetAll.parse(params);
 
-      // note the dateRange values are still strings here
-      // console.log({userId, options, dateRange})
-
-      // ["source", "qr"],
-      // ["source", "link"],
-      // ["country", "canada"],
-
-      // this makes sure we have unique kv pairs.
-
-      // const map = new Map();
-      // for (const [k, v] of options || []) {
-      //   map.set(k, (map.get(k) || new Set()).add(v));
-      // }
-
-      // for (const [k, vs] of map) {
-      //   map.set(k, Array.from(vs));
-      // }
-
-      // [
-      //   { key: "source", values: ["qr", "link"]},
-      //   { key: "country", values: ["canada"]},
-      // ]
-
-      // let dummyOptions = [["source", "qr"], ["country", "canada"]];
-
-      // all i want to do is filter the source by qr
-
-      // const query1 = `
-      //   WITH user_links AS (
-      //     SELECT *
-      //     FROM links
-      //     WHERE user_id = $1
-      //   ), your_table AS (
-      //     SELECT *
-      //     FROM click_events AS ce
-      //     JOIN user_links ON user_links.id = ce.link_id
-      //   )
-
-      //   SELECT 'source' AS field, source::TEXT AS value, COUNT(*) AS count FROM your_table GROUP BY source
-      //   UNION ALL
-      //   SELECT 'country' AS field, country::TEXT AS value, COUNT(*) FROM your_table GROUP BY country
-      //   UNION ALL
-      //   SELECT 'continent' AS field, continent::TEXT AS value, COUNT(*) FROM your_table GROUP BY continent
-      //   UNION ALL
-      //   SELECT 'city' AS field, city::TEXT AS value, COUNT(*) FROM your_table GROUP BY city
-      //   UNION ALL
-      //   SELECT 'short_url' AS field, short_url::TEXT AS value, COUNT(*) FROM your_table GROUP BY short_url
-      //   UNION ALL
-      //   SELECT 'original_url' AS field, original_url::TEXT AS value, COUNT(*) FROM your_table GROUP BY original_url;
-      // `;
-
-      /*
-
-      const columns = Object.keys(tableData);
-      const placeholders = columns.map((_, i) => `$${i+1}`).join(", ");
-      const values = Object.values(tableData);
-
-      const query = `
-        INSERT INTO links (${columns})
-        VALUES (${placeholders})
-        RETURNING *;
-      `;
-
-      */
-
-     // [TODO SUPER IMPORTANT!] use Zod to make sure that the key is one of source, country, continuent, etc.
-     // otherwise open to sql injections!
-
-     // WHERE source IN ('qr') AND country IN ('CA', 'RO')
-
-      // const ex = [
-      //   { key: "source", values: ["qr"] },
-      //   { key: "country", values: ["CA", "RO"] },
-      // ];
-
-      // const data = await fs.readFile(path.join(process.cwd(), "./utils/countries.json"));
-      // const parsed = JSON.parse(data.toString());
-
       const conditions = [];
       const queryParams = [userId];
       let placeholderIndex = 2;
@@ -265,23 +171,6 @@ export class ClickEvents {
 
         */
 
-        // if (key === "country") {
-        //   // console.log(key, values)
-        //   const ccs = [];
-        //   looking: for (const cname of values) {
-        //     for (const { name, code } of parsed) {
-        //       console.log(cname, name, code)
-        //       if (cname === name) {
-        //         ccs.push(code);
-        //         continue looking;
-        //       }
-        //     }
-        //   }
-
-        //   if (ccs.length === 0) continue;
-        //   values = ccs;
-        // }
-
         const placeholders = values.map(() => `$${placeholderIndex++}`).join(", ");
         conditions.push(`${formattedKey} IN (${placeholders})`);
 
@@ -290,16 +179,12 @@ export class ClickEvents {
 
       // WHERE created_at >= startDate AND created_at <= endDate
       if (dateRange) {
-        const { start, end } = dateRange;
         conditions.push(`ce.created_at >= $${placeholderIndex++}`);
         conditions.push(`ce.created_at <= $${placeholderIndex++}`);
-        queryParams.push(start);
-        queryParams.push(end);
+        queryParams.push(...dateRange);
       }
 
       const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
-      // console.log(whereClause)
-      // console.log(queryParams)
 
       const query = `
         WITH filtered_clicks AS (
