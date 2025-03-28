@@ -1,0 +1,35 @@
+"use server";
+
+import { LinkTable } from "@/data-access/urls";
+import { ERROR_MESSAGES } from "@/lib/error-messages";
+import { getSession } from "@/lib/get-session";
+import { ServerResponse } from "@/lib/server-repsonse";
+import { LinkSchemas, LinkTypes } from "@/lib/zod/links";
+import { makeCode, makeShortUrl } from "@/utils/generate-short-code";
+
+export const createUrl = async (params: LinkTypes.CreateUrl) => {
+
+  // 1 - Validate the incoming data
+  const validated = LinkSchemas.CreateUrl.safeParse(params);
+  if (!validated.success) return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS);
+
+  // 2 - Get session data
+  const session = await getSession();
+  if (!session) return ServerResponse.fail(ERROR_MESSAGES.UNAUTHORIZED);
+
+  // 3 - Send request to DAL
+  const code = makeCode();
+  if (!code) return ServerResponse.fail(ERROR_MESSAGES.INTERNAL_SERVER_ERROR);
+  const shortUrl = makeShortUrl(code);
+
+  const response = await LinkTable.createLink({
+    userId: session.user.id,
+    code,
+    shortUrl: shortUrl,
+    ...validated.data,
+  });
+
+  // 4 - Handle DAL response
+  return ServerResponse.success('');
+  // return response;
+}

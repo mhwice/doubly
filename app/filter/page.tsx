@@ -9,11 +9,38 @@ import { ClickEventTypes } from "@/lib/zod/clicks";
 import { ClientWrapper } from "./client-wrapper";
 import { safeConvert } from "@/utils/helper";
 
+import { z } from "zod"
+
+export type MyData = z.infer<typeof myDataSchema>
+
+export const myDataSchema = z.object({
+  userId: z.string(),
+  name: z.string(),
+  signUpDate: z.coerce.date().optional(),
+  greeting: z.string().transform((userName) => `Hi, ${userName}`).optional()
+});
+
+const someUnsafeData = {
+  id: "12345",
+  name: "Will Sather",
+  date: "2024-04-19T04:07:22+0000",
+};
+
+
 export default async function Filter() {
 
-  const session = await getSession();
-  if (!session) redirect("/");
-  const userId = session.user.id;
+  const parsedData = myDataSchema.safeParse({
+    userId: someUnsafeData.id,
+    name: someUnsafeData.name,
+    signUpDate: someUnsafeData.date,
+    greeting: someUnsafeData.name,
+  });
+
+  console.log(parsedData)
+
+  // const session = await getSession();
+  // if (!session) redirect("/");
+  // const userId = session.user.id;
 
   // const { data, error } = await ClickEvents.getFilterMenuData({ userId });
   // if (error !== undefined) throw new Error(error);
@@ -23,7 +50,7 @@ export default async function Filter() {
   return (
     <div className="flex justify-center items-center h-full">
       {/* <Combobox filterFields={menu} selectedValues={} setSelectedValues={} /> */}
-      <ClientWrapper userId={userId} />
+      {/* <ClientWrapper userId={userId} /> */}
     </div>
   );
 }

@@ -181,7 +181,9 @@ export class ClickEvents {
       if (dateRange) {
         conditions.push(`ce.created_at >= $${placeholderIndex++}`);
         conditions.push(`ce.created_at <= $${placeholderIndex++}`);
-        queryParams.push(...dateRange);
+        // TODO - can query params just have the raw date object?? i think so...
+        queryParams.push(dateRange[0].toISOString());
+        queryParams.push(dateRange[1].toISOString());
       }
 
       const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
