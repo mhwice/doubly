@@ -1,16 +1,16 @@
 "use server";
 
-import { LinkTable } from "@/data-access/urls";
+import { LinkTable } from "@/data-access/links";
 import { ERROR_MESSAGES } from "@/lib/error-messages";
 import { getSession } from "@/lib/get-session";
 import { ServerResponse } from "@/lib/server-repsonse";
 import { LinkSchemas, LinkTypes } from "@/lib/zod/links";
 import { makeCode, makeShortUrl } from "@/utils/generate-short-code";
 
-export const createUrl = async (params: LinkTypes.CreateUrl) => {
+export const createLink = async (params: LinkTypes.CreateLink) => {
 
   // 1 - Validate the incoming data
-  const validated = LinkSchemas.CreateUrl.safeParse(params);
+  const validated = LinkSchemas.CreateLink.safeParse(params);
   if (!validated.success) return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS);
 
   // 2 - Get session data

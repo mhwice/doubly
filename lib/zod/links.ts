@@ -1,3 +1,4 @@
+import { snakeCase } from 'change-case';
 import { z } from 'zod';
 
 const LinkTableSchema = z.object({
@@ -14,7 +15,7 @@ const LinkTableSchema = z.object({
   password: z.string().trim().min(1).max(63).optional()
 });
 
-const LinkCreateUrlSchema = z.object({
+const LinkCreateLinkSchema = z.object({
   originalUrl: z.string(),
   password: z.string().optional(),
   expiresAt: z.date().optional(),
@@ -27,6 +28,10 @@ const LinkCreateSchema = LinkTableSchema.pick({
   userId: true,
   expiresAt: true,
   password: true
+}).transform((data) => {
+  return Object.fromEntries(
+    Object.entries(data).filter(([_, value]) => value !== undefined).map(([key, value]) => [snakeCase(key), value])
+  );
 });
 
 const LinkDeleteSchema = LinkTableSchema.pick({
@@ -34,7 +39,7 @@ const LinkDeleteSchema = LinkTableSchema.pick({
   userId: true
 });
 
-const LinkDeleteUrlSchema = LinkTableSchema.pick({
+const LinkDeleteLinkSchema = LinkTableSchema.pick({
   id: true,
 });
 
@@ -137,7 +142,7 @@ const LinkEditSchema = LinkTableSchema.pick({
   updates: LinkTableSchema.pick({ originalUrl: true })
 });
 
-const LinkEditUrlSchema = LinkTableSchema.pick({
+const LinkEditLinkSchema = LinkTableSchema.pick({
   id: true
 }).extend({
   updates: LinkTableSchema.pick({ originalUrl: true })
@@ -151,11 +156,11 @@ const LinkClickEventSchema = LinkTableSchema.pick({
 export namespace LinkSchemas {
   export const Table = LinkTableSchema;
   export const Create = LinkCreateSchema;
-  export const CreateUrl = LinkCreateUrlSchema;
+  export const CreateLink = LinkCreateLinkSchema;
   export const Edit = LinkEditSchema;
-  export const EditUrl = LinkEditUrlSchema;
+  export const EditLink = LinkEditLinkSchema;
   export const Delete = LinkDeleteSchema;
-  export const DeleteUrl = LinkDeleteUrlSchema;
+  export const DeleteLink = LinkDeleteLinkSchema;
   export const DTO = LinkDTOSchema;
   export const GetAll = LinkGetAllSchema;
   export const Lookup = LinkLookupSchema;
@@ -165,11 +170,11 @@ export namespace LinkSchemas {
 export namespace LinkTypes {
   export type Link = z.infer<typeof LinkTableSchema>;
   export type Create = z.infer<typeof LinkCreateSchema>;
-  export type CreateUrl = z.infer<typeof LinkCreateUrlSchema>;
+  export type CreateLink = z.infer<typeof LinkCreateLinkSchema>;
   export type Edit = z.infer<typeof LinkEditSchema>;
-  export type EditUrl = z.infer<typeof LinkEditUrlSchema>;
+  export type EditLink = z.infer<typeof LinkEditLinkSchema>;
   export type Delete = z.infer<typeof LinkDeleteSchema>;
-  export type DeleteUrl = z.infer<typeof LinkDeleteUrlSchema>;
+  export type DeleteLink = z.infer<typeof LinkDeleteLinkSchema>;
   export type DTO = z.infer<typeof LinkDTOSchema>;
   export type Id = Delete["id"];
   export type Lookup = z.infer<typeof LinkLookupSchema>;

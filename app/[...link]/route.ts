@@ -1,5 +1,5 @@
 import { ClickEvents } from "@/data-access/clicks";
-import { LinkTable } from "@/data-access/urls";
+import { LinkTable } from "@/data-access/links";
 import { permanentRedirect, redirect } from "next/navigation";
 import { NextRequest, NextResponse, userAgent } from 'next/server'
 

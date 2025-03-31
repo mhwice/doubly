@@ -1,6 +1,6 @@
 import { columns } from "./components/columns";
 import { DataTable } from "./components/data-table";
-import { LinkTable } from "@/data-access/urls"
+import { LinkTable } from "@/data-access/links"
 import { redirect } from "next/navigation";
 import { StatsHeader } from "@/app/dashboard/stats-header";
 import { type LinkTypes } from "@/lib/zod/links";

@@ -1,36 +1,44 @@
-import "server-only";
-
 /*
-[QUESTION] is .url() is this sufficient or should I be using startsWith(http)?
+      TODO
+
+      - See if theres any way I can make the helper utils a bit cleaner using Zod transformations
+
+
+      !! I think I am doing the parsing of db resonses a bit weird.
+         Right now I format the unparsed response, then validate it.
+         I think I should be doing it in the opposite order.
+
+      - Should the use of the 'sql' function be moved to a different file so I don't make any connections to db?
+        I can test this by intentionally throwing an error in a method. Wrap the instantiation of the
+        sql variable in a function that logs a message and see if its called.
+      - Clean up the naming of DAL functions, and helper functions.
+
+      - Finally, the Zod Schema file needs a lot of work. Need to make sure things are really precise,
+        and need to fix the naming. Its a mess currently.
+
+      A note on namenculture.
+      • A 'url' points to a location on the internet. Like an address being 123 somestreet.
+      • A 'link' takes you from point A to point B. Neither of these points need tom be a location on the internet.
+
 */
+
+import "server-only";
 
 import { env } from "@/data-access/env";
 import { neon } from '@neondatabase/serverless';
 import { ZodError } from 'zod';
-import { mapFieldsToInsert, parseQueryResponse, type QueryResponse } from "@/utils/helper";
+import { parseQueryResponse, type QueryResponse } from "@/utils/helper";
 import { LinkSchemas, type LinkTypes } from "@/lib/zod/links";
+import { ERROR_MESSAGES } from "@/lib/error-messages";
+import { ServerResponse, ServerResponseType } from "@/lib/server-repsonse";
 
 const sql = neon(env.DATABASE_URL);
 
-const ERROR_MESSAGES = {
-  PARSING: "Error parsing data",
-  DB_ERROR: "Database error",
-  NOT_FOUND: "Link not found"
-};
-
-type DALSuccess<T> = { data: T; error?: undefined };
-type DALError = { data?: undefined; error: string; };
-type DALResponse<T> = DALSuccess<T> | DALError;
-
 export class LinkTable {
-
-  static async createLink(params: LinkTypes.Create): Promise<DALResponse<LinkTypes.Link>> {
-
+  static async createLink(params: LinkTypes.Create): Promise<ServerResponseType<LinkTypes.Link>> {
     try {
 
-      const parsedData = LinkSchemas.Create.parse(params);
-      const filteredData = Object.fromEntries(Object.entries(parsedData).filter(([_, value]) => value !== undefined));
-      const tableData = mapFieldsToInsert(filteredData);
+      const tableData = LinkSchemas.Create.parse(params);
 
       const columns = Object.keys(tableData);
       const placeholders = columns.map((_, i) => `$${i+1}`).join(", ");
@@ -45,17 +53,17 @@ export class LinkTable {
       const response: QueryResponse = await sql(query, values);
       const result = parseQueryResponse(response, LinkSchemas.Table);
 
-      if (result.length !== 1) throw new Error();
+      if (result.length !== 1) return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
 
-      return { data: result[0] };
+      return ServerResponse.success(result[0]);
 
     } catch (error: unknown) {
-      if (error instanceof ZodError) return { error: ERROR_MESSAGES.PARSING };
-      return { error: ERROR_MESSAGES.DB_ERROR };
+      if (error instanceof ZodError) return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS);
+      return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
     }
   }
 
-  static async editLink(params: LinkTypes.Edit): Promise<DALResponse<LinkTypes.Link>> {
+  static async editLink(params: LinkTypes.Edit): Promise<ServerResponseType<LinkTypes.Link>> {
 
     try {
       const { userId, id, updates: { originalUrl } } = LinkSchemas.Edit.parse(params);
@@ -70,17 +78,17 @@ export class LinkTable {
       const response = await sql(query, [originalUrl, id, userId]);
       const result = parseQueryResponse(response, LinkSchemas.Table);
 
-      if (result.length !== 1) return { error: ERROR_MESSAGES.NOT_FOUND };
+      if (result.length !== 1) return ServerResponse.fail(ERROR_MESSAGES.NOT_FOUND);
 
-      return { data: result[0] };
+      return ServerResponse.success(result[0]);
 
     } catch (error: unknown) {
-      if (error instanceof ZodError) return { error: ERROR_MESSAGES.PARSING };
-      return { error: ERROR_MESSAGES.DB_ERROR };
+      if (error instanceof ZodError) return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS);
+      return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
     }
   }
 
-  static async deleteLinkById(params: LinkTypes.Delete): Promise<DALResponse<LinkTypes.Id>> {
+  static async deleteLinkById(params: LinkTypes.Delete): Promise<ServerResponseType<LinkTypes.Id>> {
     try {
       const { id, userId } = LinkSchemas.Delete.parse(params);
 
@@ -93,17 +101,17 @@ export class LinkTable {
       const response: QueryResponse = await sql(query, [id, userId]);
       const result = parseQueryResponse(response, LinkSchemas.Table);
 
-      if (result.length !== 1) return { error: ERROR_MESSAGES.NOT_FOUND };
+      if (result.length !== 1) return ServerResponse.fail(ERROR_MESSAGES.NOT_FOUND);
 
-      return { data: result[0].id };
+      return ServerResponse.success(result[0].id);
 
     } catch (error: unknown) {
-      if (error instanceof ZodError) return { error: ERROR_MESSAGES.PARSING };
-      return { error: ERROR_MESSAGES.DB_ERROR };
+      if (error instanceof ZodError) return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS);
+      return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
     }
   }
 
-  static async #recordClick(params: LinkTypes.Link, source: "qr" | "link"): Promise<DALResponse<LinkTypes.Id>> {
+  static async #recordClick(params: LinkTypes.Link, source: "qr" | "link"): Promise<ServerResponseType<LinkTypes.Id>> {
     // don't need to validate here since this method is private and data is already validated
     try {
       const { id } = params;
@@ -116,14 +124,14 @@ export class LinkTable {
       `;
 
       await sql(query, [id]);
-      return { data: id };
+      return ServerResponse.success(id);
 
     } catch (error: unknown) {
-      return { error: ERROR_MESSAGES.DB_ERROR };
+      return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
     }
   }
 
-  static async getLinkByCode(params: LinkTypes.Lookup): Promise<DALResponse<LinkTypes.Link | null>> {
+  static async getLinkByCode(params: LinkTypes.Lookup): Promise<ServerResponseType<LinkTypes.Link | null>> {
 
     try {
       const { code, source } = LinkSchemas.Lookup.parse(params);
@@ -138,20 +146,21 @@ export class LinkTable {
       const result = parseQueryResponse(response, LinkSchemas.Table);
 
       // its not an error, there just doesn't exist any link
-      if (result.length === 0) return { data: null, error: undefined };
+      if (result.length === 0) return ServerResponse.success(null);
 
       const link = result[0];
 
       await LinkTable.#recordClick(link, source);
-      return { data: link };
+
+      return ServerResponse.success(link);
 
     } catch (error: unknown) {
-      if (error instanceof ZodError) return { error: ERROR_MESSAGES.PARSING };
-      return { error: ERROR_MESSAGES.DB_ERROR };
+      if (error instanceof ZodError) return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS);
+      return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
     }
   }
 
-  static async #getMockData(): Promise<DALResponse<LinkTypes.Link[]>> {
+  static async #getMockData(): Promise<ServerResponseType<LinkTypes.Link[]>> {
     const links: LinkTypes.Link[] = [
       {
         id: 1,
@@ -187,10 +196,10 @@ export class LinkTable {
         userId: ""
       }
     ];
-    return { data: links };
+    return ServerResponse.success(links);
   }
 
-  static async getAllLinks(params: LinkTypes.GetAll): Promise<DALResponse<LinkTypes.Link[]>> {
+  static async getAllLinks(params: LinkTypes.GetAll): Promise<ServerResponseType<LinkTypes.Link[]>> {
 
     if (env.ENV === "dev") {
       return this.#getMockData();
@@ -209,11 +218,11 @@ export class LinkTable {
       const result = parseQueryResponse(response, LinkSchemas.Table);
 
       // this should only return the dto, not full list of links
-      return { data: result };
+      return ServerResponse.success(result);
 
     } catch (error: unknown) {
-      if (error instanceof ZodError) return { error: ERROR_MESSAGES.PARSING };
-      return { error: ERROR_MESSAGES.DB_ERROR };
+      if (error instanceof ZodError) return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS);
+      return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
     }
   }
 }

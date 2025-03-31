@@ -1,6 +1,6 @@
 "use server";
 
-import { LinkTable } from "@/data-access/urls";
+import { LinkTable } from "@/data-access/links";
 import { getSession } from "@/lib/get-session";
 import { makeCode, makeShortUrl } from "@/utils/generate-short-code";
 

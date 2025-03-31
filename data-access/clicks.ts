@@ -3,54 +3,20 @@ import "server-only";
 import { env } from "@/data-access/env";
 import { neon } from '@neondatabase/serverless';
 import { ZodError } from 'zod';
-import { mapFieldsToInsert, parseQueryResponse, type QueryResponse } from "@/utils/helper";
+import { parseQueryResponse, type QueryResponse } from "@/utils/helper";
 import { ClickEventSchemas, type ClickEventTypes } from "@/lib/zod/clicks";
 import { LinkSchemas, LinkTypes } from "@/lib/zod/links";
 import { snakeCase } from "change-case";
+import { ERROR_MESSAGES } from "@/lib/error-messages";
+import { ServerResponse, ServerResponseType } from "@/lib/server-repsonse";
 
 const sql = neon(env.DATABASE_URL);
 
-export const ERROR_MESSAGES = {
-  PARSING: "Error parsing data",
-  DB_ERROR: "Database error",
-  NOT_FOUND: "Link not found"
-};
-
-type DALSuccess<T> = { data: T; error?: undefined };
-type DALError = { data?: undefined; error: string; };
-type DALResponse<T> = DALSuccess<T> | DALError;
-
-// export type FilterRepsonse = {
-//   filter: ClickEventTypes.Filter[],
-//   chart: ClickEventTypes.Chart[]
-// }
-
 export class ClickEvents {
 
-  static async getCoords() {
+  static async recordClick(params: ClickEventTypes.Create): Promise<ServerResponseType<ClickEventTypes.Click>> {
     try {
-
-      const query = `
-        SELECT latitude
-        FROM click_events
-      `;
-
-      const response = await sql(query, []);
-      console.log(response);
-
-      return { data: "done" };
-
-    } catch (error: unknown) {
-      if (error instanceof ZodError) return { error: ERROR_MESSAGES.PARSING };
-      return { error: ERROR_MESSAGES.DB_ERROR };
-    }
-  }
-
-  static async recordClick(params: ClickEventTypes.Create): Promise<DALResponse<ClickEventTypes.Click>> {
-    try {
-      const parsedData = ClickEventSchemas.Create.parse(params);
-      const filteredData = Object.fromEntries(Object.entries(parsedData).filter(([_, value]) => value !== undefined));
-      const tableData = mapFieldsToInsert(filteredData);
+      const tableData = ClickEventSchemas.Create.parse(params);
 
       const columns = Object.keys(tableData);
       const placeholders = columns.map((_, i) => `$${i+1}`).join(", ");
@@ -65,18 +31,18 @@ export class ClickEvents {
       const response: QueryResponse = await sql(query, values);
       const result = parseQueryResponse(response, ClickEventSchemas.Click);
 
-      if (result.length !== 1) throw new Error();
+      if (result.length !== 1) return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
 
-      return { data: result[0] };
+      return ServerResponse.success(result[0]);
 
     } catch (error: unknown) {
-      if (error instanceof ZodError) return { error: ERROR_MESSAGES.PARSING };
-      return { error: ERROR_MESSAGES.DB_ERROR };
+      if (error instanceof ZodError) return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS);
+      return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
     }
   }
 
   // All clicks for all links for the current user
-  static async getAllClicks(params: LinkTypes.GetAll): Promise<DALResponse<ClickEventTypes.Click[]>> {
+  static async getAllClicks(params: LinkTypes.GetAll): Promise<ServerResponseType<ClickEventTypes.Click[]>> {
     try {
       const { userId } = LinkSchemas.GetAll.parse(params);
 
@@ -94,17 +60,17 @@ export class ClickEvents {
       const result = parseQueryResponse(response, ClickEventSchemas.Click);
 
       // this should only return the dto, not full list of clicks?
-      return { data: result };
+      return ServerResponse.success(result);
 
     } catch (error: unknown) {
       console.log(error)
-      if (error instanceof ZodError) return { error: ERROR_MESSAGES.PARSING };
-      return { error: ERROR_MESSAGES.DB_ERROR };
+      if (error instanceof ZodError) return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS);
+      return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
     }
   }
 
   // All clicks for the given link and user
-  static async getClicksByLinkId(params: LinkTypes.ClickEvent): Promise<DALResponse<ClickEventTypes.Click[]>> {
+  static async getClicksByLinkId(params: LinkTypes.ClickEvent): Promise<ServerResponseType<ClickEventTypes.Click[]>> {
     try {
       const { id, userId } = LinkSchemas.ClickEvent.parse(params);
 
@@ -122,11 +88,11 @@ export class ClickEvents {
       const result = parseQueryResponse(response, ClickEventSchemas.Click);
 
       // this should only return the dto, not full list of links
-      return { data: result };
+      return ServerResponse.success(result);
 
     } catch (error: unknown) {
-      if (error instanceof ZodError) return { error: ERROR_MESSAGES.PARSING };
-      return { error: ERROR_MESSAGES.DB_ERROR };
+      if (error instanceof ZodError) return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS);
+      return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
     }
   }
 
@@ -143,7 +109,7 @@ export class ClickEvents {
     continent: [europe, south america, ...],
 
   */
-  static async getFilterMenuData(params: LinkTypes.GetAll): Promise<DALResponse<ClickEventTypes.ClickResponse>> {
+  static async getFilterMenuData(params: LinkTypes.GetAll): Promise<ServerResponseType<ClickEventTypes.ClickResponse>> {
     try {
       const { userId, options, dateRange } = LinkSchemas.GetAll.parse(params);
 
@@ -314,16 +280,11 @@ export class ClickEvents {
       // If there is no click data, what is the result?
       // if (result.length !== 1) throw new Error();
 
-      return {
-        data: {
-          filter: result,
-          chart: result2
-        }
-      };
+      return ServerResponse.success({ filter: result, chart: result2 });
 
     } catch (error: unknown) {
-      if (error instanceof ZodError) return { error: ERROR_MESSAGES.PARSING };
-      return { error: ERROR_MESSAGES.DB_ERROR };
+      if (error instanceof ZodError) return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS);
+      return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
     }
   }
 }

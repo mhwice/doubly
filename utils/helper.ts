@@ -50,12 +50,6 @@ export function formatDBResponse(record: SQLRecord, columnsToFormat?: string[]):
   );
 }
 
-export function mapFieldsToInsert(record: SQLRecord): SQLRecord {
-  return Object.fromEntries(
-    Object.entries(record).map(([key, value]) => [snakeCase(key), value])
-  );
-}
-
 /**
  * Formats and validates a node-pg query response against a Zod schema.
  * Throws an error if unsuccessful.

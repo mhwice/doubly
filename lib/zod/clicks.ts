@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { LinkSchemas } from './links';
+import { snakeCase } from 'change-case';
 
 // TODO - check what happens if I insert a lat/lng into the db with too much precision
 //        such as 1.2345678901234567890123456789012345678901234567890
@@ -16,9 +17,19 @@ const ClickEventSchema = z.object({
   longitude: z.number().gte(-180).lte(180).optional(),
 });
 
+// const ClickEventCreateSchema = ClickEventSchema.omit({
+//   id: true
+// });
+
 const ClickEventCreateSchema = ClickEventSchema.omit({
   id: true
+}).transform((data) => {
+  return Object.fromEntries(
+    Object.entries(data).filter(([_, value]) => value !== undefined).map(([key, value]) => [snakeCase(key), value])
+  );
 });
+
+// type snack = z.infer<typeof ClickEventCreateSchemaWithTransform>;
 
 const ClickEventGetAllSchema = ClickEventSchema.pick({
   linkId: true
