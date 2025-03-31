@@ -12,6 +12,9 @@ import { ServerResponse, ServerResponseType } from "@/lib/server-repsonse";
 
 const sql = neon(env.DATABASE_URL);
 
+/**
+ * Data-Access-Layer (DAL) for all ClickEvents
+ */
 export class ClickEvents {
 
   static async recordClick(params: ClickEventTypes.Create): Promise<ServerResponseType<ClickEventTypes.Click>> {

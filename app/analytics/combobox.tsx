@@ -179,7 +179,7 @@ export function Combobox({ filterFields, selectedValues, setSelectedValues }: Co
 
   return (
     <div className="flex flex-col">
-      <div className="w-[200px]">
+      {/* <div className="w-[200px]">
         {selectedValues.map(([k, v]) => (
           <Badge
             key={`${k},${v}`}
@@ -190,7 +190,7 @@ export function Combobox({ filterFields, selectedValues, setSelectedValues }: Co
             {k + ": " + v}
           </Badge>
         ))}
-      </div>
+      </div> */}
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild onFocus={() => {
           console.log("trigger focused")

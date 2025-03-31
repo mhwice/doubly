@@ -70,10 +70,17 @@ const ClickChartSchema = z.object({
   linkCount: z.number()
 })
 
+// const FilterRepsonseSchema = z.object({
+//   filter: ClickFilterSchema.array(),
+//   chart: ClickChartSchema.array(),
+// });
+
 const FilterRepsonseSchema = z.object({
   filter: ClickFilterSchema.array(),
   chart: ClickChartSchema.array(),
-})
+});
+
+const ServerResponseFilterSchema = serverResponseSchema(FilterRepsonseSchema);
 
 const FakeClickEventSchema = z.object({
   id: z.number().nonnegative().lt(2_147_483_648),
@@ -99,6 +106,7 @@ export namespace ClickEventSchemas {
   export const Filter = ClickFilterSchema;
   export const Chart = ClickChartSchema;
   export const ClickResponse = FilterRepsonseSchema;
+  export const ServerResponseFilter = ServerResponseFilterSchema;
 }
 
 export namespace ClickEventTypes {
@@ -109,4 +117,25 @@ export namespace ClickEventTypes {
   export type Filter = z.infer<typeof ClickFilterSchema>;
   export type Chart = z.infer<typeof ClickChartSchema>;
   export type ClickResponse = z.infer<typeof FilterRepsonseSchema>;
+  export type ServerResponseFilter = z.infer<typeof ServerResponseFilterSchema>;
+}
+
+/**
+ * Given a Zod schema, this function returns a new schema which mirrors a ServerResponse that contains the
+ * provided schema. This is very useful for validating the data returned from an API or Server Action.
+ *
+ * @param dataSchema
+ * @returns
+ */
+function serverResponseSchema<T>(dataSchema: z.ZodType<T>) {
+  return z.discriminatedUnion("success", [
+    z.object({
+      success: z.literal(true),
+      data: dataSchema,
+    }),
+    z.object({
+      success: z.literal(false),
+      error: z.string(),
+    }),
+  ]);
 }

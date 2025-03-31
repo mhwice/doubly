@@ -121,6 +121,8 @@ export const APIContents = z.object({
   }, { message: "range start date must be before range end data" }).optional()
 });
 
+type API = z.infer<typeof APIContents>;
+
 // function refineFn(val: [string,string][]) {
 //   const map = new Map();
 //   for (const [k, v] of val) {

@@ -41,14 +41,11 @@ export function TimePicker({ dateRange, setDateRange }: TimePickerProps) {
         break;
       }
     }
-
-
-    // console.log(e)
   }
 
   return (
     <Select onValueChange={(e) => handleClick(e)}>
-      <SelectTrigger className="w-[180px]">
+      <SelectTrigger className="hover:bg-gray-100 border transition w-[180px] data-[placeholder]:text-primary">
         <SelectValue placeholder="Filter by date" />
       </SelectTrigger>
       <SelectContent>

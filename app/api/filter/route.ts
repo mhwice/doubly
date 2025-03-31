@@ -1,5 +1,7 @@
-import { ClickEvents, ERROR_MESSAGES } from "@/data-access/clicks";
+import { ClickEvents } from "@/data-access/clicks";
+import { ERROR_MESSAGES } from "@/lib/error-messages";
 import { getSession } from "@/lib/get-session";
+import { ServerResponse } from "@/lib/server-repsonse";
 import { APIContents, FilterEnumType, LinkTypes } from "@/lib/zod/links";
 import { redirect } from "next/navigation";
 import { NextRequest, NextResponse } from "next/server";
@@ -8,33 +10,42 @@ import { ZodError } from "zod";
 
 export async function POST(request: NextRequest) {
 
-  let parsedContents;
+  // 1 - Read and parse request body
+  let contents;
   try {
     const body = await request.json();
-    const contents = deserialize(body);
-    parsedContents = APIContents.parse(contents);
-
+    contents = deserialize(body);
   } catch (error: unknown) {
-    if (error instanceof ZodError) return { error: ERROR_MESSAGES.PARSING };
-      return { error: ERROR_MESSAGES.DB_ERROR };
+    return NextResponse.json(serialize(ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS)));
+    return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS);
   }
 
+  // 2 - Validate the incoming data
+  const validated = APIContents.safeParse(contents);
+  if (!validated.success) return NextResponse.json(serialize(ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS)));
+  // if (!validated.success) return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS)
+
+  // 3 - Get session data
+  const session = await getSession();
+  if (!session) return NextResponse.json(serialize(ServerResponse.fail(ERROR_MESSAGES.UNAUTHORIZED)));
+  // if (!session) return ServerResponse.fail(ERROR_MESSAGES.UNAUTHORIZED);
+
+  // 3 - Send request to DAL
   const map: Map<FilterEnumType, string[]> = new Map();
-  for (const [k, v] of parsedContents.selectedValues) {
+  for (const [k, v] of validated.data.selectedValues) {
     if (!map.has(k)) map.set(k, []);
     map.get(k)?.push(v);
   }
 
-  // TODO - does this need to be try-catched?
-  // no, getSession returns null if there is a failure.
-  const session = await getSession();
-  if (!session) redirect("/");
-  const userId = session.user.id;
+  const response = await ClickEvents.getFilterMenuData({
+    userId: session.user.id,
+    options: map,
+    ...validated.data
+  });
 
-  const payload: LinkTypes.GetAll = { userId, options: map, dateRange: parsedContents.dateRange };
-  const { data, error } = await ClickEvents.getFilterMenuData(payload);
+  // 4 - Handle DAL response
+  // return response;
 
-  if (error !== undefined) throw new Error(error);
-
-  return NextResponse.json(serialize(data));
+  // if (error !== undefined) throw new Error(error);
+  return NextResponse.json(serialize(response));
 }

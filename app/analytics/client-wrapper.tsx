@@ -5,69 +5,56 @@ import { Combobox } from "./combobox";
 import { ClickEventSchemas, ClickEventTypes } from "@/lib/zod/clicks";
 import { TimePicker } from "./time-picker";
 import { deserialize, serialize, stringify } from "superjson";
+import { ChartAreaInteractive } from "../dashboard/chart-area-interactive";
 
-export function ClientWrapper({userId}: { userId: string}) {
+export function ClientWrapper() {
 
   const [dateRange, setDateRange] = useState<[Date, Date] | undefined>();
   const [selectedValues, setSelectedValues] = useState<Array<Array<string>>>([]);
   const [data, setData] = useState<MenuItem>();
+  const [chartData, setChartData] = useState<ClickEventTypes.Chart[]>();
 
   useEffect(() => {
-    // console.log(dateRange)
-  }, [dateRange]);
-
-  // commented out so i dont query db
-  useEffect(() => {
-
-    const body = {
-      selectedValues: [...selectedValues, ['country','CA'],['source','qr'],['country','CA']],
-      dateRange: dateRange
-    }
-
-    // console.log("body", stringify(body))
 
     fetch("/api/filter", {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: stringify(body),
+      body: stringify({ selectedValues, dateRange }),
     })
       .then((res) => {
         return res.json()
       })
       .then((res) => {
         const deserialized = deserialize(res);
-        console.log({deserialized})
 
-        const { data: out, error } = ClickEventSchemas.ClickResponse.safeParse(deserialized);
-        if (!error) {
-          // We now know all the types of data, and they have been validated!
-          console.log("no err", {out});
-          setData(buildMenu(out.filter));
-        } else {
-          console.log("error", error);
-        }
+        const validated = ClickEventSchemas.ServerResponseFilter.safeParse(deserialized);
+        if (!validated.success) throw new Error("failed to validate api response");
+        if (!validated.data.success) throw new Error(validated.data.error);
+        const { chart, filter } = validated.data.data;
 
-
-
-        // TODO validate 'deserialized' with Zod.
-        // thankfully, now the data should match what came from the API so I should be able to reuse the schemas.
+        setChartData(chart);
+        setData(buildMenu(filter));
       })
 
 
   }, [selectedValues, dateRange]);
 
   return (
-    <div>
-      {/* {JSON.stringify(data)} */}
-      {data && <Combobox
-        filterFields={data}
-        selectedValues={selectedValues}
-        setSelectedValues={setSelectedValues}
-      />}
-      <TimePicker
-        dateRange={dateRange}
-        setDateRange={setDateRange}
-      />
+    <div className="flex flex-col w-[90%]">
+      <div className="flex flex-row justify-start p-4 w-[70%] space-x-4">
+        {data && <Combobox
+          filterFields={data}
+          selectedValues={selectedValues}
+          setSelectedValues={setSelectedValues}
+        />}
+        <TimePicker
+          dateRange={dateRange}
+          setDateRange={setDateRange}
+        />
+      </div>
+      <div className="">
+        {chartData && <ChartAreaInteractive clickEvents={chartData} />}
+      </div>
     </div>
   );
 }
