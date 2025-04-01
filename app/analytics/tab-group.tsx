@@ -25,7 +25,20 @@ const cities = [
   { title: "Sao Paulo", count: 2, percent: Math.floor(2/877*100) },
 ];
 
-export function TabGroup() {
+type TabData = {
+  title: string;
+  count: number;
+  percent: number;
+}
+
+interface TabGroupParams {
+  countries: TabData[],
+  cities: TabData[],
+  continents: TabData[],
+}
+
+
+export function TabGroup(params: TabGroupParams) {
   return (
     <Tabs defaultValue="continent" className="w-[500px]">
       <TabsList>
@@ -33,9 +46,9 @@ export function TabGroup() {
         <TabsTrigger value="country">Country</TabsTrigger>
         <TabsTrigger value="city">City</TabsTrigger>
       </TabsList>
-      <TabsContent value="continent"><TabStuff title="Top Continents" data={continents}/></TabsContent>
-      <TabsContent value="country"><TabStuff title="Top Countries" data={countries}/></TabsContent>
-      <TabsContent value="city"><TabStuff title="Top Cities" data={cities}/></TabsContent>
+      <TabsContent value="continent"><TabStuff title="Top Continents" data={params.continents}/></TabsContent>
+      <TabsContent value="country"><TabStuff title="Top Countries" data={params.countries}/></TabsContent>
+      <TabsContent value="city"><TabStuff title="Top Cities" data={params.cities}/></TabsContent>
     </Tabs>
   );
 }

@@ -10,6 +10,7 @@ interface propppy {
 }
 
 export function TabStuff(params: propppy) {
+  console.log(params)
   return (
     <div className="rounded-xl border bg-white p-6 shadow-sm">
       <div className="flex items-center justify-between mb-6">

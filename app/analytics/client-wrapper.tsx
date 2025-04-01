@@ -16,31 +16,33 @@ export function ClientWrapper() {
   const [chartData, setChartData] = useState<ClickEventTypes.Chart[]>();
   const [fd, setFd] = useState<ClickEventTypes.Filter[]>();
 
-  // useEffect(() => {
+  useEffect(() => {
 
-  //   fetch("/api/filter", {
-  //     method: 'POST',
-  //     headers: { 'Content-Type': 'application/json' },
-  //     body: stringify({ selectedValues, dateRange }),
-  //   })
-  //     .then((res) => {
-  //       return res.json()
-  //     })
-  //     .then((res) => {
-  //       const deserialized = deserialize(res);
+    fetch("/api/filter", {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: stringify({ selectedValues, dateRange }),
+    })
+      .then((res) => {
+        return res.json()
+      })
+      .then((res) => {
+        const deserialized = deserialize(res);
 
-  //       const validated = ClickEventSchemas.ServerResponseFilter.safeParse(deserialized);
-  //       if (!validated.success) throw new Error("failed to validate api response");
-  //       if (!validated.data.success) throw new Error(validated.data.error);
-  //       const { chart, filter } = validated.data.data;
+        const validated = ClickEventSchemas.ServerResponseFilter.safeParse(deserialized);
+        if (!validated.success) throw new Error("failed to validate api response");
+        if (!validated.data.success) throw new Error(validated.data.error);
+        const { chart, filter } = validated.data.data;
+        console.log({chart})
+        console.log({filter})
 
-  //       setChartData(chart);
-  //       setData(buildMenu(filter));
-  //       setFd(filter);
-  //     })
+        setChartData(chart);
+        setData(buildMenu(filter));
+        setFd(filter);
+      })
 
 
-  // }, [selectedValues, dateRange]);
+  }, [selectedValues, dateRange]);
 
   return (
     <div className="flex flex-col w-[90%]">
@@ -58,12 +60,54 @@ export function ClientWrapper() {
       <div className="">
         {chartData && <ChartAreaInteractive clickEvents={chartData} />}
       </div>
-      <div>
+      {/* <div>
         {fd && fd.map((x) => <div key={JSON.stringify(x)}>{JSON.stringify(x)}</div>)}
-      </div>
-      <TabGroup />
+      </div> */}
+      { fd &&
+        <TabGroup cities={makeCardData(fd).cities} continents={makeCardData(fd).continents} countries={makeCardData(fd).countries} />
+      }
     </div>
   );
+}
+
+// { title: "Duncan", count: 877, percent: Math.floor(877/877*100) },
+function makeCardData(fieldData: {
+  field: string;
+  count: number;
+  value?: string | undefined;
+}[]) {
+  const continents = [];
+  const cities = [];
+  const countries = [];
+
+  let maxContinent = 0;
+  let maxCountry = 0;
+  let maxCity = 0;
+  for (const { field, count, value } of fieldData) {
+    if (field === "continent") {
+      maxContinent = Math.max(maxContinent, count);
+    } else if (field === "city") {
+      maxCity = Math.max(maxCity, count);
+    } else if (field === "country") {
+      maxCountry = Math.max(maxCountry, count);
+    }
+  }
+
+  for (const { field, count, value } of fieldData) {
+    if (field === "continent") {
+      continents.push({ title: value || "unknown",  count, percent: Math.floor(count * 100 / maxContinent) });
+    } else if (field === "city") {
+      cities.push({ title: value || "unknown",  count, percent: Math.floor(count * 100 / maxCity) });
+    } else if (field === "country") {
+      countries.push({ title: value || "unknown",  count, percent: Math.floor(count * 100 / maxCountry) });
+    }
+  }
+
+  continents.sort((a, b) => b.count - a.count);
+  countries.sort((a, b) => b.count - a.count);
+  cities.sort((a, b) => b.count - a.count);
+
+  return {continents, countries, cities}
 }
 
 type MenuItem = {

@@ -31,6 +31,6 @@ export function makeShortUrl(code) {
   return `${env.APP_URL}/${code}`;
 }
 
-export function getRandomDate(start = new Date(1980, 0, 1), end = new Date()) {
+export function getRandomDate(start = new Date(), end = new Date()) {
   return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
 }

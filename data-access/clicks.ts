@@ -9,8 +9,9 @@ import { LinkSchemas, LinkTypes } from "@/lib/zod/links";
 import { snakeCase } from "change-case";
 import { ERROR_MESSAGES } from "@/lib/error-messages";
 import { ServerResponse, ServerResponseType } from "@/lib/server-repsonse";
+import { sql as localSQL } from "./local-connect-test";
 
-const sql = neon(env.DATABASE_URL);
+const sql = env.ENV === "dev" ? localSQL : neon(env.DATABASE_URL);
 
 /**
  * Data-Access-Layer (DAL) for all ClickEvents
@@ -286,6 +287,7 @@ export class ClickEvents {
       return ServerResponse.success({ filter: result, chart: result2 });
 
     } catch (error: unknown) {
+      console.log({ error })
       if (error instanceof ZodError) return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS);
       return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
     }

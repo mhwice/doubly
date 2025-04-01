@@ -18,7 +18,7 @@ const { Client } = pg;
 import { loadLocationData, getRandomInt, getRandomDate, makeCode } from './utils.js';
 import { faker } from '@faker-js/faker';
 
-const NUM_USERS = [100, 100];
+const NUM_USERS = [5, 5];
 const LINKS_PER_USER = [0, 50];
 const CLICKS_PER_LINK = [0, 100];
 const AVG_NUM_CITY_COLLISIONS = 5;
@@ -82,13 +82,13 @@ async function createUser(client) {
   seenUIDS.add(uid);
 
   const name = faker.person.fullName() ;
-  const email = faker.internet.email();
+  const email = faker.internet.email().toLocaleLowerCase();
   const emailVerified = true;
-  const createdAt = getRandomDate().toISOString();
+  const createdAt = getRandomDate(new Date(1980, 0, 1), new Date(2000, 0, 1)).toISOString();
   const updatedAt = createdAt;
 
   await client.query(`
-    INSERT INTO "user" (id, name, email, emailVerified, createdAt, updatedAt)
+    INSERT INTO "user" ("id", "name", "email", "emailVerified", "createdAt", "updatedAt")
     VALUES ($1, $2, $3, $4, $5, $6);
   `, [uid, name, email, emailVerified, createdAt, updatedAt]);
 
@@ -101,12 +101,12 @@ async function createUser(client) {
   seenAIDS.add(aid);
 
   const accountId = uid
-  const providerId = "credentials";
+  const providerId = "credential";
   const userId = uid;
   const password = "pass1234";
 
   await client.query(`
-    INSERT INTO "account" (id, accountId, providerId, userId, createdAt, updatedAt, password)
+    INSERT INTO "account" ("id", "accountId", "providerId", "userId", "createdAt", "updatedAt", "password")
     VALUES ($1, $2, $3, $4, $5, $6, $7)
   `, [aid, accountId, providerId, userId, createdAt, updatedAt, password]);
 
@@ -128,11 +128,13 @@ async function createLink(client, uid) {
   const shortUrl = `https://localhost:3000/${code}`;
   const userId = uid;
 
+  const createdAt = getRandomDate(new Date(2001, 0, 1), new Date(2010, 0, 1));
+
   const resp = await client.query(`
-    INSERT INTO links (original_url, short_url, code, user_id)
-    VALUES ($1, $2, $3, $4)
+    INSERT INTO links (original_url, short_url, code, user_id, created_at)
+    VALUES ($1, $2, $3, $4, $5)
     RETURNING id
-  `, [originalUrl, shortUrl, code, userId]);
+  `, [originalUrl, shortUrl, code, userId, createdAt]);
 
   const linkId = resp.rows[0].id;
   return linkId;
@@ -149,11 +151,12 @@ async function createClick(client, linkId, loc) {
   const continent = randomLocation.continentCode;
   const latitude = randomLocation.lat;
   const longitude = randomLocation.lng;
+  const createdAt = getRandomDate(new Date(2024, 0, 1));
 
   await client.query(`
-    INSERT INTO click_events (link_id, source, country, city, region, continent, latitude, longitude)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-  `, [linkId, source, country, city, region, continent, latitude, longitude]);
+    INSERT INTO click_events (link_id, source, country, city, region, continent, latitude, longitude, created_at)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+  `, [linkId, source, country, city, region, continent, latitude, longitude, createdAt]);
 }
 
 // function pickFromLoc(loc, numClicks) {
