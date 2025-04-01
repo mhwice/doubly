@@ -1,9 +1,15 @@
 import { ChartComponent } from "./chart";
+// import { run } from "@/data-access/local-test";
+import { seed } from "@/data-access/seed";
 
-export default function Graph() {
+export default async function Graph() {
+
+  await seed();
+
   return (
     <div className="flex justify-center items-center h-full">
-      <ChartComponent />
+      hello
+      {/* <ChartComponent /> */}
     </div>
   );
 }
