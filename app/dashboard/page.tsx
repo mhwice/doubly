@@ -12,7 +12,7 @@ import { ClickEventTypes } from "@/lib/zod/clicks";
 import { ChartAreaInteractive } from "./chart-area-interactive";
 
 // TODO - it might be a better idea to query this from the db directly
-function makeStats(links: LinkTypes.DTO[]) {
+function makeStats(links: LinkTypes.Dashboard[]) {
   let numUrls = 0;
   let numLinkClicks = 0;
   let numQRClicks = 0;

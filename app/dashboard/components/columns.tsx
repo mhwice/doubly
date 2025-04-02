@@ -6,7 +6,7 @@ import { DataTableColumnHeader } from "../static-components/data-table-column-he
 import { DataTableRowActions } from "./data-table-row-actions"
 import { type LinkTypes } from "@/lib/zod/links"
 
-export const columns: ColumnDef<LinkTypes.DTO>[] = [
+export const columns: ColumnDef<LinkTypes.Dashboard>[] = [
   {
     id: "select",
     header: ({ table }) => (

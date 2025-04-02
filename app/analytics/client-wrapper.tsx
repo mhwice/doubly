@@ -7,6 +7,7 @@ import { TimePicker } from "./time-picker";
 import { deserialize, serialize, stringify } from "superjson";
 import { ChartAreaInteractive } from "../dashboard/chart-area-interactive";
 import { TabGroup } from "./tab-group";
+import { TabStuff } from "./tab-content";
 
 export function ClientWrapper() {
 
@@ -57,21 +58,22 @@ export function ClientWrapper() {
           setDateRange={setDateRange}
         />
       </div>
-      <div className="">
+      <div className="mb-8">
         {chartData && <ChartAreaInteractive clickEvents={chartData} />}
       </div>
-      {/* <div>
-        {fd && fd.map((x) => <div key={JSON.stringify(x)}>{JSON.stringify(x)}</div>)}
-      </div> */}
       { fd &&
-        <TabGroup cities={makeCardData(fd).cities} continents={makeCardData(fd).continents} countries={makeCardData(fd).countries} />
+        <div className="flex flex-row justify-between space-x-4">
+          <TabGroup items={makeCardDeviceData(fd)} />
+          <TabGroup items={makeCardLinkData(fd)} />
+          <TabGroup items={makeCardCountryData(fd)} />
+        </div>
       }
     </div>
   );
 }
 
 // { title: "Duncan", count: 877, percent: Math.floor(877/877*100) },
-function makeCardData(fieldData: {
+function makeCardCountryData(fieldData: {
   field: string;
   count: number;
   value?: string | undefined;
@@ -79,10 +81,12 @@ function makeCardData(fieldData: {
   const continents = [];
   const cities = [];
   const countries = [];
+  const regions = [];
 
   let maxContinent = 0;
   let maxCountry = 0;
   let maxCity = 0;
+  let maxRegion = 0;
   for (const { field, count, value } of fieldData) {
     if (field === "continent") {
       maxContinent = Math.max(maxContinent, count);
@@ -90,6 +94,8 @@ function makeCardData(fieldData: {
       maxCity = Math.max(maxCity, count);
     } else if (field === "country") {
       maxCountry = Math.max(maxCountry, count);
+    } else if (field === "region") {
+      maxRegion = Math.max(maxRegion, count);
     }
   }
 
@@ -100,14 +106,106 @@ function makeCardData(fieldData: {
       cities.push({ title: value || "unknown",  count, percent: Math.floor(count * 100 / maxCity) });
     } else if (field === "country") {
       countries.push({ title: value || "unknown",  count, percent: Math.floor(count * 100 / maxCountry) });
+    } else if (field === "region") {
+      regions.push({ title: value || "unknown",  count, percent: Math.floor(count * 100 / maxRegion) });
     }
   }
 
   continents.sort((a, b) => b.count - a.count);
   countries.sort((a, b) => b.count - a.count);
   cities.sort((a, b) => b.count - a.count);
+  regions.sort((a, b) => b.count - a.count);
 
-  return {continents, countries, cities}
+  return [
+    { title: "Continents", value: "continents", children: <TabStuff title="Continents" data={continents} /> },
+    { title: "Countries", value: "countries", children: <TabStuff title="Countries" data={countries} /> },
+    { title: "Regions", value: "regions", children: <TabStuff title="Regions" data={regions} /> },
+    { title: "Cities", value: "cities", children: <TabStuff title="Cities" data={cities} /> },
+  ];
+
+  // return {continents, countries, cities}
+}
+
+function makeCardDeviceData(fieldData: {
+  field: string;
+  count: number;
+  value?: string | undefined;
+}[]) {
+  const browsers = [];
+  const oss = [];
+  const devices = [];
+
+  let maxBrowser = 0;
+  let maxOss = 0;
+  let maxDevices = 0;
+  for (const { field, count, value } of fieldData) {
+    if (field === "browser") {
+      maxBrowser = Math.max(maxBrowser, count);
+    } else if (field === "device") {
+      maxDevices = Math.max(maxDevices, count);
+    } else if (field === "os") {
+      maxOss = Math.max(maxOss, count);
+    }
+  }
+
+  for (const { field, count, value } of fieldData) {
+    if (field === "browser") {
+      browsers.push({ title: value || "unknown",  count, percent: Math.floor(count * 100 / maxBrowser) });
+    } else if (field === "device") {
+      devices.push({ title: value || "unknown",  count, percent: Math.floor(count * 100 / maxDevices) });
+    } else if (field === "os") {
+      oss.push({ title: value || "unknown",  count, percent: Math.floor(count * 100 / maxOss) });
+    }
+  }
+
+  browsers.sort((a, b) => b.count - a.count);
+  devices.sort((a, b) => b.count - a.count);
+  oss.sort((a, b) => b.count - a.count);
+
+  return [
+    { title: "Browsers", value: "browsers", children: <TabStuff title="Browsers" data={browsers} /> },
+    { title: "Devices", value: "devices", children: <TabStuff title="Devices" data={devices} /> },
+    { title: "OSs", value: "oss", children: <TabStuff title="OSs" data={oss} /> },
+  ];
+
+  // return {continents, countries, cities}
+}
+
+function makeCardLinkData(fieldData: {
+  field: string;
+  count: number;
+  value?: string | undefined;
+}[]) {
+  const originalUrls = [];
+  const shortUrls = [];
+
+  let maxOriginal = 0;
+  let maxShort = 0;
+  for (const { field, count, value } of fieldData) {
+    if (field === "originalUrl") {
+      maxOriginal = Math.max(maxOriginal, count);
+    } else if (field === "shortUrl") {
+      maxShort = Math.max(maxShort, count);
+    }
+  }
+
+  for (const { field, count, value } of fieldData) {
+    if (field === "originalUrl") {
+      originalUrls.push({ title: value || "unknown",  count, percent: Math.floor(count * 100 / maxOriginal) });
+    } else if (field === "shortUrl") {
+      shortUrls.push({ title: value || "unknown",  count, percent: Math.floor(count * 100 / maxShort) });
+    }
+  }
+
+  originalUrls.sort((a, b) => b.count - a.count);
+  shortUrls.sort((a, b) => b.count - a.count);
+
+  return [
+    { title: "Original Urls", value: "originalurl", children: <TabStuff title="Original Urls" data={originalUrls} /> },
+    { title: "Short Urls", value: "shorturl", children: <TabStuff title="Short Urls" data={shortUrls} /> },
+  ];
+
+  // return {continents, countries, cities}
 }
 
 type MenuItem = {

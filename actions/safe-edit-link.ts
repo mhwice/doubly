@@ -23,5 +23,6 @@ export const editLink = async (params: LinkTypes.EditLink) => {
   });
 
   // 4 - Handle DAL response
-  return response;
+  if (!response.success) return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS);
+  return response.data;
 }

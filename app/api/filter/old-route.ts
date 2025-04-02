@@ -1,4 +1,5 @@
-import { ClickEvents, ERROR_MESSAGES } from "@/data-access/clicks";
+import { ClickEvents } from "@/data-access/clicks";
+import { ERROR_MESSAGES } from "@/lib/error-messages";
 import { getSession } from "@/lib/get-session";
 import { APIContents, FilterEnumType, LinkTypes } from "@/lib/zod/links";
 import { redirect } from "next/navigation";
@@ -15,8 +16,8 @@ export async function POST(request: NextRequest) {
     parsedContents = APIContents.parse(contents);
 
   } catch (error: unknown) {
-    if (error instanceof ZodError) return { error: ERROR_MESSAGES.PARSING };
-      return { error: ERROR_MESSAGES.DB_ERROR };
+    if (error instanceof ZodError) return { error: ERROR_MESSAGES.INVALID_PARAMS };
+      return { error: ERROR_MESSAGES.DATABASE_ERROR };
   }
 
   const map: Map<FilterEnumType, string[]> = new Map();
@@ -32,9 +33,9 @@ export async function POST(request: NextRequest) {
   const userId = session.user.id;
 
   const payload: LinkTypes.GetAll = { userId, options: map, dateRange: parsedContents.dateRange };
-  const { data, error } = await ClickEvents.getFilterMenuData(payload);
+  const response = await ClickEvents.getFilterMenuData(payload);
 
-  if (error !== undefined) throw new Error(error);
+  if (!response.success) throw new Error(response.error);
 
-  return NextResponse.json(serialize(data));
+  return NextResponse.json(serialize(response.data));
 }

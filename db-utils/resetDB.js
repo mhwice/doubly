@@ -88,8 +88,6 @@ async function resetDatabase() {
         original_url VARCHAR(255) NOT NULL,
         short_url VARCHAR(63) NOT NULL UNIQUE,
         code VARCHAR(15) NOT NULL UNIQUE,
-        link_clicks INTEGER DEFAULT 0 NOT NULL CHECK(link_clicks >= 0),
-        qr_clicks INTEGER DEFAULT 0 NOT NULL CHECK(qr_clicks >= 0),
         created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
         updated_at TIMESTAMPTZ DEFAULT now() NOT NULL,
         user_id TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
@@ -115,7 +113,10 @@ async function resetDatabase() {
         region VARCHAR(3),
         continent VARCHAR(2),
         latitude REAL CHECK(latitude IS NULL OR (latitude >= -90 AND latitude <= 90)),
-        longitude REAL CHECK(longitude IS NULL OR (longitude >= -180 AND longitude <= 180))
+        longitude REAL CHECK(longitude IS NULL OR (longitude >= -180 AND longitude <= 180)),
+        browser VARCHAR(63),
+        device VARCHAR(63),
+        os VARCHAR(63)
       );
     `);
 

@@ -17,6 +17,7 @@ import pg from 'pg'
 const { Client } = pg;
 import { loadLocationData, getRandomInt, getRandomDate, makeCode } from './utils.js';
 import { faker } from '@faker-js/faker';
+import { UAParser } from 'ua-parser-js';
 
 const NUM_USERS = [5, 5];
 const LINKS_PER_USER = [0, 50];
@@ -153,10 +154,17 @@ async function createClick(client, linkId, loc) {
   const longitude = randomLocation.lng;
   const createdAt = getRandomDate(new Date(2024, 0, 1));
 
+  const ua = faker.internet.userAgent();
+  const parser = new UAParser(ua);
+  const result = parser.getResult();
+  const os = result.os.name;
+  const browser = result.browser.name;
+  const device = result.device.type || "desktop";
+
   await client.query(`
-    INSERT INTO click_events (link_id, source, country, city, region, continent, latitude, longitude, created_at)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-  `, [linkId, source, country, city, region, continent, latitude, longitude, createdAt]);
+    INSERT INTO click_events (link_id, source, country, city, region, continent, latitude, longitude, created_at, os, browser, device)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+  `, [linkId, source, country, city, region, continent, latitude, longitude, createdAt, os, browser, device]);
 }
 
 // function pickFromLoc(loc, numClicks) {

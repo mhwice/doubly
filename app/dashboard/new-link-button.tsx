@@ -1,6 +1,6 @@
 "use client";
 
-import { createURL } from "@/actions/create-url";
+import { createLink } from "@/actions/safe-create-link";
 import { CustomDialog } from "@/components/custom-dialog";
 import { EditLinkForm } from "@/components/edit-link-form";
 import { EditLinkModal } from "@/components/edit-link-modal";

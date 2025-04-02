@@ -164,10 +164,14 @@ export class ClickEvents {
             ce.source AS source,
             ce.city AS city,
             ce.country AS country,
+            ce.region AS region,
             ce.continent AS continent,
             user_links.short_url AS short_url,
             user_links.original_url AS original_url,
-            ce.created_at AS created_at
+            ce.created_at AS created_at,
+            ce.browser AS browser,
+            ce.device AS device,
+            ce.os AS os
           FROM click_events AS ce
           JOIN (
             SELECT *
@@ -192,6 +196,12 @@ export class ClickEvents {
 
         UNION ALL
 
+        SELECT 'region' AS field, region::TEXT AS value, COUNT(*)
+        FROM filtered_clicks
+        GROUP BY region
+
+        UNION ALL
+
         SELECT 'continent' AS field, continent::TEXT AS value, COUNT(*)
         FROM filtered_clicks
         GROUP BY continent
@@ -212,7 +222,25 @@ export class ClickEvents {
 
         SELECT 'original_url' AS field, original_url::TEXT AS value, COUNT(*)
         FROM filtered_clicks
-        GROUP BY original_url;
+        GROUP BY original_url
+
+        UNION ALL
+
+        SELECT 'browser' AS field, browser::TEXT AS value, COUNT(*)
+        FROM filtered_clicks
+        GROUP BY browser
+
+        UNION ALL
+
+        SELECT 'device' AS field, device::TEXT AS value, COUNT(*)
+        FROM filtered_clicks
+        GROUP BY device
+
+        UNION ALL
+
+        SELECT 'os' AS field, os::TEXT AS value, COUNT(*)
+        FROM filtered_clicks
+        GROUP BY os;
       `;
 
 
@@ -233,7 +261,10 @@ export class ClickEvents {
             ce.continent AS continent,
             user_links.short_url AS short_url,
             user_links.original_url AS original_url,
-            ce.created_at AS created_at
+            ce.created_at AS created_at,
+            ce.browser AS browser,
+            ce.device AS device,
+            ce.os AS os
           FROM click_events AS ce
           JOIN (
             SELECT *

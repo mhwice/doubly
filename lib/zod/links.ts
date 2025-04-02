@@ -6,14 +6,20 @@ const LinkTableSchema = z.object({
   originalUrl: z.string().trim().min(1).max(255).url(),
   shortUrl: z.string().trim().min(1).max(63).url(),
   code: z.string().trim().min(1).max(15),
-  linkClicks: z.number().nonnegative().lt(2_147_483_648),
-  qrClicks: z.number().nonnegative().lt(2_147_483_648),
   createdAt: z.date(),
   updatedAt: z.date(),
   userId: z.string().trim().min(1),
   expiresAt: z.date().optional(),
   password: z.string().trim().min(1).max(63).optional()
 });
+
+const LinkDashboardSchema = LinkTableSchema.pick({
+  originalUrl: true,
+  shortUrl: true,
+}).extend({
+  linkClicks: z.number().nonnegative(),
+  qrClicks: z.number().nonnegative()
+})
 
 const LinkCreateLinkSchema = z.object({
   originalUrl: z.string(),
@@ -47,8 +53,6 @@ const LinkDTOSchema = LinkTableSchema.pick({
   id: true,
   originalUrl: true,
   shortUrl: true,
-  linkClicks: true,
-  qrClicks: true,
 })
 
 const LinkLookupSchema = LinkTableSchema.pick({
@@ -167,6 +171,7 @@ export namespace LinkSchemas {
   export const GetAll = LinkGetAllSchema;
   export const Lookup = LinkLookupSchema;
   export const ClickEvent = LinkClickEventSchema;
+  export const Dashboard = LinkDashboardSchema;
 }
 
 export namespace LinkTypes {
@@ -182,4 +187,5 @@ export namespace LinkTypes {
   export type Lookup = z.infer<typeof LinkLookupSchema>;
   export type GetAll = z.infer<typeof LinkGetAllSchema>;
   export type ClickEvent = z.infer<typeof LinkClickEventSchema>;
+  export type Dashboard = z.infer<typeof LinkDashboardSchema>;
 }

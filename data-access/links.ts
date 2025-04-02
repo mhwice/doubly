@@ -31,8 +31,9 @@ import { parseQueryResponse, type QueryResponse } from "@/utils/helper";
 import { LinkSchemas, type LinkTypes } from "@/lib/zod/links";
 import { ERROR_MESSAGES } from "@/lib/error-messages";
 import { ServerResponse, ServerResponseType } from "@/lib/server-repsonse";
+import { sql as localSQL } from "./local-connect-test";
 
-const sql = neon(env.DATABASE_URL);
+const sql = env.ENV === "dev" ? localSQL : neon(env.DATABASE_URL);
 
 export class LinkTable {
   static async createLink(params: LinkTypes.Create): Promise<ServerResponseType<LinkTypes.Link>> {
@@ -199,7 +200,7 @@ export class LinkTable {
     return ServerResponse.success(links);
   }
 
-  static async getAllLinks(params: LinkTypes.GetAll): Promise<ServerResponseType<LinkTypes.Link[]>> {
+  static async getAllLinks(params: LinkTypes.GetAll): Promise<ServerResponseType<LinkTypes.Dashboard[]>> {
 
     // if (env.ENV === "dev") {
     //   return this.#getMockData();
@@ -208,14 +209,39 @@ export class LinkTable {
     try {
       const { userId } = LinkSchemas.GetAll.parse(params);
 
+      // const query = `
+      //   SELECT *
+      //   FROM links
+      //   WHERE user_id = $1;
+      // `;
+
       const query = `
-        SELECT *
-        FROM links
-        WHERE user_id = $1;
+        SELECT
+          fl.original_url AS original_url,
+          fl.short_url AS short_url,
+          SUM(
+            CASE
+              WHEN ce.source = 'qr' THEN 1
+              ELSE 0
+            END
+          ) AS qr_clicks,
+          SUM(
+            CASE
+              WHEN ce.source = 'link' THEN 1
+              ELSE 0
+            END
+          ) AS link_clicks
+        FROM click_events AS ce
+        JOIN (
+          SELECT *
+          FROM links
+          WHERE user_id = $1
+        ) AS fl ON fl.id = ce.link_id
+        GROUP BY (fl.original_url, fl.short_url);
       `;
 
       const response: QueryResponse = await sql(query, [userId]);
-      const result = parseQueryResponse(response, LinkSchemas.Table);
+      const result = parseQueryResponse(response, LinkSchemas.Dashboard);
 
       // this should only return the dto, not full list of links
       return ServerResponse.success(result);
