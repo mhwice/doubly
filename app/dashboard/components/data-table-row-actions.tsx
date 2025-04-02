@@ -34,7 +34,7 @@ import { EditLinkForm } from "@/components/edit-link-form"
 // }
 
 interface DataTableRowActionsProps {
-  row: Row<LinkTypes.DTO>
+  row: Row<LinkTypes.Dashboard>
 }
 
 export function DataTableRowActions({ row }: DataTableRowActionsProps) {

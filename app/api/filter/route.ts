@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     contents = deserialize(body);
   } catch (error: unknown) {
     return NextResponse.json(serialize(ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS)));
-    return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS);
+    // return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS);
   }
 
   // 2 - Validate the incoming data

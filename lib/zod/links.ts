@@ -14,6 +14,7 @@ const LinkTableSchema = z.object({
 });
 
 const LinkDashboardSchema = LinkTableSchema.pick({
+  id: true,
   originalUrl: true,
   shortUrl: true,
 }).extend({

@@ -168,8 +168,6 @@ export class LinkTable {
         originalUrl: "https://www.google.com",
         shortUrl: "https://localhost:3000/jhb23xj",
         code: "jhb23xj",
-        linkClicks: 331,
-        qrClicks: 892,
         createdAt: new Date(Date.now()),
         updatedAt: new Date(Date.now()),
         userId: ""
@@ -179,8 +177,6 @@ export class LinkTable {
         originalUrl: "https://www.leetcode.com",
         shortUrl: "https://localhost:3000/JdsidHu",
         code: "JdsidHu",
-        linkClicks: 7,
-        qrClicks: 3,
         createdAt: new Date(Date.now()),
         updatedAt: new Date(Date.now()),
         userId: ""
@@ -190,8 +186,6 @@ export class LinkTable {
         originalUrl: "https://www.reddit.com",
         shortUrl: "https://localhost:3000/lsd9nk",
         code: "lsd9nk",
-        linkClicks: 55,
-        qrClicks: 0,
         createdAt: new Date(Date.now()),
         updatedAt: new Date(Date.now()),
         userId: ""
