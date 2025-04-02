@@ -17,7 +17,7 @@ if (process.env.ENV === 'dev') {
   neonConfig.useSecureWebSocket = connectionStringUrl.hostname !== 'db.localtest.me';
   neonConfig.wsProxy = (host) => (host === 'db.localtest.me' ? `${host}:4444/v2` : `${host}/v2`);
 } else {
-  throw new Error("not in dev!!");
+  // throw new Error("not in dev!!");
 }
 neonConfig.webSocketConstructor = WebSocket;
 
