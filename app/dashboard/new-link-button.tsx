@@ -1,6 +1,6 @@
 "use client";
 
-import { createURL } from "@/actions/create-url";
+import { createLink } from "@/actions/safe-create-link";
 import { CustomDialog } from "@/components/custom-dialog";
 import { EditLinkForm } from "@/components/edit-link-form";
 import { EditLinkModal } from "@/components/edit-link-modal";
@@ -8,11 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 
-interface NewButtonProps {
-  userId: string
-}
-
-export function NewLinkButton({ userId }: NewButtonProps) {
+export function NewLinkButton() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 

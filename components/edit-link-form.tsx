@@ -10,10 +10,10 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { FormError } from "@/components/form-error";
 import { LoadingButton } from "@/components/auth/loading-button";
-import { createURL } from "@/actions/create-url";
-import { editURL } from "@/actions/edit-url";
+import { createLink } from "@/actions/safe-create-link";
+import { editLink } from "@/actions/safe-edit-link";
 
-import { useUser } from "@/app/dashboard/UserContext";
+// import { useUser } from "@/app/dashboard/UserContext";
 
 const LinkSchema = z.object({
   link: z.string().trim().url().min(1, { message: "link is required" }),
@@ -32,7 +32,7 @@ export const EditLinkForm = ({ setIsOpen, link, isEditing, id }: EditLinkFormPro
   const [error, setError] = useState<string | undefined>();
   const [isPending, startTransition] = useTransition();
 
-  const { userId } = useUser();
+  // const { userId } = useUser();
 
   const form = useForm<z.infer<typeof LinkSchema>>({
     resolver: zodResolver(LinkSchema),
@@ -57,13 +57,12 @@ export const EditLinkForm = ({ setIsOpen, link, isEditing, id }: EditLinkFormPro
         if (id === undefined) {
           error = "no id provided"
         } else {
-          const response = await editURL({ userId, id, updates });
-          console.log({ response })
-          error = response.error;
+          const response = await editLink({ id, updates });
+          // error = response.error;
         }
       } else {
-        const response = await createURL({ url: link, userId });
-        error = response.error;
+        const response = await createLink({ originalUrl: link });
+        // error = response.error;
       }
 
       if (error) setError(error);

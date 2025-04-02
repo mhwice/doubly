@@ -1,17 +1,18 @@
 import { columns } from "./components/columns";
 import { DataTable } from "./components/data-table";
-import { LinkTable } from "@/data-access/urls"
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { LinkTable } from "@/data-access/links"
 import { redirect } from "next/navigation";
 import { StatsHeader } from "@/app/dashboard/stats-header";
 import { type LinkTypes } from "@/lib/zod/links";
-import { NewLinkButton } from "@/app/dashboard/new-link-button";
-import { UserProvider } from "./UserContext";
+// import { UserProvider } from "./UserContext";
 import { TableHeader } from "./table-header";
+import { getSession } from "@/lib/get-session";
+import { ClickEvents } from "@/data-access/clicks";
+import { ClickEventTypes } from "@/lib/zod/clicks";
+import { ChartAreaInteractive } from "./chart-area-interactive";
 
 // TODO - it might be a better idea to query this from the db directly
-function makeStats(links: LinkTypes.DTO[]) {
+function makeStats(links: LinkTypes.Dashboard[]) {
   let numUrls = 0;
   let numLinkClicks = 0;
   let numQRClicks = 0;
@@ -26,29 +27,35 @@ function makeStats(links: LinkTypes.DTO[]) {
 
 export default async function DemoPage() {
 
-  const session = await auth.api.getSession({
-    headers: await headers()
-  });
-
-  if (!session?.session) redirect("/");
+  const session = await getSession();
+  if (!session) redirect("/");
   const userId = session.user.id;
 
-  const { data: links, error } = await LinkTable.getAllLinks({ userId });
-  if (error !== undefined) throw new Error(error);
+  const response = await LinkTable.getAllLinks({
+    userId: userId,
+    options: new Map()
+  });
+
+  if (!response.success) throw new Error(response.error);
+  const links = response.data;
+
+  // const { data: links, error } = await LinkTable.getAllLinks({ userId });
+  // if (error !== undefined) throw new Error(error);
+
+  // const { data: clicks, error: clickError } = await ClickEvents.getAllClicks({ userId });
+  // if (clickError !== undefined) throw new Error(clickError);
 
   const stats = makeStats(links);
 
   return (
-    <UserProvider userId={userId}>
-      <div className="container mx-auto py-10">
-        <div className="mb-14">
-          <StatsHeader stats={stats} />
-        </div>
-        <TableHeader userId={userId} />
-        <DataTable data={links} columns={columns} />
+    <div className="container mx-auto py-10">
+      <div className="mb-8">
+        <StatsHeader stats={stats} />
       </div>
-    </UserProvider>
+      {/* <ChartAreaInteractive clickEvents={groupByDay(clicks)}/> */}
+      <div className="mb-8"></div>
+      <TableHeader />
+      <DataTable data={links} columns={columns} />
+    </div>
   )
 }
-
-

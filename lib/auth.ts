@@ -21,7 +21,14 @@ export const auth = betterAuth({
     requireEmailVerification: true,
     sendResetPassword: async ({ user, url, token }, request) => {
       await sendBetterPasswordResetEmail(user.email, url);
-    }
+    },
+    ...(env.ENV === "dev" ? {
+        password: {
+          hash: async (password) => password,
+          verify: async ({ hash, password }) => hash === password,
+        },
+      }
+    : {})
   },
   emailVerification: {
     sendOnSignUp: true,

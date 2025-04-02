@@ -1,5 +1,5 @@
 import { ClickEvents } from "@/data-access/clicks";
-import { LinkTable } from "@/data-access/urls";
+import { LinkTable } from "@/data-access/links";
 import { permanentRedirect, redirect } from "next/navigation";
 import { NextRequest, NextResponse, userAgent } from 'next/server'
 
@@ -15,82 +15,84 @@ function parseRequest(request: NextRequest) {
   return code;
 }
 
-export async function GET(request: NextRequest, { params }: { params: Promise<{ link: string[] }> }) {
+// export async function GET(request: NextRequest, { params }: { params: Promise<{ link: string[] }> }) {
 
-  // const ip = request.headers.get("x-forwarded-for")?.split(",")[0] || undefined;
-  const country = request.headers.get("x-vercel-ip-country") || undefined;
-  const region = request.headers.get("x-vercel-ip-country-region") || undefined;
-  const city = request.headers.get("x-vercel-ip-city") || undefined;
-  const continent = request.headers.get("x-vercel-ip-continent") || undefined;
-  const latitude = request.headers.get("x-vercel-ip-latitude") || undefined;
-  const parsedLatitude = latitude === undefined ? undefined : parseFloat(latitude);
+//   console.log(request)
 
-  const longitude = request.headers.get("x-vercel-ip-longitude") || undefined;
-  const parsedLongitude = longitude === undefined ? undefined : parseFloat(longitude);
-  // console.log({ ip, country, region, city });
+//   // const ip = request.headers.get("x-forwarded-for")?.split(",")[0] || undefined;
+//   const country = request.headers.get("x-vercel-ip-country") || undefined;
+//   const region = request.headers.get("x-vercel-ip-country-region") || undefined;
+//   const city = request.headers.get("x-vercel-ip-city") || undefined;
+//   const continent = request.headers.get("x-vercel-ip-continent") || undefined;
+//   const latitude = request.headers.get("x-vercel-ip-latitude") || undefined;
+//   const parsedLatitude = latitude === undefined ? undefined : parseFloat(latitude);
 
-  const source = request.nextUrl.searchParams.get("source");
+//   const longitude = request.headers.get("x-vercel-ip-longitude") || undefined;
+//   const parsedLongitude = longitude === undefined ? undefined : parseFloat(longitude);
+//   // console.log({ ip, country, region, city });
 
-
-
-  // console.log("api", {request});
+//   const source = request.nextUrl.searchParams.get("source");
 
 
-  // console.log({ source });
 
-  // We can use this way to manage many / easily
-  // const urlSegments = (await params).link;
-  // console.log({ urlSegments })
-  // const code = urlSegments[0];
-
-  // or we can use this way, and someone figure out how to handle the extra values - maybe throw an error.
-  const code = parseRequest(request);
-  // console.log({ code });
+//   // console.log("api", {request});
 
 
-  /*
+//   // console.log({ source });
 
-    Need to do some thinking on how I want to handle the urls.
-    For example:
+//   // We can use this way to manage many / easily
+//   // const urlSegments = (await params).link;
+//   // console.log({ urlSegments })
+//   // const code = urlSegments[0];
 
-    localhost:3000/bj43knj
-    localhost:3000/bj43knj/324n
-    localhost:3000/bj43knj/dsf/fds/sdf/sdf
-    localhost:3000/a///////cd
-    localhost:3000/auth/login
-
-  */
-
-  const { ua, browser, engine, os, device, cpu, isBot } = userAgent(request);
-  console.log({ ua, browser, engine, os, device, cpu, isBot });
+//   // or we can use this way, and someone figure out how to handle the extra values - maybe throw an error.
+//   const code = parseRequest(request);
+//   // console.log({ code });
 
 
-  const response = await LinkTable.getLinkByCode({ code, source: source === "qr" ? "qr" : "link" });
-  if (!response.data) permanentRedirect("/");
+//   /*
 
-  const link = response.data;
+//     Need to do some thinking on how I want to handle the urls.
+//     For example:
 
-  console.log({
-    linkId: link.id,
-    source: source === "qr" ? "qr" : "link",
-    city,
-    continent,
-    country,
-    latitude: parsedLatitude,
-    longitude: parsedLongitude,
-    region
-  });
+//     localhost:3000/bj43knj
+//     localhost:3000/bj43knj/324n
+//     localhost:3000/bj43knj/dsf/fds/sdf/sdf
+//     localhost:3000/a///////cd
+//     localhost:3000/auth/login
 
-  const clickResponse = await ClickEvents.recordClick({
-    linkId: link.id,
-    source: source === "qr" ? "qr" : "link",
-    city,
-    continent,
-    country,
-    latitude: parsedLatitude,
-    longitude: parsedLongitude,
-    region
-  });
+//   */
 
-  permanentRedirect(response.data.originalUrl);
-}
+//   const { ua, browser, engine, os, device, cpu, isBot } = userAgent(request);
+//   console.log({ ua, browser, engine, os, device, cpu, isBot });
+
+
+//   const response = await LinkTable.getLinkByCode({ code, source: source === "qr" ? "qr" : "link" });
+//   if (!response.data) permanentRedirect("/");
+
+//   const link = response.data;
+
+//   console.log({
+//     linkId: link.id,
+//     source: source === "qr" ? "qr" : "link",
+//     city,
+//     continent,
+//     country,
+//     latitude: parsedLatitude,
+//     longitude: parsedLongitude,
+//     region
+//   });
+
+//   const clickResponse = await ClickEvents.recordClick({
+//     linkId: link.id,
+//     source: source === "qr" ? "qr" : "link",
+//     city,
+//     continent,
+//     country,
+//     latitude: parsedLatitude,
+//     longitude: parsedLongitude,
+//     region
+//   });
+
+//   permanentRedirect(response.data.originalUrl);
+// }

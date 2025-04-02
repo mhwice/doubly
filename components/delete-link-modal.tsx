@@ -1,5 +1,5 @@
-import { deleteURL } from "@/actions/delete-url";
-import { useUser } from "@/app/dashboard/UserContext";
+import { deleteLink } from "@/actions/safe-delete-link";
+// import { useUser } from "@/app/dashboard/UserContext";
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -22,14 +22,14 @@ interface ModalProps {
 
 export function DeleteLinkModal({ isOpen, onOpenChange, linkData }: ModalProps) {
 
-  const { userId } = useUser();
+  // const { userId } = useUser();
 
   const handleOnDelete = async () => {
     // call a deleteLink action
     // IMPORTANT! this needs the user id as well.
     startTransition(async () => {
-      const response = await deleteURL(linkData.id, userId);
-      if (response.data) onOpenChange(false);
+      const response = await deleteLink({ id: linkData.id });
+      if (response) onOpenChange(false);
       else throw new Error("failed to delete");
     });
   }
