@@ -157,8 +157,8 @@ async function createClick(client, linkId, loc) {
   const ua = faker.internet.userAgent();
   const parser = new UAParser(ua);
   const result = parser.getResult();
-  const os = result.os.name;
-  const browser = result.browser.name;
+  const os = result.os.name || "unkown";
+  const browser = result.browser.name || "unknown";
   const device = result.device.type || "desktop";
 
   await client.query(`

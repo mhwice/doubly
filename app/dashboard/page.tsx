@@ -4,12 +4,10 @@ import { LinkTable } from "@/data-access/links"
 import { redirect } from "next/navigation";
 import { StatsHeader } from "@/app/dashboard/stats-header";
 import { type LinkTypes } from "@/lib/zod/links";
-// import { UserProvider } from "./UserContext";
 import { TableHeader } from "./table-header";
 import { getSession } from "@/lib/get-session";
-import { ClickEvents } from "@/data-access/clicks";
-import { ClickEventTypes } from "@/lib/zod/clicks";
-import { ChartAreaInteractive } from "./chart-area-interactive";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Link from "next/link";
 
 // TODO - it might be a better idea to query this from the db directly
 function makeStats(links: LinkTypes.Dashboard[]) {
@@ -39,23 +37,28 @@ export default async function DemoPage() {
   if (!response.success) throw new Error(response.error);
   const links = response.data;
 
-  // const { data: links, error } = await LinkTable.getAllLinks({ userId });
-  // if (error !== undefined) throw new Error(error);
-
-  // const { data: clicks, error: clickError } = await ClickEvents.getAllClicks({ userId });
-  // if (clickError !== undefined) throw new Error(clickError);
-
   const stats = makeStats(links);
 
   return (
-    <div className="container mx-auto py-10">
+    <>
+    <div className="h-full mx-[5%]">
+      <Tabs defaultValue="dashboard" className="w-[500px] my-5">
+        <TabsList>
+          <Link href="/dashboard" passHref>
+            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+          </Link>
+          <Link href="/analytics" passHref>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          </Link>
+        </TabsList>
+      </Tabs>
       <div className="mb-8">
         <StatsHeader stats={stats} />
       </div>
-      {/* <ChartAreaInteractive clickEvents={groupByDay(clicks)}/> */}
       <div className="mb-8"></div>
       <TableHeader />
       <DataTable data={links} columns={columns} />
     </div>
+    </>
   )
 }

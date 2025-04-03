@@ -60,7 +60,18 @@ export function formatDBResponse(record: SQLRecord, columnsToFormat?: string[]):
  * @returns A validated array of data
  */
 export function parseQueryResponse<T>(response: QueryResponse, zodSchema: z.ZodSchema<T>, columnsToFormat?: string[]) {
-  return response.map((row) => zodSchema.parse(formatDBResponse(row, columnsToFormat)));
+  return response.map((row) => {
+    const data = formatDBResponse(row, columnsToFormat);
+    // console.log(data)
+    return zodSchema.parse(data)
+  });
+}
+
+export function parseJSONQueryResponse<T>(response: QueryResponse, zodSchema: z.ZodSchema<T>) {
+  const resp = Object.fromEntries(
+    Object.entries(response[0].results).map(([k, v]) => [camelCase(k), v])
+  );
+  return zodSchema.parse(resp);
 }
 
 /**

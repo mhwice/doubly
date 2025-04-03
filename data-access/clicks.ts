@@ -3,7 +3,7 @@ import "server-only";
 import { env } from "@/data-access/env";
 import { neon } from '@neondatabase/serverless';
 import { ZodError } from 'zod';
-import { parseQueryResponse, type QueryResponse } from "@/utils/helper";
+import { parseJSONQueryResponse, parseQueryResponse, type QueryResponse } from "@/utils/helper";
 import { ClickEventSchemas, type ClickEventTypes } from "@/lib/zod/clicks";
 import { LinkSchemas, LinkTypes } from "@/lib/zod/links";
 import { snakeCase } from "change-case";
@@ -46,59 +46,59 @@ export class ClickEvents {
   }
 
   // All clicks for all links for the current user
-  static async getAllClicks(params: LinkTypes.GetAll): Promise<ServerResponseType<ClickEventTypes.Click[]>> {
-    try {
-      const { userId } = LinkSchemas.GetAll.parse(params);
+  // static async getAllClicks(params: LinkTypes.GetAll): Promise<ServerResponseType<ClickEventTypes.Click[]>> {
+  //   try {
+  //     const { userId } = LinkSchemas.GetAll.parse(params);
 
-      const query = `
-        SELECT ce.*
-        FROM click_events AS ce
-        JOIN (
-          SELECT *
-          FROM links
-          WHERE user_id = $1
-        ) AS fl ON fl.id = ce.link_id;
-      `;
+  //     const query = `
+  //       SELECT ce.*
+  //       FROM click_events AS ce
+  //       JOIN (
+  //         SELECT *
+  //         FROM links
+  //         WHERE user_id = $1
+  //       ) AS fl ON fl.id = ce.link_id;
+  //     `;
 
-      const response: QueryResponse = await sql(query, [userId]);
-      const result = parseQueryResponse(response, ClickEventSchemas.Click);
+  //     const response: QueryResponse = await sql(query, [userId]);
+  //     const result = parseQueryResponse(response, ClickEventSchemas.Click);
 
-      // this should only return the dto, not full list of clicks?
-      return ServerResponse.success(result);
+  //     // this should only return the dto, not full list of clicks?
+  //     return ServerResponse.success(result);
 
-    } catch (error: unknown) {
-      console.log(error)
-      if (error instanceof ZodError) return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS);
-      return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
-    }
-  }
+  //   } catch (error: unknown) {
+  //     console.log(error)
+  //     if (error instanceof ZodError) return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS);
+  //     return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
+  //   }
+  // }
 
   // All clicks for the given link and user
-  static async getClicksByLinkId(params: LinkTypes.ClickEvent): Promise<ServerResponseType<ClickEventTypes.Click[]>> {
-    try {
-      const { id, userId } = LinkSchemas.ClickEvent.parse(params);
+  // static async getClicksByLinkId(params: LinkTypes.ClickEvent): Promise<ServerResponseType<ClickEventTypes.Click[]>> {
+  //   try {
+  //     const { id, userId } = LinkSchemas.ClickEvent.parse(params);
 
-      const query = `
-        SELECT ce.*,
-        FROM click_events AS ce
-        JOIN (
-          SELECT *
-          FROM links
-          WHERE id = $1 AND user_id = $2
-        ) AS fl ON fl.id = ce.link_id;
-      `;
+  //     const query = `
+  //       SELECT ce.*,
+  //       FROM click_events AS ce
+  //       JOIN (
+  //         SELECT *
+  //         FROM links
+  //         WHERE id = $1 AND user_id = $2
+  //       ) AS fl ON fl.id = ce.link_id;
+  //     `;
 
-      const response: QueryResponse = await sql(query, [id, userId]);
-      const result = parseQueryResponse(response, ClickEventSchemas.Click);
+  //     const response: QueryResponse = await sql(query, [id, userId]);
+  //     const result = parseQueryResponse(response, ClickEventSchemas.Click);
 
-      // this should only return the dto, not full list of links
-      return ServerResponse.success(result);
+  //     // this should only return the dto, not full list of links
+  //     return ServerResponse.success(result);
 
-    } catch (error: unknown) {
-      if (error instanceof ZodError) return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS);
-      return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
-    }
-  }
+  //   } catch (error: unknown) {
+  //     if (error instanceof ZodError) return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS);
+  //     return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
+  //   }
+  // }
 
   /*
     Given some filter criteria, we need to return all of the unique items and their count, so we can
@@ -190,57 +190,179 @@ export class ClickEvents {
 
         UNION ALL
 
-        SELECT 'country' AS field, country::TEXT AS value, COUNT(*)
+        SELECT 'country' AS field, country::TEXT AS value, COUNT(*) AS count
         FROM filtered_clicks
         GROUP BY country
 
         UNION ALL
 
-        SELECT 'region' AS field, region::TEXT AS value, COUNT(*)
+        SELECT 'region' AS field, region::TEXT AS value, COUNT(*) AS count
         FROM filtered_clicks
         GROUP BY region
 
         UNION ALL
 
-        SELECT 'continent' AS field, continent::TEXT AS value, COUNT(*)
+        SELECT 'continent' AS field, continent::TEXT AS value, COUNT(*) AS count
         FROM filtered_clicks
         GROUP BY continent
 
         UNION ALL
 
-        SELECT 'city' AS field, city::TEXT AS value, COUNT(*)
+        SELECT 'city' AS field, city::TEXT AS value, COUNT(*) AS count
         FROM filtered_clicks
         GROUP BY city
 
         UNION ALL
 
-        SELECT 'short_url' AS field, short_url::TEXT AS value, COUNT(*)
+        SELECT 'short_url' AS field, short_url::TEXT AS value, COUNT(*) AS count
         FROM filtered_clicks
         GROUP BY short_url
 
         UNION ALL
 
-        SELECT 'original_url' AS field, original_url::TEXT AS value, COUNT(*)
+        SELECT 'original_url' AS field, original_url::TEXT AS value, COUNT(*) AS count
         FROM filtered_clicks
         GROUP BY original_url
 
         UNION ALL
 
-        SELECT 'browser' AS field, browser::TEXT AS value, COUNT(*)
+        SELECT 'browser' AS field, browser::TEXT AS value, COUNT(*) AS count
         FROM filtered_clicks
         GROUP BY browser
 
         UNION ALL
 
-        SELECT 'device' AS field, device::TEXT AS value, COUNT(*)
+        SELECT 'device' AS field, device::TEXT AS value, COUNT(*) AS count
         FROM filtered_clicks
         GROUP BY device
 
         UNION ALL
 
-        SELECT 'os' AS field, os::TEXT AS value, COUNT(*)
+        SELECT 'os' AS field, os::TEXT AS value, COUNT(*) AS count
         FROM filtered_clicks
-        GROUP BY os;
+        GROUP BY os
+
+        ORDER BY count DESC, value;
+      `;
+
+      const testquery = `
+        WITH filtered_clicks AS (
+          SELECT
+            ce.source AS source,
+            ce.city AS city,
+            ce.country AS country,
+            ce.region AS region,
+            ce.continent AS continent,
+            user_links.short_url AS short_url,
+            user_links.original_url AS original_url,
+            ce.created_at AS created_at,
+            ce.browser AS browser,
+            ce.device AS device,
+            ce.os AS os
+          FROM click_events AS ce
+          JOIN (
+            SELECT *
+            FROM links
+            -- TODO, if I filter our short_url and original_url here, then this becomes more efficient
+            -- as we aren't doing a join on as many records, and the subsequent steps are faster
+            WHERE user_id = $1
+          ) AS user_links ON user_links.id = ce.link_id
+          -- WHERE source IN ('qr') AND country IN ('CA', 'RO')
+          ${whereClause}
+        )
+
+        SELECT json_build_object(
+          'source', (
+            SELECT json_agg(t)
+            FROM (
+              SELECT source::TEXT AS value, COUNT(*) AS count
+              FROM filtered_clicks
+              GROUP BY source
+              ORDER BY count DESC, value
+            ) t
+          ),
+          'country', (
+            SELECT json_agg(t)
+            FROM (
+              SELECT country::TEXT AS value, COUNT(*) AS count
+              FROM filtered_clicks
+              GROUP BY country
+              ORDER BY count DESC, value
+            ) t
+          ),
+          'region', (
+            SELECT json_agg(t)
+            FROM (
+              SELECT region::TEXT AS value, COUNT(*) AS count
+              FROM filtered_clicks
+              GROUP BY region
+              ORDER BY count DESC, value
+            ) t
+          ),
+          'continent', (
+            SELECT json_agg(t)
+            FROM (
+              SELECT continent::TEXT AS value, COUNT(*) AS count
+              FROM filtered_clicks
+              GROUP BY continent
+              ORDER BY count DESC, value
+            ) t
+          ),
+          'city', (
+            SELECT json_agg(t)
+            FROM (
+              SELECT city::TEXT AS value, COUNT(*) AS count
+              FROM filtered_clicks
+              GROUP BY city
+              ORDER BY count DESC, value
+            ) t
+          ),
+          'short_url', (
+            SELECT json_agg(t)
+            FROM (
+              SELECT short_url::TEXT AS value, COUNT(*) AS count
+              FROM filtered_clicks
+              GROUP BY short_url
+              ORDER BY count DESC, value
+            ) t
+          ),
+          'original_url', (
+            SELECT json_agg(t)
+            FROM (
+              SELECT original_url::TEXT AS value, COUNT(*) AS count
+              FROM filtered_clicks
+              GROUP BY original_url
+              ORDER BY count DESC, value
+            ) t
+          ),
+          'browser', (
+            SELECT json_agg(t)
+            FROM (
+              SELECT browser::TEXT AS value, COUNT(*) AS count
+              FROM filtered_clicks
+              GROUP BY browser
+              ORDER BY count DESC, value
+            ) t
+          ),
+          'device', (
+            SELECT json_agg(t)
+            FROM (
+              SELECT device::TEXT AS value, COUNT(*) AS count
+              FROM filtered_clicks
+              GROUP BY device
+              ORDER BY count DESC, value
+            ) t
+          ),
+          'os', (
+            SELECT json_agg(t)
+            FROM (
+              SELECT os::TEXT AS value, COUNT(*) AS count
+              FROM filtered_clicks
+              GROUP BY os
+              ORDER BY count DESC, value
+            ) t
+          )
+        ) AS results;
       `;
 
 
@@ -292,7 +414,8 @@ export class ClickEvents {
             END
           ) AS link_count
         FROM filtered_clicks
-        GROUP BY date;
+        GROUP BY date
+        ORDER BY date DESC;
       `;
 
       /*
@@ -303,6 +426,10 @@ export class ClickEvents {
       This will require changing the Zod schemas...
 
       */
+
+      const testResponse: QueryResponse = await sql(testquery, queryParams);
+      const testResult = parseJSONQueryResponse(testResponse, ClickEventSchemas.JSONAgg);
+      console.log(testResult)
 
       const response: QueryResponse = await sql(query, queryParams);
       const result = parseQueryResponse(response, ClickEventSchemas.Filter, ["field"]);
@@ -315,10 +442,11 @@ export class ClickEvents {
       // If there is no click data, what is the result?
       // if (result.length !== 1) throw new Error();
 
-      return ServerResponse.success({ filter: result, chart: result2 });
+      return ServerResponse.success({ filter: result, chart: result2, json: testResult });
 
     } catch (error: unknown) {
       console.log({ error })
+      console.log(error)
       if (error instanceof ZodError) return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS);
       return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
     }

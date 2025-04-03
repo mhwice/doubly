@@ -171,7 +171,7 @@ export namespace LinkSchemas {
   export const DTO = LinkDTOSchema;
   export const GetAll = LinkGetAllSchema;
   export const Lookup = LinkLookupSchema;
-  export const ClickEvent = LinkClickEventSchema;
+  // export const ClickEvent = LinkClickEventSchema;
   export const Dashboard = LinkDashboardSchema;
 }
 
@@ -187,6 +187,6 @@ export namespace LinkTypes {
   export type Id = Delete["id"];
   export type Lookup = z.infer<typeof LinkLookupSchema>;
   export type GetAll = z.infer<typeof LinkGetAllSchema>;
-  export type ClickEvent = z.infer<typeof LinkClickEventSchema>;
+  // export type ClickEvent = z.infer<typeof LinkClickEventSchema>;
   export type Dashboard = z.infer<typeof LinkDashboardSchema>;
 }

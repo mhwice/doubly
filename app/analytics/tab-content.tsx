@@ -3,9 +3,9 @@ import { BarChart2 } from "lucide-react"
 interface propppy {
   title: string,
   data: {
-    title: string,
+    value: string,
     count: number,
-    percent: number,
+    percent?: number,
   }[]
 }
 
@@ -18,17 +18,17 @@ export function TabStuff(params: propppy) {
       </div>
 
       <div className="space-y-6">
-        {params.data.map(({ title, count, percent }) => {
+        {params.data.map(({ value, count, percent }) => {
           return (
-            <div key={`${title},${count}`} className="space-y-2">
+            <div key={`${value},${count}`} className="space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="font-medium">{title}</span>
+                  <span className="font-medium">{value}</span>
                 </div>
                 <span className="font-medium">{count}</span>
               </div>
               <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                <div className="h-full bg-indigo-400 rounded-full" style={{ width: `${percent}%` }}></div>
+                <div className="h-full bg-indigo-400 rounded-full" style={{ width: `${percent || 50}%` }}></div>
               </div>
             </div>
           );
