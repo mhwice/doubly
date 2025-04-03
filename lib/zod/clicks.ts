@@ -54,7 +54,8 @@ const ClickChartSchema = z.object({
 
 const JSONEntitySchema = z.object({
   value: z.string(),
-  count: z.number()
+  count: z.number(),
+  percent: z.number()
 }).array();
 
 const ClickJsonGetAllSchema = z.object({
@@ -71,7 +72,7 @@ const ClickJsonGetAllSchema = z.object({
 });
 
 const FilterRepsonseSchema = z.object({
-  filter: ClickFilterSchema.array(),
+  // filter: ClickFilterSchema.array(),
   chart: ClickChartSchema.array(),
   json: ClickJsonGetAllSchema,
 });

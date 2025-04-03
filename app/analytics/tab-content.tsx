@@ -5,7 +5,7 @@ interface propppy {
   data: {
     value: string,
     count: number,
-    percent?: number,
+    percent: number,
   }[]
 }
 
@@ -25,10 +25,10 @@ export function TabStuff(params: propppy) {
                 <div className="flex items-center gap-2">
                   <span className="font-medium">{value}</span>
                 </div>
-                <span className="font-medium">{count}</span>
+                <span className="font-medium">{count} <span className="text-xs font-mono font-thin text-muted-foreground">({Math.round(percent)}%)</span></span>
               </div>
               <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                <div className="h-full bg-indigo-400 rounded-full" style={{ width: `${percent || 50}%` }}></div>
+                <div className="h-full bg-gray-500 rounded-full" style={{ width: `${percent}%` }}></div>
               </div>
             </div>
           );

@@ -67,12 +67,21 @@ export function parseQueryResponse<T>(response: QueryResponse, zodSchema: z.ZodS
   });
 }
 
-export function parseJSONQueryResponse<T>(response: QueryResponse, zodSchema: z.ZodSchema<T>) {
+// export function parseJSONQueryResponse<T>(response: QueryResponse, zodSchema: z.ZodSchema<T>) {
+//   const resp = Object.fromEntries(
+//     Object.entries(response[0].results).map(([k, v]) => [camelCase(k), v])
+//   );
+//   return zodSchema.parse(resp);
+// }
+
+export function parseJSONQueryResponse<T>(response: QueryResponse, zodSchema: z.ZodSchema<T>): T {
+  const results = response[0].results as Record<string, unknown>;
   const resp = Object.fromEntries(
-    Object.entries(response[0].results).map(([k, v]) => [camelCase(k), v])
+    Object.entries(results).map(([k, v]) => [camelCase(k), v])
   );
   return zodSchema.parse(resp);
 }
+
 
 /**
  * Converts a value to a number in the range [2^53-1,2^53-1] if possible, otherwise returns the original value.

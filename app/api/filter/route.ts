@@ -44,7 +44,18 @@ export async function POST(request: NextRequest) {
   });
 
   // 4 - Handle DAL response
-  // return response;
+
+  // for testing a huge number of cities
+  // if (response.success) {
+  //   response.data.json.city = [];
+  //   for (let i = 0; i < 1e6; i += 1) {
+  //     response.data.json.city.push({
+  //       value: `city${i}`,
+  //       count: 3,
+  //       percent: 2
+  //     })
+  //   }
+  // }
 
   // if (error !== undefined) throw new Error(error);
   return NextResponse.json(serialize(response));

@@ -51,7 +51,7 @@ export const columns: ColumnDef<LinkTypes.Dashboard>[] = [
       return (
         <div className="flex space-x-1">
           {/* {label && <Badge variant="outline">{label.label}</Badge>} */}
-          <span className="max-w-[500px] truncate font-medium">
+          <span className="max-w-[500px] truncate font-mono font-normal text-xs text-gray-600 bg-gray-100 rounded px-2 py-1">
             {row.getValue("shortUrl")}
           </span>
         </div>

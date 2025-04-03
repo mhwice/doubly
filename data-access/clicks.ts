@@ -158,92 +158,92 @@ export class ClickEvents {
 
       const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
-      const query = `
-        WITH filtered_clicks AS (
-          SELECT
-            ce.source AS source,
-            ce.city AS city,
-            ce.country AS country,
-            ce.region AS region,
-            ce.continent AS continent,
-            user_links.short_url AS short_url,
-            user_links.original_url AS original_url,
-            ce.created_at AS created_at,
-            ce.browser AS browser,
-            ce.device AS device,
-            ce.os AS os
-          FROM click_events AS ce
-          JOIN (
-            SELECT *
-            FROM links
-            -- TODO, if I filter our short_url and original_url here, then this becomes more efficient
-            -- as we aren't doing a join on as many records, and the subsequent steps are faster
-            WHERE user_id = $1
-          ) AS user_links ON user_links.id = ce.link_id
-          -- WHERE source IN ('qr') AND country IN ('CA', 'RO')
-          ${whereClause}
-        )
+      // const query = `
+      //   WITH filtered_clicks AS (
+      //     SELECT
+      //       ce.source AS source,
+      //       ce.city AS city,
+      //       ce.country AS country,
+      //       ce.region AS region,
+      //       ce.continent AS continent,
+      //       user_links.short_url AS short_url,
+      //       user_links.original_url AS original_url,
+      //       ce.created_at AS created_at,
+      //       ce.browser AS browser,
+      //       ce.device AS device,
+      //       ce.os AS os
+      //     FROM click_events AS ce
+      //     JOIN (
+      //       SELECT *
+      //       FROM links
+      //       -- TODO, if I filter our short_url and original_url here, then this becomes more efficient
+      //       -- as we aren't doing a join on as many records, and the subsequent steps are faster
+      //       WHERE user_id = $1
+      //     ) AS user_links ON user_links.id = ce.link_id
+      //     -- WHERE source IN ('qr') AND country IN ('CA', 'RO')
+      //     ${whereClause}
+      //   )
 
-        SELECT 'source' AS field, source::TEXT AS value, COUNT(*) AS count
-        FROM filtered_clicks
-        GROUP BY source
+      //   SELECT 'source' AS field, source::TEXT AS value, COUNT(*) AS count
+      //   FROM filtered_clicks
+      //   GROUP BY source
 
-        UNION ALL
+      //   UNION ALL
 
-        SELECT 'country' AS field, country::TEXT AS value, COUNT(*) AS count
-        FROM filtered_clicks
-        GROUP BY country
+      //   SELECT 'country' AS field, country::TEXT AS value, COUNT(*) AS count
+      //   FROM filtered_clicks
+      //   GROUP BY country
 
-        UNION ALL
+      //   UNION ALL
 
-        SELECT 'region' AS field, region::TEXT AS value, COUNT(*) AS count
-        FROM filtered_clicks
-        GROUP BY region
+      //   SELECT 'region' AS field, region::TEXT AS value, COUNT(*) AS count
+      //   FROM filtered_clicks
+      //   GROUP BY region
 
-        UNION ALL
+      //   UNION ALL
 
-        SELECT 'continent' AS field, continent::TEXT AS value, COUNT(*) AS count
-        FROM filtered_clicks
-        GROUP BY continent
+      //   SELECT 'continent' AS field, continent::TEXT AS value, COUNT(*) AS count
+      //   FROM filtered_clicks
+      //   GROUP BY continent
 
-        UNION ALL
+      //   UNION ALL
 
-        SELECT 'city' AS field, city::TEXT AS value, COUNT(*) AS count
-        FROM filtered_clicks
-        GROUP BY city
+      //   SELECT 'city' AS field, city::TEXT AS value, COUNT(*) AS count
+      //   FROM filtered_clicks
+      //   GROUP BY city
 
-        UNION ALL
+      //   UNION ALL
 
-        SELECT 'short_url' AS field, short_url::TEXT AS value, COUNT(*) AS count
-        FROM filtered_clicks
-        GROUP BY short_url
+      //   SELECT 'short_url' AS field, short_url::TEXT AS value, COUNT(*) AS count
+      //   FROM filtered_clicks
+      //   GROUP BY short_url
 
-        UNION ALL
+      //   UNION ALL
 
-        SELECT 'original_url' AS field, original_url::TEXT AS value, COUNT(*) AS count
-        FROM filtered_clicks
-        GROUP BY original_url
+      //   SELECT 'original_url' AS field, original_url::TEXT AS value, COUNT(*) AS count
+      //   FROM filtered_clicks
+      //   GROUP BY original_url
 
-        UNION ALL
+      //   UNION ALL
 
-        SELECT 'browser' AS field, browser::TEXT AS value, COUNT(*) AS count
-        FROM filtered_clicks
-        GROUP BY browser
+      //   SELECT 'browser' AS field, browser::TEXT AS value, COUNT(*) AS count
+      //   FROM filtered_clicks
+      //   GROUP BY browser
 
-        UNION ALL
+      //   UNION ALL
 
-        SELECT 'device' AS field, device::TEXT AS value, COUNT(*) AS count
-        FROM filtered_clicks
-        GROUP BY device
+      //   SELECT 'device' AS field, device::TEXT AS value, COUNT(*) AS count
+      //   FROM filtered_clicks
+      //   GROUP BY device
 
-        UNION ALL
+      //   UNION ALL
 
-        SELECT 'os' AS field, os::TEXT AS value, COUNT(*) AS count
-        FROM filtered_clicks
-        GROUP BY os
+      //   SELECT 'os' AS field, os::TEXT AS value, COUNT(*) AS count
+      //   FROM filtered_clicks
+      //   GROUP BY os
 
-        ORDER BY count DESC, value;
-      `;
+      //   ORDER BY count DESC, value;
+      // `;
 
       const testquery = `
         WITH filtered_clicks AS (
@@ -269,13 +269,16 @@ export class ClickEvents {
           ) AS user_links ON user_links.id = ce.link_id
           -- WHERE source IN ('qr') AND country IN ('CA', 'RO')
           ${whereClause}
+        ),
+        total_count AS (
+          SELECT COUNT(*) AS total FROM filtered_clicks
         )
 
         SELECT json_build_object(
           'source', (
             SELECT json_agg(t)
             FROM (
-              SELECT source::TEXT AS value, COUNT(*) AS count
+              SELECT source::TEXT AS value, COUNT(*) AS count, (COUNT(*) * 100.0 / (SELECT total FROM total_count)) AS percent
               FROM filtered_clicks
               GROUP BY source
               ORDER BY count DESC, value
@@ -284,7 +287,7 @@ export class ClickEvents {
           'country', (
             SELECT json_agg(t)
             FROM (
-              SELECT country::TEXT AS value, COUNT(*) AS count
+              SELECT country::TEXT AS value, COUNT(*) AS count, (COUNT(*) * 100.0 / (SELECT total FROM total_count)) AS percent
               FROM filtered_clicks
               GROUP BY country
               ORDER BY count DESC, value
@@ -293,7 +296,7 @@ export class ClickEvents {
           'region', (
             SELECT json_agg(t)
             FROM (
-              SELECT region::TEXT AS value, COUNT(*) AS count
+              SELECT region::TEXT AS value, COUNT(*) AS count, (COUNT(*) * 100.0 / (SELECT total FROM total_count)) AS percent
               FROM filtered_clicks
               GROUP BY region
               ORDER BY count DESC, value
@@ -302,7 +305,7 @@ export class ClickEvents {
           'continent', (
             SELECT json_agg(t)
             FROM (
-              SELECT continent::TEXT AS value, COUNT(*) AS count
+              SELECT continent::TEXT AS value, COUNT(*) AS count, (COUNT(*) * 100.0 / (SELECT total FROM total_count)) AS percent
               FROM filtered_clicks
               GROUP BY continent
               ORDER BY count DESC, value
@@ -311,7 +314,7 @@ export class ClickEvents {
           'city', (
             SELECT json_agg(t)
             FROM (
-              SELECT city::TEXT AS value, COUNT(*) AS count
+              SELECT city::TEXT AS value, COUNT(*) AS count, (COUNT(*) * 100.0 / (SELECT total FROM total_count)) AS percent
               FROM filtered_clicks
               GROUP BY city
               ORDER BY count DESC, value
@@ -320,7 +323,7 @@ export class ClickEvents {
           'short_url', (
             SELECT json_agg(t)
             FROM (
-              SELECT short_url::TEXT AS value, COUNT(*) AS count
+              SELECT short_url::TEXT AS value, COUNT(*) AS count, (COUNT(*) * 100.0 / (SELECT total FROM total_count)) AS percent
               FROM filtered_clicks
               GROUP BY short_url
               ORDER BY count DESC, value
@@ -329,7 +332,7 @@ export class ClickEvents {
           'original_url', (
             SELECT json_agg(t)
             FROM (
-              SELECT original_url::TEXT AS value, COUNT(*) AS count
+              SELECT original_url::TEXT AS value, COUNT(*) AS count, (COUNT(*) * 100.0 / (SELECT total FROM total_count)) AS percent
               FROM filtered_clicks
               GROUP BY original_url
               ORDER BY count DESC, value
@@ -338,7 +341,7 @@ export class ClickEvents {
           'browser', (
             SELECT json_agg(t)
             FROM (
-              SELECT browser::TEXT AS value, COUNT(*) AS count
+              SELECT browser::TEXT AS value, COUNT(*) AS count, (COUNT(*) * 100.0 / (SELECT total FROM total_count)) AS percent
               FROM filtered_clicks
               GROUP BY browser
               ORDER BY count DESC, value
@@ -347,7 +350,7 @@ export class ClickEvents {
           'device', (
             SELECT json_agg(t)
             FROM (
-              SELECT device::TEXT AS value, COUNT(*) AS count
+              SELECT device::TEXT AS value, COUNT(*) AS count, (COUNT(*) * 100.0 / (SELECT total FROM total_count)) AS percent
               FROM filtered_clicks
               GROUP BY device
               ORDER BY count DESC, value
@@ -356,7 +359,7 @@ export class ClickEvents {
           'os', (
             SELECT json_agg(t)
             FROM (
-              SELECT os::TEXT AS value, COUNT(*) AS count
+              SELECT os::TEXT AS value, COUNT(*) AS count, (COUNT(*) * 100.0 / (SELECT total FROM total_count)) AS percent
               FROM filtered_clicks
               GROUP BY os
               ORDER BY count DESC, value
@@ -429,10 +432,10 @@ export class ClickEvents {
 
       const testResponse: QueryResponse = await sql(testquery, queryParams);
       const testResult = parseJSONQueryResponse(testResponse, ClickEventSchemas.JSONAgg);
-      console.log(testResult)
+      // console.log(testResult)
 
-      const response: QueryResponse = await sql(query, queryParams);
-      const result = parseQueryResponse(response, ClickEventSchemas.Filter, ["field"]);
+      // const response: QueryResponse = await sql(query, queryParams);
+      // const result = parseQueryResponse(response, ClickEventSchemas.Filter, ["field"]);
 
       const response2: QueryResponse = await sql(query2, queryParams);
       const result2 = parseQueryResponse(response2, ClickEventSchemas.Chart);
@@ -442,7 +445,7 @@ export class ClickEvents {
       // If there is no click data, what is the result?
       // if (result.length !== 1) throw new Error();
 
-      return ServerResponse.success({ filter: result, chart: result2, json: testResult });
+      return ServerResponse.success({ chart: result2, json: testResult });
 
     } catch (error: unknown) {
       console.log({ error })
