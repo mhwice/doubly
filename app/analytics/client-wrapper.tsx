@@ -10,6 +10,8 @@ import { TabGroup } from "./tab-group";
 import { TabStuff } from "./tab-content";
 import { StatsHeader } from "../dashboard/stats-header";
 import { Badge } from "@/components/ui/badge";
+import { Tag } from "./tag";
+import { TagGroup } from "./tag-group";
 
 export function ClientWrapper() {
 
@@ -22,6 +24,10 @@ export function ClientWrapper() {
 
   const [now, setNow] = useState<Date>(new Date());
   const [dateRange, setDateRange] = useState<[Date | undefined, Date]>([undefined, now]);
+
+  const removeTag = (tagToRemove: string[]) => {
+    setSelectedValues((prev) => prev.filter(([k, v]) => !(k === tagToRemove[0] && v === tagToRemove[1])));
+  };
 
   useEffect(() => {
 
@@ -62,34 +68,23 @@ export function ClientWrapper() {
           }} />
         </div>
       )} */}
-      {/* <div className="flex flex-row justify-start py-4 space-x-4"> */}
-      <div className="w-[200px]">
-        {selectedValues.map(([k, v]) => (
-          <Badge
-            key={`${k},${v}`}
-            variant="outline"
-            style={badgeStyle("#ef4444")}
-            className="mb-2 mr-2"
-          >
-            {k + ": " + v}
-          </Badge>
-        ))}
-      </div>
-      <div className="flex flex-row justify-center items-center py-32">
+      <TagGroup selectedValues={selectedValues} onRemoveTag={removeTag} />
+      <div className="flex flex-row justify-start space-x-4">
+      {/* <div className="flex flex-row justify-center items-center py-32"> */}
         {filteredData && <Combobox
           filteredData={filteredData}
           selectedValues={selectedValues}
           setSelectedValues={setSelectedValues}
         />}
-        {/* <TimePicker
+        <TimePicker
           dateRange={dateRange}
           setDateRange={setDateRange}
-        /> */}
+        />
       </div>
-      <div className="mb-8">
+      <div className="my-4">
         {chartData && <ChartAreaInteractive clickEvents={chartData} />}
       </div>
-      {/* { filteredData &&
+      { filteredData &&
         <div className="flex flex-row justify-between space-x-4">
           <TabGroup items={[
             { title: "Browser", value: "browser", children: <TabStuff title="Browser" data={filteredData.browser} /> },
@@ -107,7 +102,7 @@ export function ClientWrapper() {
             { title: "City", value: "city", children: <TabStuff title="City" data={filteredData.city} /> },
           ]} />
         </div>
-      } */}
+      }
     </div>
   );
 }
