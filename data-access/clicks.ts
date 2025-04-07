@@ -158,7 +158,7 @@ export class ClickEvents {
     try {
       const { userId, options, dateRange, queryString, queryField } = LinkSchemas.GetAll.parse(params);
 
-      const LIMIT = "5";
+      const LIMIT = "50";
 
       const conditions = [];
       const queryParams = [userId];
@@ -245,7 +245,7 @@ export class ClickEvents {
     try {
       const { userId, options, dateRange, queryString, queryField } = LinkSchemas.GetAll.parse(params);
 
-      const LIMIT = "5";
+      const LIMIT = "50";
 
       const conditions = [];
       const queryParams = [userId];

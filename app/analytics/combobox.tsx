@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, Dispatch, SetStateAction, useRef } from "react"
-import { CheckIcon, ChevronsUpDown, QrCodeIcon, LinkIcon, MousePointerClickIcon } from "lucide-react"
+import { CheckIcon, ChevronsUpDown, QrCodeIcon, LinkIcon, MousePointerClickIcon, Loader2 } from "lucide-react"
 import { IoOptionsSharp, IoFlag } from "react-icons/io5";
 import { MdLocationCity } from "react-icons/md";
 import { PiMapPinAreaFill } from "react-icons/pi";
@@ -10,6 +10,7 @@ import { BiLinkExternal } from "react-icons/bi";
 import { GoBrowser } from "react-icons/go";
 import { HiOutlineDevicePhoneMobile } from "react-icons/hi2";
 import { IoCubeOutline } from "react-icons/io5";
+import { IoFilter } from "react-icons/io5";
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -51,23 +52,25 @@ type MenuItem = {
 
 type Menu = MenuItem[];
 
-const shouldUseServerFetch = {
-  root: false,
-  source: false,
-  country: true,
-  region: false,
-  city: true,
-  continent: false,
-  shortUrl: true,
-  originalUrl: true,
-  browser: false,
-  device: false,
-  os: false,
-};
-
 export function Combobox({ filteredData, selectedValues, setSelectedValues }: ComboboxProps) {
   // this is temporary. going to need to use useMemo to acutally prevent re-renders
   const frozen = useRef(filteredData);
+
+  // use to determine if we should be doing local queries or server-queries
+  const LIMIT = 50;
+  const shouldUseServerFetch = {
+    root: false,
+    source: frozen.current.source.length >= LIMIT,
+    country: frozen.current.country.length >= LIMIT,
+    region: frozen.current.region.length >= LIMIT,
+    city: frozen.current.city.length >= LIMIT,
+    continent: frozen.current.continent.length >= LIMIT,
+    shortUrl: frozen.current.shortUrl.length >= LIMIT,
+    originalUrl: frozen.current.originalUrl.length >= LIMIT,
+    browser: frozen.current.browser.length >= LIMIT,
+    device: frozen.current.device.length >= LIMIT,
+    os: frozen.current.os.length >= LIMIT,
+  };
 
   // Combobox state
   const [open, setOpen] = useState(false);
@@ -89,12 +92,20 @@ export function Combobox({ filteredData, selectedValues, setSelectedValues }: Co
 
   // Clear when closed
   useEffect(() => {
-    if (!open) {
+
+    /*
+      When the popover closes this useEffect fires, even before the Popover closing animation has completed.
+      If we reset the menu while the closing animation is happening, we see the data flicker as the Popover closes.
+      The workaround here is to set a tiny delay until we clear the menu.
+    */
+    const timer = setTimeout(() => {
+      setValue("");
+      setQueryString("");
       setPage("root");
       setCurrentMenu(fallbackMenu.root);
-      setQueryString("");
-      setValue("");
-    }
+    }, 50);
+
+    return () => clearTimeout(timer);
   }, [open]);
 
   // useEffect(() => {
@@ -148,6 +159,7 @@ export function Combobox({ filteredData, selectedValues, setSelectedValues }: Co
       if (item.label === "root") {
         // not possible...
       } else {
+        setQueryString("");
         setPage(item.label as FilterEnumType);
         setCurrentMenu(fallbackMenu[item.label as FilterEnumType]);
       }
@@ -181,33 +193,74 @@ export function Combobox({ filteredData, selectedValues, setSelectedValues }: Co
     <div className="flex flex-col">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button variant="outline" role="combobox" aria-expanded={open} className="w-[200px] justify-between" >Filter</Button>
+          <Button variant="outline" role="combobox" aria-expanded={open} className="w-[120px] justify-center" >
+            <IoFilter />
+            Add Filter
+          </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[200px] p-0">
+        <PopoverContent
+          className="w-[300px] p-0"
+          onCloseAutoFocus={(e) => {
+            e.preventDefault() ; // THIS IS THE KEY TO FIXING THE FOCUS BUG!
+          }}
+          onEscapeKeyDown={(e) => {
+            // TODO - enabling this makes for weird focus behaviour
+            // if (page === "root") {
+
+            // } else {
+            //   e.preventDefault();
+            //   setPage("root");
+            //   setCurrentMenu(fallbackMenu.root);
+            //   // setQueryString("");
+            //   // setValue("");
+            // }
+            // console.log("ESCAPE");
+          }}
+        >
           {/* https://github.com/pacocoursey/cmdk/issues/267 */}
           <Command shouldFilter={!shouldUseServerFetch[page]}>
-            <CommandInput placeholder="search..." className="h-9" value={queryString} onValueChange={(e) => handleOnValueChange(e)}/>
+            <div className="relative border-b w-full">
+              <CommandInput placeholder="search..." className="h-9" value={queryString} onValueChange={(e) => handleOnValueChange(e)}/>
+              {loading && (
+                <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                </div>
+              )}
+            </div>
+            {/* <CommandInput placeholder="search..." className="h-9" value={queryString} onValueChange={(e) => handleOnValueChange(e)}/> */}
             <CommandList>
               {loading ? <LoadingSkeleton /> :
-                <CommandGroup heading={value || ""}>
-                  {currentMenu.map((item) => {
-                    if (page === "root") {
-                      return (
-                        <CommandItem key={item.label} onSelect={(value) => handleSelect(value, item)}>
-                          {item.icon} {item.value}
-                        </CommandItem>
-                      );
-                    } else {
-                      const selected = isSelected(page, item.value);
-                      return (
-                        <CommandItem key={item.label} onSelect={(value) => handleSelect(value, item)}>
-                          <CircularCheckbox checked={selected} />
-                          {item.value}
-                        </CommandItem>
-                      );
-                    }
-                  })}
-                </CommandGroup>
+                <>
+                  <CommandEmpty>Not found.</CommandEmpty>
+                  <CommandGroup heading={value || ""} >
+                    {currentMenu.map((item) => {
+                      if (page === "root") {
+                        return (
+                          <CommandItem key={item.label} onSelect={(value) => handleSelect(value, item)}>
+                            {item.icon}
+                            <div className="max-w-[200px] truncate">{item.value}</div>
+                          </CommandItem>
+                        );
+                      } else {
+                        const selected = isSelected(page, item.value);
+                        return (
+                          <CommandItem key={item.label} onSelect={(value) => handleSelect(value, item)}>
+                            <CircularCheckbox checked={selected} />
+                            <div className="max-w-[200px] truncate">{item.value}</div>
+                            <span className="ml-auto font-mono text-muted-foreground">{item.count}</span>
+                          </CommandItem>
+                        );
+                      }
+                    })}
+                  </CommandGroup>
+                  {shouldUseServerFetch[page] && currentMenu.length === LIMIT &&
+                    <CommandGroup>
+                      <CommandItem disabled>
+                        <span className="mx-auto font-mono text-muted-foreground">search to view more items</span>
+                      </CommandItem>
+                    </CommandGroup>
+                  }
+                </>
               }
             </CommandList>
           </Command>
