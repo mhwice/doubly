@@ -31,6 +31,8 @@ import { ClickEventSchemas, ClickEventTypes } from "@/lib/zod/clicks"
 import { useDebounce } from "../async/use-debounce"
 import { deserialize, stringify } from "superjson"
 import { type FilterEnumType } from "@/lib/zod/links"
+import { CircularCheckbox } from "./circular-checkbox";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type ComboboxProps = {
   filteredData: ClickEventTypes.JSONAgg,
@@ -49,6 +51,20 @@ type MenuItem = {
 
 type Menu = MenuItem[];
 
+const shouldUseServerFetch = {
+  root: false,
+  source: false,
+  country: true,
+  region: false,
+  city: true,
+  continent: false,
+  shortUrl: true,
+  originalUrl: true,
+  browser: false,
+  device: false,
+  os: false,
+};
+
 export function Combobox({ filteredData, selectedValues, setSelectedValues }: ComboboxProps) {
   // this is temporary. going to need to use useMemo to acutally prevent re-renders
   const frozen = useRef(filteredData);
@@ -56,6 +72,7 @@ export function Combobox({ filteredData, selectedValues, setSelectedValues }: Co
   // Combobox state
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
+  const [loading, setLoading] = useState(false);
 
   // What to display is no query
   const [fallbackMenu, setFallbackMenu] = useState(buildMenu(frozen.current));
@@ -86,14 +103,20 @@ export function Combobox({ filteredData, selectedValues, setSelectedValues }: Co
 
   useEffect(() => {
 
-    if (page === "root") return;
     if (queryString === "") {
       // set menu to fallback
       setCurrentMenu(fallbackMenu[page]);
       return;
     }
 
+    if (!shouldUseServerFetch[page]) {
+      // should be client side. dont fetch;
+      return;
+    }
+
     console.log("fetching...");
+
+    setLoading(true);
 
     fetch("/api/query", {
       method: 'POST',
@@ -112,6 +135,7 @@ export function Combobox({ filteredData, selectedValues, setSelectedValues }: Co
         // console.log(x);
 
         // console.log(currentMenu)
+        setLoading(false);
         setCurrentMenu(x);
         // console.log(currentMenu)
       })
@@ -161,30 +185,30 @@ export function Combobox({ filteredData, selectedValues, setSelectedValues }: Co
         </PopoverTrigger>
         <PopoverContent className="w-[200px] p-0">
           {/* https://github.com/pacocoursey/cmdk/issues/267 */}
-          <Command shouldFilter={false}>
+          <Command shouldFilter={!shouldUseServerFetch[page]}>
             <CommandInput placeholder="search..." className="h-9" value={queryString} onValueChange={(e) => handleOnValueChange(e)}/>
             <CommandList>
-              <CommandGroup heading={value || ""}>
-                {currentMenu.map((item) => {
-                  if (page === "root") {
-                    return (
-                      <CommandItem key={item.label} onSelect={(value) => handleSelect(value, item)}>
-                        {item.icon} {item.value}
-                      </CommandItem>
-                    );
-                  } else {
-                    const selected = isSelected(page, item.value);
-                    return (
-                      <CommandItem key={item.label} onSelect={(value) => handleSelect(value, item)}>
-                        <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary", selected ? "bg-primary text-primary-foreground" : "opacity-50 [&_svg]:invisible")}>
-                          <CheckIcon className="h-4 w-4" />
-                        </div>
-                        {item.value}
-                      </CommandItem>
-                    );
-                  }
-                })}
-              </CommandGroup>
+              {loading ? <LoadingSkeleton /> :
+                <CommandGroup heading={value || ""}>
+                  {currentMenu.map((item) => {
+                    if (page === "root") {
+                      return (
+                        <CommandItem key={item.label} onSelect={(value) => handleSelect(value, item)}>
+                          {item.icon} {item.value}
+                        </CommandItem>
+                      );
+                    } else {
+                      const selected = isSelected(page, item.value);
+                      return (
+                        <CommandItem key={item.label} onSelect={(value) => handleSelect(value, item)}>
+                          <CircularCheckbox checked={selected} />
+                          {item.value}
+                        </CommandItem>
+                      );
+                    }
+                  })}
+                </CommandGroup>
+              }
             </CommandList>
           </Command>
         </PopoverContent>
@@ -236,4 +260,19 @@ function buildMenu(filteredData: ClickEventTypes.JSONAgg) {
   }
 
   return menu;
+}
+
+const LoadingSkeleton = () => {
+  return (
+    <CommandGroup>
+      {[1, 2, 3, 4, 5].map((i) => (
+        <CommandItem key={i}>
+          <div className="flex items-center w-full justify-start content-between gap-[7px] py-[2px]">
+            <Skeleton className="h-[16px] w-[16px] rounded" />
+            <Skeleton className="h-[16px] w-24 rounded" />
+          </div>
+        </CommandItem>
+      ))}
+    </CommandGroup>
+  );
 }
