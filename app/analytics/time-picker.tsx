@@ -26,8 +26,8 @@ const options = [
 ];
 
 interface TimePickerProps {
-  dateRange: [Date, Date] | undefined
-  setDateRange: React.Dispatch<React.SetStateAction<[Date, Date] | undefined>>
+  dateRange: [Date | undefined, Date]
+  setDateRange: React.Dispatch<React.SetStateAction<[Date | undefined, Date]>>
 }
 
 export function TimePicker({ dateRange, setDateRange }: TimePickerProps) {

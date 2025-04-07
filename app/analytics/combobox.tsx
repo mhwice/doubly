@@ -1,7 +1,15 @@
 "use client"
 
-import { useState, useEffect, useMemo, useRef, KeyboardEvent, Dispatch, SetStateAction } from "react"
-import { Check, ChevronsUpDown } from "lucide-react"
+import { useState, useEffect, Dispatch, SetStateAction, useRef } from "react"
+import { CheckIcon, ChevronsUpDown, QrCodeIcon, LinkIcon, MousePointerClickIcon } from "lucide-react"
+import { IoOptionsSharp, IoFlag } from "react-icons/io5";
+import { MdLocationCity } from "react-icons/md";
+import { PiMapPinAreaFill } from "react-icons/pi";
+import { IoMdGlobe } from "react-icons/io";
+import { BiLinkExternal } from "react-icons/bi";
+import { GoBrowser } from "react-icons/go";
+import { HiOutlineDevicePhoneMobile } from "react-icons/hi2";
+import { IoCubeOutline } from "react-icons/io5";
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -19,232 +27,165 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 
-import { Badge } from "@/components/ui/badge"
-import { Kbd } from "./kbd"
-import { useHotKey } from "./use-hot-key"
-
-/*
-ref on Command, CommandInput, PopoverTrigger, PopoverContent, Button doesn't work
-*/
+import { ClickEventSchemas, ClickEventTypes } from "@/lib/zod/clicks"
+import { useDebounce } from "../async/use-debounce"
+import { deserialize, stringify } from "superjson"
+import { type FilterEnumType } from "@/lib/zod/links"
 
 type ComboboxProps = {
-  filterFields: MenuItem;
+  filteredData: ClickEventTypes.JSONAgg,
   selectedValues: string[][],
   setSelectedValues: Dispatch<SetStateAction<string[][]>>
 };
 
-export function Combobox({ filterFields, selectedValues, setSelectedValues }: ComboboxProps) {
+type Page = FilterEnumType | "root";
+type MenuItem = {
+  value: string,
+  label: string,
+  count?: number,
+  percent?: number,
+  icon?: React.ReactNode
+}
+
+type Menu = MenuItem[];
+
+export function Combobox({ filteredData, selectedValues, setSelectedValues }: ComboboxProps) {
+  // this is temporary. going to need to use useMemo to acutally prevent re-renders
+  const frozen = useRef(filteredData);
+
+  // Combobox state
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
-  const [inputValue, setInputValue] = useState("");
-  const [page, setPage] = useState<string>("root");
-  // const [selectedValues, setSelectedValues] = useState<Array<Array<string>>>([]);
 
-  // const ref = useRef<HTMLDivElement | null>(null);
-  // const ref = useRef<HTMLButtonElement | null>(null);
-  // const ref = useRef<HTMLButtonElement>(null);
-  // const triggerRef = useRef<HTMLButtonElement | null>(null);
-  // const inputRef = useRef<HTMLInputElement | null>(null);
+  // What to display is no query
+  const [fallbackMenu, setFallbackMenu] = useState(buildMenu(frozen.current));
 
+  // What to display if there is a query
+  const [currentMenu, setCurrentMenu] = useState<Menu>(fallbackMenu.root);
+
+  // The thing we are displaying
+  const [page, setPage] = useState<Page>("root");
+
+  // Search state
+  const [queryString, setQueryString] = useState<string>("");
+  const debouncedQueryString = useDebounce(queryString, 2000);
+
+  // Clear when closed
   useEffect(() => {
-    if (open) {
-      // inputRef.current?.focus();
-    } else {
-      // Optionally, blur the trigger when closing.
-      // triggerRef.current?.blur();
+    if (!open) {
       setPage("root");
-      setInputValue("");
+      setCurrentMenu(fallbackMenu.root);
+      setQueryString("");
       setValue("");
     }
   }, [open]);
 
-  // do the filtering here
   // useEffect(() => {
-    // console.log(selectedValues)
+  //   console.log("currentMenu", currentMenu)
+  // }, [currentMenu]);
 
-    // if client-side filtering, we already have all the data, and can do JS filtering on the rows.
-    // say our rows are in a variable called 'rows'
-    /*
-      and lets assume
+  useEffect(() => {
 
-      selectedValues = [
-        ["country", "canada"],
-        ["country", "mexico"],
-        ["source", "qr"],
-        ["continent", "europe"],
-      ]
+    if (page === "root") return;
+    if (queryString === "") {
+      // set menu to fallback
+      setCurrentMenu(fallbackMenu[page]);
+      return;
+    }
 
-      How do we filter our rows?
-      Most efficient to do a raw forlet loop
+    console.log("fetching...");
 
-      remember, my selected values mean
+    fetch("/api/query", {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: stringify({ selectedValues: [], dateRange: [undefined, new Date()], queryString: debouncedQueryString, queryField: page }),
+    })
+      .then((res) => {
+        return res.json()
+      })
+      .then((res) => {
+        const deserialized = deserialize(res);
+        const validated = ClickEventSchemas.ServerResponsQuery.safeParse(deserialized);
+        if (!validated.success) throw new Error("failed to validate api response");
+        if (!validated.data.success) throw new Error(validated.data.error);
+        const x = validated.data.data;
+        // console.log(x);
 
-      country = canada || mexico
-      &&
-      source = qr
-      &&
-      continent = europe
+        // console.log(currentMenu)
+        setCurrentMenu(x);
+        // console.log(currentMenu)
+      })
 
-      So we can turn our selectedValues into:
+  }, [debouncedQueryString]);
 
-      map = {
-        country: [canada, mexico],
-        source: [qr]
-        continent: [europe]
+  const handleSelect = (value: string, item: MenuItem) => {
+
+    if (item.label in fallbackMenu) {
+      if (item.label === "root") {
+        // not possible...
+      } else {
+        setPage(item.label as FilterEnumType);
+        setCurrentMenu(fallbackMenu[item.label as FilterEnumType]);
       }
+    } else {
+      // select this thing
+      // console.log("selected", item.value);
+      // setSelectedValues()
+      setSelectedValues((currentlSelected) => {
 
-      and for each rule in map, the current row must hit at least one item (can actually be a set)
-
-
-      const good = [];
-      looking: for (let i = 0, n = rows.length; i < n; i += 1) {
-        const row = row[i];
-        for (const [k, vs] of map) {
-          if (!vs.has(row[k])) continue looking;
+        const without = currentlSelected.filter(([k, v]) => !(k === page && v === item.value));
+        if (without.length === currentlSelected.length) {
+          // its not currently selected -> select it
+          return [...currentlSelected, [page, item.value]];
+        } else {
+          // its currently selected -> remove it
+          return without;
         }
+      });
+    }
+  }
 
-        good.push(row);
-      }
+  const handleOnValueChange = (e: string) => {
+    setQueryString(e);
+  }
 
-      return good;
-
-      but this only works client-side.
-      if doing server-side we dont actually do any filtering, we just ask the db for the correct data
-      using a serverAction.
-
-      and instead of 'fetching' the data, we can bubble this up to the server component who can refetch what we need
-
-      TODO: use TS ReadonlyArray
-
-
-    */
-
-  // }, [selectedValues]);
-
-  useHotKey(() => setOpen((open) => !open), "e");
-
-  const renderMainMenu = () => {
-    const menu = findSubmenu(page, filterFields);
-    return (
-      <CommandList>
-        <CommandGroup heading={value || ""}>
-          {menu && menu.map((field) => {
-            return (
-              <CommandItem
-                key={field.label}
-                onSelect={(val) => {
-                  if (field.sub === undefined) {
-
-                    // console.log("selected", value, field.label);
-
-                    setSelectedValues((currentlSelected) => {
-                      let seen = false;
-                      for (const [k, v] of currentlSelected) {
-                        if (k === value && v === field.label) {
-                          seen = true;
-                          break;
-                        }
-                      }
-
-                      if (seen) return currentlSelected;
-                      return [...currentlSelected, [value, field.label]];
-                      // if (currVals.includes(field.label)) return currVals;
-                      // return [...currVals, field.label];
-                    });
-
-                    setInputValue("");
-                    setPage("root");
-                  } else {
-                    setInputValue("");
-                    setValue(field.label);
-                    setPage(field.label);
-                  }
-              }}>
-                {field.label}
-                <span className="ml-auto font-mono text-muted-foreground">{field.count}</span>
-              </CommandItem>
-            );
-          })}
-          {page !== "root" && <CommandItem
-          onSelect={() => {
-            setValue("");
-            setPage("root")
-          }}>
-            ← Go Home
-          </CommandItem>}
-        </CommandGroup>
-      </CommandList>
-    );
+  function isSelected(field: string, value: string) {
+    return selectedValues.filter(([k, v]) => k === field && v === value).length > 0;
   }
 
   return (
     <div className="flex flex-col">
-      {/* <div className="w-[200px]">
-        {selectedValues.map(([k, v]) => (
-          <Badge
-            key={`${k},${v}`}
-            variant="outline"
-            style={badgeStyle("#ef4444")}
-            className="mb-2 mr-2"
-          >
-            {k + ": " + v}
-          </Badge>
-        ))}
-      </div> */}
       <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild onFocus={() => {
-          console.log("trigger focused")
-        }}>
-          <Button variant="outline" role="combobox" aria-expanded={open} className="w-[200px] justify-between" >
-            Filter
-            <ChevronsUpDown className="opacity-50" />
-            <Kbd className="ml-auto text-muted-foreground group-hover:text-accent-foreground">
-              <span className="mr-1">⌘</span>
-              <span>E</span>
-            </Kbd>
-          </Button>
+        <PopoverTrigger asChild>
+          <Button variant="outline" role="combobox" aria-expanded={open} className="w-[200px] justify-between" >Filter</Button>
         </PopoverTrigger>
-        <PopoverContent
-          className="w-[200px] p-0"
-          onEscapeKeyDown={(e) => {
-            console.log("onEscapeKeyDown")
-          }}
-          onCloseAutoFocus={(e) => {
-            e.preventDefault(); // THIS IS THE KEY TO FIXING THE FOCUS BUG!
-            console.log("onCloseAutoFocus")
-          }}
-
-        >
-          <Command
-            loop
-            onKeyDown={(e) => {
-            if (e.key === "Escape") {
-              // TODO this is a little janky, for a split second we can see the root menu layout
-              // the reason is that this runs before the close animation finishes.
-              // instead, maybe do this in a useEffect when the menu closes - yup that worked!
-              // setPage("root");
-              // setInputValue("");
-              // setValue("");
-            }
-          }}>
-            <CommandInput
-              placeholder="search..."
-              className="h-9"
-              value={inputValue}
-              onValueChange={(e) => {
-                setInputValue(e);
-              }}
-              // onKeyDown={(e) => {
-              //   console.log("onKeyDown", e);
-              // }}
-              // onBlur={(e) => {
-              //   console.log("onBlur", e);
-              // }}
-              // onInput={(e) => {
-              //   console.log("onInput", e);
-              // }}
-              />
-            {renderMainMenu()}
+        <PopoverContent className="w-[200px] p-0">
+          {/* https://github.com/pacocoursey/cmdk/issues/267 */}
+          <Command shouldFilter={false}>
+            <CommandInput placeholder="search..." className="h-9" value={queryString} onValueChange={(e) => handleOnValueChange(e)}/>
+            <CommandList>
+              <CommandGroup heading={value || ""}>
+                {currentMenu.map((item) => {
+                  if (page === "root") {
+                    return (
+                      <CommandItem key={item.label} onSelect={(value) => handleSelect(value, item)}>
+                        {item.icon} {item.value}
+                      </CommandItem>
+                    );
+                  } else {
+                    const selected = isSelected(page, item.value);
+                    return (
+                      <CommandItem key={item.label} onSelect={(value) => handleSelect(value, item)}>
+                        <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary", selected ? "bg-primary text-primary-foreground" : "opacity-50 [&_svg]:invisible")}>
+                          <CheckIcon className="h-4 w-4" />
+                        </div>
+                        {item.value}
+                      </CommandItem>
+                    );
+                  }
+                })}
+              </CommandGroup>
+            </CommandList>
           </Command>
         </PopoverContent>
       </Popover>
@@ -252,63 +193,47 @@ export function Combobox({ filterFields, selectedValues, setSelectedValues }: Co
   )
 }
 
-const badgeStyle = (color: string) => ({
-  borderColor: `${color}20`,
-  backgroundColor: `${color}30`,
-  color,
-});
-
-type MenuItem = {
-  label: string;
-  count: number;
-  sub?: MenuItem[];
-};
-
-/*
-
-const data = {
-  label: "root",
-  sub: [
-    {
-      label: "continents",
-      sub: [
-        {
-          label: "north america",
-          sub: [
-            {
-              label: "canada",
-              sub: [
-                {
-                  label: "bc",
-                },
-                {
-                  label: "ontario",
-                },
-              ]
-            },
-            {
-              label: "usa",
-            },
-            {
-              label: "mexico"
-            },
-          ]
-
-*/
-
-function findSubmenu(label: string, menu: MenuItem): MenuItem[] | null {
-  if (menu.label === label) {
-    return menu.sub ?? [];
+function buildMenu(filteredData: ClickEventTypes.JSONAgg) {
+  const menu: {
+    root: Menu
+    source: Menu;
+    country: Menu;
+    region: Menu;
+    city: Menu;
+    continent: Menu;
+    shortUrl: Menu;
+    originalUrl: Menu;
+    browser: Menu;
+    device: Menu;
+    os: Menu;
+  } = {
+    root: [
+      { value: "Source", label: "source", icon: <IoOptionsSharp className="h-4 w-4 text-muted-foreground"/> },
+      { value: "Country", label: "country", icon: <IoFlag className="h-4 w-4 text-muted-foreground" /> },
+      { value: "Region", label: "region", icon: <PiMapPinAreaFill className="h-4 w-4 text-muted-foreground" /> },
+      { value: "City", label: "city", icon: <MdLocationCity className="h-4 w-4 text-muted-foreground" /> },
+      { value: "Continent", label: "continent", icon: <IoMdGlobe className="h-4 w-4 text-muted-foreground" /> },
+      { value: "Short Url", label: "shortUrl", icon:  <LinkIcon className="h-4 w-4 text-muted-foreground" /> },
+      { value: "Original Url", label: "originalUrl", icon: <BiLinkExternal className="h-4 w-4 text-muted-foreground" /> },
+      { value: "Browser", label: "browser", icon: <GoBrowser className="h-4 w-4 text-muted-foreground" /> },
+      { value: "Device", label: "device", icon: <HiOutlineDevicePhoneMobile className="h-4 w-4 text-muted-foreground" /> },
+      { value: "OS", label: "os", icon: <IoCubeOutline className="h-4 w-4 text-muted-foreground" /> },
+    ],
+    source: [],
+    country: [],
+    region: [],
+    city: [],
+    continent: [],
+    shortUrl: [],
+    originalUrl: [],
+    browser: [],
+    device: [],
+    os: [],
   }
 
-  if (menu.sub) {
-    for (const item of menu.sub) {
-      const result = findSubmenu(label, item);
-      if (result !== null) {
-        return result;
-      }
-    }
+  for (const { label } of menu.root) {
+    menu[label as FilterEnumType] = filteredData[label as FilterEnumType];
   }
 
-  return null;
+  return menu;
 }

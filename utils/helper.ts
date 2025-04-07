@@ -75,10 +75,13 @@ export function parseQueryResponse<T>(response: QueryResponse, zodSchema: z.ZodS
 // }
 
 export function parseJSONQueryResponse<T>(response: QueryResponse, zodSchema: z.ZodSchema<T>): T {
+  // console.log("parsing json")
   const results = response[0].results as Record<string, unknown>;
   const resp = Object.fromEntries(
     Object.entries(results).map(([k, v]) => [camelCase(k), v])
   );
+
+  // console.log(resp)
   return zodSchema.parse(resp);
 }
 

@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     map.get(k)?.push(v);
   }
 
-  const response = await ClickEvents.getFilterMenuData({
+  const response = await ClickEvents.getQueriedData({
     userId: session.user.id,
     options: map,
     ...validated.data

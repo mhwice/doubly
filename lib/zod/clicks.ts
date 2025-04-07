@@ -55,20 +55,21 @@ const ClickChartSchema = z.object({
 const JSONEntitySchema = z.object({
   value: z.string(),
   count: z.number(),
-  percent: z.number()
-}).array();
+  percent: z.number(),
+  label: z.string()
+});
 
 const ClickJsonGetAllSchema = z.object({
-  source: JSONEntitySchema,
-  country: JSONEntitySchema,
-  region: JSONEntitySchema,
-  continent: JSONEntitySchema,
-  city: JSONEntitySchema,
-  shortUrl: JSONEntitySchema,
-  originalUrl: JSONEntitySchema,
-  browser: JSONEntitySchema,
-  device: JSONEntitySchema,
-  os: JSONEntitySchema
+  source: JSONEntitySchema.array(),
+  country: JSONEntitySchema.array(),
+  region: JSONEntitySchema.array(),
+  continent: JSONEntitySchema.array(),
+  city: JSONEntitySchema.array(),
+  shortUrl: JSONEntitySchema.array(),
+  originalUrl: JSONEntitySchema.array(),
+  browser: JSONEntitySchema.array(),
+  device: JSONEntitySchema.array(),
+  os: JSONEntitySchema.array()
 });
 
 const FilterRepsonseSchema = z.object({
@@ -78,6 +79,7 @@ const FilterRepsonseSchema = z.object({
 });
 
 const ServerResponseFilterSchema = serverResponseSchema(FilterRepsonseSchema);
+
 
 const FakeClickEventSchema = z.object({
   id: z.number().nonnegative().lt(2_147_483_648),
@@ -95,6 +97,8 @@ const FakeClickEventSchema = z.object({
   longitude: z.number().gte(-180).lte(180)
 });
 
+const ServerResponseQuerySchema = serverResponseSchema(JSONEntitySchema.array());
+
 export namespace ClickEventSchemas {
   export const Click = ClickEventSchema; // used
   export const Create = ClickEventCreateSchema; // used
@@ -104,7 +108,9 @@ export namespace ClickEventSchemas {
   export const Chart = ClickChartSchema; // used
   export const ClickResponse = FilterRepsonseSchema;
   export const ServerResponseFilter = ServerResponseFilterSchema; // used
+  export const ServerResponsQuery = ServerResponseQuerySchema; // used
   export const JSONAgg = ClickJsonGetAllSchema; // used
+  export const Query = JSONEntitySchema;
 }
 
 export namespace ClickEventTypes {
@@ -116,7 +122,9 @@ export namespace ClickEventTypes {
   export type Chart = z.infer<typeof ClickChartSchema>; // used
   export type ClickResponse = z.infer<typeof FilterRepsonseSchema>; // used
   export type ServerResponseFilter = z.infer<typeof ServerResponseFilterSchema>;
+  export type ServerResponseQuery = z.infer<typeof ServerResponseQuerySchema>;
   export type JSONAgg = z.infer<typeof ClickJsonGetAllSchema>;
+  export type Query = z.infer<typeof JSONEntitySchema>;
 }
 
 /**
