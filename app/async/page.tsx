@@ -2,9 +2,8 @@
 
 import { AsyncSelect } from "./async-select";
 import { useState } from "react";
-import { getCities, type City } from "./fetch-cities";
 import { ClickEventTypes } from "@/lib/zod/clicks";
-import { AsyncCombobox } from "./async-combobox";
+// import { AsyncCombobox } from "./async-combobox";
 
 export default function AsyncSelectExample() {
   const [selectedCity, setSelectedCity] = useState<string>("");
@@ -13,8 +12,8 @@ export default function AsyncSelectExample() {
   return (
     <div className="flex flex-row justify-center text-center h-full bg-slate-100 pt-[240px]">
       {/* <AsyncCombobox filterFields={} selectedValues={selectedValues} setSelectedValues={setSelectedValues} /> */}
-      <AsyncSelect<ClickEventTypes.Filter>
-        fetcher={getCities}
+      {/* <AsyncSelect<ClickEventTypes.Filter>
+        fetcher={}
         renderOption={(city) => (
           <div className="flex items-center gap-2">
             <div className="flex flex-col">
@@ -36,7 +35,7 @@ export default function AsyncSelectExample() {
         value={selectedCity}
         onChange={setSelectedCity}
         width="350px"
-      />
+      /> */}
     </div>
   )
 }

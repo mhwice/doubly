@@ -1,3 +1,4 @@
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { BarChart2 } from "lucide-react"
 
 interface propppy {
@@ -11,7 +12,7 @@ interface propppy {
 
 export function TabStuff(params: propppy) {
   return (
-    <div className="rounded-xl border bg-white p-6 shadow-sm">
+    <ScrollArea className="rounded-xl border bg-white p-6 shadow-sm h-[500px] mb-36">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold tracking-tight">{params.title}</h2>
         <BarChart2 className="h-5 w-5 text-gray-400" />
@@ -34,6 +35,6 @@ export function TabStuff(params: propppy) {
           );
         })}
       </div>
-    </div>
+    </ScrollArea>
   )
 }

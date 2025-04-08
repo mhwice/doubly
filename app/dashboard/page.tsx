@@ -31,7 +31,8 @@ export default async function DemoPage() {
 
   const response = await LinkTable.getAllLinks({
     userId: userId,
-    options: new Map()
+    options: new Map(),
+    dateRange: [undefined, new Date()]
   });
 
   if (!response.success) throw new Error(response.error);
