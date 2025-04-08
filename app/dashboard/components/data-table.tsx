@@ -26,6 +26,8 @@ import {
 } from "@/components/ui/table"
 
 import { DataTablePagination } from "../static-components/data-table-pagination"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
 // import { DataTableToolbar } from "./data-table-toolbar"
 
 interface DataTableProps<TData, TValue> {
@@ -70,6 +72,19 @@ export function DataTable<TData, TValue>({
   return (
     <div className="space-y-4">
       {/* <DataTableToolbar table={table} /> */}
+      {table.getFilteredSelectedRowModel().rows.length >= 2 && (
+        <Button onClick={() => {console.log("delete em")}} variant="destructive">Delete {table.getFilteredSelectedRowModel().rows.length} selected?</Button>
+      )}
+      <div className="flex items-center py-4">
+        <Input
+          placeholder="Filter original urls..."
+          value={(table.getColumn("originalUrl")?.getFilterValue() as string) ?? ""}
+          onChange={(event) =>
+            table.getColumn("originalUrl")?.setFilterValue(event.target.value)
+          }
+          className="max-w-sm"
+        />
+      </div>
       <div className="rounded-md border">
         <Table>
           <TableHeader>

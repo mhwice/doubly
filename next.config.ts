@@ -5,6 +5,10 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  /* TODO: this is for testing with faker - remove for prod! */
+  images: {
+    domains: ['cdn.jsdelivr.net', 'avatars.githubusercontent.com'],
+  },
 };
 
 const withBundleAnalyzer = require('@next/bundle-analyzer')({

@@ -1,9 +1,10 @@
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { BarChart2 } from "lucide-react"
 
 interface propppy {
   title: string,
   data: {
-    title: string,
+    value: string,
     count: number,
     percent: number,
   }[]
@@ -11,29 +12,29 @@ interface propppy {
 
 export function TabStuff(params: propppy) {
   return (
-    <div className="rounded-xl border bg-white p-6 shadow-sm">
+    <ScrollArea className="rounded-xl border bg-white p-6 shadow-sm h-[500px] mb-36">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold tracking-tight">{params.title}</h2>
         <BarChart2 className="h-5 w-5 text-gray-400" />
       </div>
 
       <div className="space-y-6">
-        {params.data.map(({ title, count, percent }) => {
+        {params.data.map(({ value, count, percent }) => {
           return (
-            <div key={`${title},${count}`} className="space-y-2">
+            <div key={`${value},${count}`} className="space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="font-medium">{title}</span>
+                  <span className="font-medium">{value}</span>
                 </div>
-                <span className="font-medium">{count}</span>
+                <span className="font-medium">{count} <span className="text-xs font-mono font-thin text-muted-foreground">({Math.round(percent)}%)</span></span>
               </div>
               <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                <div className="h-full bg-indigo-400 rounded-full" style={{ width: `${percent}%` }}></div>
+                <div className="h-full bg-gray-500 rounded-full" style={{ width: `${percent}%` }}></div>
               </div>
             </div>
           );
         })}
       </div>
-    </div>
+    </ScrollArea>
   )
 }

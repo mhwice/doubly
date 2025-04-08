@@ -86,7 +86,7 @@ array of objects, where key is an enum, and values are an array of strings?
 //   ]).array().optional()
 // });
 
-const FilterEnum = z.enum(["source", "continent", "country", "city", "originalUrl", "shortUrl"]);
+const FilterEnum = z.enum(["source", "continent", "country", "city", "originalUrl", "shortUrl", "browser", "device", "os", "region"]);
 export type FilterEnumType = z.infer<typeof FilterEnum>;
 
 const LinkGetAllSchema = LinkTableSchema.pick({
@@ -97,10 +97,26 @@ const LinkGetAllSchema = LinkTableSchema.pick({
     z.string().trim().min(1).array()
   ),
   dateRange: z.tuple([
-    z.date(),
+    // I am making this tuple of type [date|undefined, date]
+    // so that we can just pass a second value [undefined, Date.now()]
+    // which means, get everything up to now
+    // which is what we want whenever the date range is not manually set
+    z.date().optional(),
     z.date()
-  ]).optional()
-});
+  ]),
+  queryString: z.string().min(1).optional(),
+  queryField: FilterEnum.optional()
+}).refine((data) =>
+  // the refine() method has the purpose of
+  // ensuring that the queryString and the field value
+  // must either both be defined, or both be undefined
+    (data.queryString === undefined && data.queryField === undefined) ||
+    (data.queryString !== undefined && data.queryField !== undefined),
+  {
+    message: "Both queryString and field must be either provided or omitted",
+    path: ["queryString", "queryField"]
+  }
+);
 
 export const APIContents = z.object({
   selectedValues: z.tuple([
@@ -119,14 +135,36 @@ export const APIContents = z.object({
     return true;
   }, { message: "a filter pair must be unique" }),
   dateRange: z.tuple([
-    z.date(),
+    z.date().optional(),
     z.date()
   ]).refine(([start, end]) => {
-    return start <= end;
-  }, { message: "range start date must be before range end data" }).optional()
-});
+    if (start !== undefined) return start <= end;
+    return true;
+  }, { message: "range start date must be before range end data" }),
+  queryString: z.string().min(1).optional(),
+  queryField: FilterEnum.optional()
+}).refine((data) => (data.queryString === undefined && data.queryField === undefined) ||
+  (data.queryString !== undefined && data.queryField !== undefined),
+  // the refine() method has the purpose of
+  // ensuring that the queryString and the field value
+  // must either both be defined, or both be undefined
+
+  {
+    message: "Both queryString and field must be either provided or omitted",
+    path: ["queryString", "queryField"]
+  }
+);
 
 type API = z.infer<typeof APIContents>;
+
+export const CityLookup = z.object({
+  query: z.string()
+})
+
+export const CityDALLookup = z.object({
+  query: z.string(),
+  userId: z.string()
+})
 
 // function refineFn(val: [string,string][]) {
 //   const map = new Map();
@@ -171,7 +209,7 @@ export namespace LinkSchemas {
   export const DTO = LinkDTOSchema;
   export const GetAll = LinkGetAllSchema;
   export const Lookup = LinkLookupSchema;
-  export const ClickEvent = LinkClickEventSchema;
+  // export const ClickEvent = LinkClickEventSchema;
   export const Dashboard = LinkDashboardSchema;
 }
 
@@ -187,6 +225,6 @@ export namespace LinkTypes {
   export type Id = Delete["id"];
   export type Lookup = z.infer<typeof LinkLookupSchema>;
   export type GetAll = z.infer<typeof LinkGetAllSchema>;
-  export type ClickEvent = z.infer<typeof LinkClickEventSchema>;
+  // export type ClickEvent = z.infer<typeof LinkClickEventSchema>;
   export type Dashboard = z.infer<typeof LinkDashboardSchema>;
 }

@@ -161,38 +161,38 @@ export class LinkTable {
     }
   }
 
-  static async #getMockData(): Promise<ServerResponseType<LinkTypes.Link[]>> {
-    const links: LinkTypes.Link[] = [
-      {
-        id: 1,
-        originalUrl: "https://www.google.com",
-        shortUrl: "https://localhost:3000/jhb23xj",
-        code: "jhb23xj",
-        createdAt: new Date(Date.now()),
-        updatedAt: new Date(Date.now()),
-        userId: ""
-      },
-      {
-        id: 2,
-        originalUrl: "https://www.leetcode.com",
-        shortUrl: "https://localhost:3000/JdsidHu",
-        code: "JdsidHu",
-        createdAt: new Date(Date.now()),
-        updatedAt: new Date(Date.now()),
-        userId: ""
-      },
-      {
-        id: 3,
-        originalUrl: "https://www.reddit.com",
-        shortUrl: "https://localhost:3000/lsd9nk",
-        code: "lsd9nk",
-        createdAt: new Date(Date.now()),
-        updatedAt: new Date(Date.now()),
-        userId: ""
-      }
-    ];
-    return ServerResponse.success(links);
-  }
+  // static async #getMockData(): Promise<ServerResponseType<LinkTypes.Link[]>> {
+  //   const links: LinkTypes.Link[] = [
+  //     {
+  //       id: 1,
+  //       originalUrl: "https://www.google.com",
+  //       shortUrl: "https://localhost:3000/jhb23xj",
+  //       code: "jhb23xj",
+  //       createdAt: new Date(Date.now()),
+  //       updatedAt: new Date(Date.now()),
+  //       userId: ""
+  //     },
+  //     {
+  //       id: 2,
+  //       originalUrl: "https://www.leetcode.com",
+  //       shortUrl: "https://localhost:3000/JdsidHu",
+  //       code: "JdsidHu",
+  //       createdAt: new Date(Date.now()),
+  //       updatedAt: new Date(Date.now()),
+  //       userId: ""
+  //     },
+  //     {
+  //       id: 3,
+  //       originalUrl: "https://www.reddit.com",
+  //       shortUrl: "https://localhost:3000/lsd9nk",
+  //       code: "lsd9nk",
+  //       createdAt: new Date(Date.now()),
+  //       updatedAt: new Date(Date.now()),
+  //       userId: ""
+  //     }
+  //   ];
+  //   return ServerResponse.success(links);
+  // }
 
   static async getAllLinks(params: LinkTypes.GetAll): Promise<ServerResponseType<LinkTypes.Dashboard[]>> {
 
@@ -211,6 +211,7 @@ export class LinkTable {
 
       const query = `
         SELECT
+          fl.id AS id,
           fl.original_url AS original_url,
           fl.short_url AS short_url,
           SUM(
@@ -231,7 +232,7 @@ export class LinkTable {
           FROM links
           WHERE user_id = $1
         ) AS fl ON fl.id = ce.link_id
-        GROUP BY (fl.original_url, fl.short_url);
+        GROUP BY (fl.id, fl.original_url, fl.short_url);
       `;
 
       const response: QueryResponse = await sql(query, [userId]);
@@ -241,6 +242,7 @@ export class LinkTable {
       return ServerResponse.success(result);
 
     } catch (error: unknown) {
+      console.log(error)
       if (error instanceof ZodError) return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS);
       return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
     }

@@ -5,6 +5,8 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { DataTableColumnHeader } from "../static-components/data-table-column-header"
 import { DataTableRowActions } from "./data-table-row-actions"
 import { type LinkTypes } from "@/lib/zod/links"
+import { GoLinkExternal } from "react-icons/go";
+import CopyButton from "../copy-button"
 
 export const columns: ColumnDef<LinkTypes.Dashboard>[] = [
   {
@@ -36,7 +38,19 @@ export const columns: ColumnDef<LinkTypes.Dashboard>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="originalUrl" />
     ),
-    cell: ({ row }) => <div className="w-[150px] truncate">{row.getValue("originalUrl")}</div>,
+    cell: ({ row }) => (
+      <div className="w-[300px] truncate">
+        <a
+          href={row.getValue("originalUrl")}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-600 flex flex-row items-center gap-2"
+        >
+          <GoLinkExternal className="h-4 w-4"/>
+          {row.getValue("originalUrl")}
+        </a>
+      </div>
+    ),
     enableSorting: false,
     enableHiding: false,
   },
@@ -51,9 +65,10 @@ export const columns: ColumnDef<LinkTypes.Dashboard>[] = [
       return (
         <div className="flex space-x-1">
           {/* {label && <Badge variant="outline">{label.label}</Badge>} */}
-          <span className="max-w-[500px] truncate font-medium">
+          <span className="max-w-[500px] truncate font-mono font-normal text-xs text-gray-600 bg-gray-100 rounded px-2 py-1">
             {row.getValue("shortUrl")}
           </span>
+            <CopyButton className="h-6 w-6" textToCopy={row.getValue("shortUrl")} />
         </div>
       )
     },
