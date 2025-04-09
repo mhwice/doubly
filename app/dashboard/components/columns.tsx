@@ -7,16 +7,13 @@ import { DataTableRowActions } from "./data-table-row-actions"
 import { type LinkTypes } from "@/lib/zod/links"
 import { GoLinkExternal } from "react-icons/go";
 import CopyButton from "../copy-button"
+import { Button } from "@/components/ui/button"
 
 export const columns: ColumnDef<LinkTypes.Dashboard>[] = [
   {
     id: "select",
     header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
+      <Checkbox checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Select all"
         className="translate-y-[2px]"
@@ -35,19 +32,13 @@ export const columns: ColumnDef<LinkTypes.Dashboard>[] = [
   },
   {
     accessorKey: "originalUrl",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="originalUrl" />
-    ),
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Original Url"/>,
+    // header: ({ column }) => <div className="bg-red-600">Original Url</div>,
     cell: ({ row }) => (
       <div className="w-[300px] truncate">
-        <a
-          href={row.getValue("originalUrl")}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-600 flex flex-row items-center gap-2"
-        >
-          <GoLinkExternal className="h-4 w-4"/>
+        <a href={row.getValue("originalUrl")} target="_blank" rel="noopener noreferrer" className="text-blue-600 flex flex-row items-center gap-2 font-mono">
           {row.getValue("originalUrl")}
+          <GoLinkExternal className="h-4 w-4"/>
         </a>
       </div>
     ),
@@ -56,78 +47,28 @@ export const columns: ColumnDef<LinkTypes.Dashboard>[] = [
   },
   {
     accessorKey: "shortUrl",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="shortUrl" />
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Shortened Url" />,
+    cell: ({ row }) => (
+      <div className="flex space-x-1 items-center">
+        <span className="max-w-[500px] truncate font-mono font-normal text-xs text-primary bg-muted rounded px-2 py-2">
+          {row.getValue("shortUrl")}
+        </span>
+        {/* <Button className="max-w-[500px] truncate font-mono font-normal text-xs text-gray-600 bg-gray-100 rounded px-2 py-1">{row.getValue("shortUrl")}</Button> */}
+        <CopyButton className="h-6 w-6" textToCopy={row.getValue("shortUrl")} />
+      </div>
     ),
-    cell: ({ row }) => {
-      // const label = labels.find((label) => label.value === row.original.shortUrl)
-
-      return (
-        <div className="flex space-x-1">
-          {/* {label && <Badge variant="outline">{label.label}</Badge>} */}
-          <span className="max-w-[500px] truncate font-mono font-normal text-xs text-gray-600 bg-gray-100 rounded px-2 py-1">
-            {row.getValue("shortUrl")}
-          </span>
-            <CopyButton className="h-6 w-6" textToCopy={row.getValue("shortUrl")} />
-        </div>
-      )
-    },
+    enableSorting: false,
+    enableHiding: false,
   },
   {
     accessorKey: "linkClicks",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="linkClicks" />
-    ),
-    cell: ({ row }) => <div className="w-[80px]">{row.getValue("linkClicks")}</div>,
-    // cell: ({ row }) => {
-    //   // const status = statuses.find(
-    //   //   (status) => status.value === row.getValue("linkClicks")
-    //   // )
-
-    //   // if (!status) {
-    //   //   return null
-    //   // }
-
-    //   return (
-    //     <div className="flex w-[100px] items-center">
-    //       {/* {status.icon && (
-    //         <status.icon className="mr-2 h-4 w-4 text-muted-foreground" />
-    //       )} */}
-    //       <span>{status.label}</span>
-    //     </div>
-    //   )
-    // },
-    // filterFn: (row, id, value) => {
-    //   return value.includes(row.getValue(id))
-    // },
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Link Clicks" />,
+    cell: ({ row }) => <div className="w-[80px] font-mono">{row.getValue("linkClicks")}</div>,
   },
   {
     accessorKey: "qrClicks",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="qrClicks" />
-    ),
-    cell: ({ row }) => <div className="w-[80px]">{row.getValue("qrClicks")}</div>,
-    // cell: ({ row }) => {
-    //   const priority = priorities.find(
-    //     (priority) => priority.value === row.getValue("qrClicks")
-    //   )
-
-    //   if (!priority) {
-    //     return null
-    //   }
-
-    //   return (
-    //     <div className="flex items-center">
-    //       {priority.icon && (
-    //         <priority.icon className="mr-2 h-4 w-4 text-muted-foreground" />
-    //       )}
-    //       <span>{priority.label}</span>
-    //     </div>
-    //   )
-    // },
-    // filterFn: (row, id, value) => {
-    //   return value.includes(row.getValue(id))
-    // },
+    header: ({ column }) => <DataTableColumnHeader column={column} title="QR Clicks" />,
+    cell: ({ row }) => <div className="w-[80px] font-mono">{row.getValue("qrClicks")}</div>,
   },
   {
     id: "actions",

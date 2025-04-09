@@ -26,9 +26,6 @@ import { type LinkTypes } from "@/lib/zod/links";
 import { CustomDialog } from "@/components/custom-dialog"
 import { EditLinkForm } from "@/components/edit-link-form"
 
-
-
-
 // interface DataTableRowActionsProps<TData> {
 //   row: Row<TData>
 // }
