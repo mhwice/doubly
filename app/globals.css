@@ -159,3 +159,41 @@ a {
 *:hover > .anchor-link {
   @apply visible;
 }
+
+/* Data table */
+
+.url-overflow::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 30%;
+  height: 100%;
+  pointer-events: none;
+  background-image: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    white 80%,
+    white 100%
+  );
+}
+
+/* .url-overflow::after {
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, white 80%, white 100%);
+} */
+
+/* .url-overflow {
+  position: relative;
+  display: inline-flex;
+} */
+
+/* .url-overflow::before,
+.url-overflow::after {
+  transition-property: backgroun-image;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+} */
+
+.group:hover .url-overflow::after {
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, #f9f9fa 80%, #f9f9fa 100%);
+}

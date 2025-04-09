@@ -8,6 +8,8 @@ import { type LinkTypes } from "@/lib/zod/links"
 import { GoLinkExternal } from "react-icons/go";
 import CopyButton from "../copy-button"
 import { Button } from "@/components/ui/button"
+import { IoCopyOutline } from "react-icons/io5"
+import { BorderGlowButton } from "../border-glow-button"
 
 export const columns: ColumnDef<LinkTypes.Dashboard>[] = [
   {
@@ -35,10 +37,24 @@ export const columns: ColumnDef<LinkTypes.Dashboard>[] = [
     header: ({ column }) => <DataTableColumnHeader column={column} title="Original Url"/>,
     // header: ({ column }) => <div className="bg-red-600">Original Url</div>,
     cell: ({ row }) => (
-      <div className="w-[300px] truncate">
-        <a href={row.getValue("originalUrl")} target="_blank" rel="noopener noreferrer" className="text-blue-600 flex flex-row items-center gap-2 font-mono">
+      // <div className="w-[300px] truncate">
+        // <a href={row.getValue("originalUrl")} target="_blank" rel="noopener noreferrer" className="text-blue-600 flex flex-row items-center gap-2 font-mono">
+        //   {row.getValue("originalUrl")}
+        //   <GoLinkExternal className="h-4 w-4"/>
+        // </a>
+      // </div>
+      // <div className="max-w-[200px] overflow-hidden relative text-nowrap">
+      //   <span className="url-overflow after:content-[''] after:absolute after:top-0 after:right-0 after:w-[30%] after:h-full after:pointer-events-none">
+      //     <a href={row.getValue("originalUrl")} target="_blank" rel="noopener noreferrer" className="text-blue-600 flex flex-row items-center gap-2 font-mono">
+      //       <GoLinkExternal className="h-4 w-4"/>
+      //       {row.getValue("originalUrl")}
+      //     </a>
+      //   </span>
+      // </div>
+      <div className="group max-w-[400px] overflow-hidden relative whitespace-nowrap">
+        <a href={row.getValue("originalUrl")} target="_blank" rel="noopener noreferrer" className="url-overflow text-blue-600 flex items-center gap-2 font-mono">
+          <GoLinkExternal className="h-4 w-4 flex-shrink-0"/>
           {row.getValue("originalUrl")}
-          <GoLinkExternal className="h-4 w-4"/>
         </a>
       </div>
     ),
@@ -50,11 +66,8 @@ export const columns: ColumnDef<LinkTypes.Dashboard>[] = [
     header: ({ column }) => <DataTableColumnHeader column={column} title="Shortened Url" />,
     cell: ({ row }) => (
       <div className="flex space-x-1 items-center">
-        <span className="max-w-[500px] truncate font-mono font-normal text-xs text-primary bg-muted rounded px-2 py-2">
-          {row.getValue("shortUrl")}
-        </span>
-        {/* <Button className="max-w-[500px] truncate font-mono font-normal text-xs text-gray-600 bg-gray-100 rounded px-2 py-1">{row.getValue("shortUrl")}</Button> */}
-        <CopyButton className="h-6 w-6" textToCopy={row.getValue("shortUrl")} />
+        <BorderGlowButton text={row.getValue("shortUrl")}/>
+        {/* <Button className="font-mono font-normal text-xs text-muted-foreground bg-muted" variant="ghost">{row.getValue("shortUrl")}<IoCopyOutline className="h-2 w-2" /></Button> */}
       </div>
     ),
     enableSorting: false,
@@ -69,6 +82,13 @@ export const columns: ColumnDef<LinkTypes.Dashboard>[] = [
     accessorKey: "qrClicks",
     header: ({ column }) => <DataTableColumnHeader column={column} title="QR Clicks" />,
     cell: ({ row }) => <div className="w-[80px] font-mono">{row.getValue("qrClicks")}</div>,
+  },
+  {
+    accessorKey: "updatedAt",
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Last Interacted" />,
+    cell: ({ row }) => <div className="max-w-[200px] min-w-[150px] font-mono text-muted-foreground">
+      {(row.getValue("updatedAt") as Date).toDateString()}
+    </div>,
   },
   {
     id: "actions",

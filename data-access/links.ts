@@ -214,6 +214,7 @@ export class LinkTable {
           fl.id AS id,
           fl.original_url AS original_url,
           fl.short_url AS short_url,
+          fl.updated_at AS updated_at,
           SUM(
             CASE
               WHEN ce.source = 'qr' THEN 1
@@ -232,7 +233,7 @@ export class LinkTable {
           FROM links
           WHERE user_id = $1
         ) AS fl ON fl.id = ce.link_id
-        GROUP BY (fl.id, fl.original_url, fl.short_url);
+        GROUP BY (fl.id, fl.original_url, fl.short_url, fl.updated_at);
       `;
 
       const response: QueryResponse = await sql(query, [userId]);

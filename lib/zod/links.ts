@@ -17,6 +17,7 @@ const LinkDashboardSchema = LinkTableSchema.pick({
   id: true,
   originalUrl: true,
   shortUrl: true,
+  updatedAt: true,
 }).extend({
   linkClicks: z.number().nonnegative(),
   qrClicks: z.number().nonnegative()

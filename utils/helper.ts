@@ -61,8 +61,8 @@ export function formatDBResponse(record: SQLRecord, columnsToFormat?: string[]):
  */
 export function parseQueryResponse<T>(response: QueryResponse, zodSchema: z.ZodSchema<T>, columnsToFormat?: string[]) {
   return response.map((row) => {
+    // console.log(row)
     const data = formatDBResponse(row, columnsToFormat);
-    // console.log(data)
     return zodSchema.parse(data)
   });
 }
