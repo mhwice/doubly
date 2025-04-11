@@ -197,3 +197,8 @@ a {
 .group:hover .url-overflow::after {
   background-image: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, #f9f9fa 80%, #f9f9fa 100%);
 }
+
+.group[data-state="selected"] .url-overflow::after {
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, #f4f4f5 80%, #f4f4f5 100%);
+}
+

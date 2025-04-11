@@ -21,7 +21,7 @@ const options = [
   { label: "Last 30 Days", value: "last-30", getDates: () => ({ start: startOfDay(subDays(new Date(), 30)), end: new Date() }) },
   { label: "Last 90 Days", value: "last-90", getDates: () => ({ start: startOfDay(subDays(new Date(), 90)), end: new Date() }) },
   { label: "Lasy Year", value: "last-year", getDates: () => ({ start: startOfDay(subYears(new Date(), 1)), end: new Date() }) },
-  { label: "All Time", value: "all-time", getDates: () => ({ start: subYears(new Date(), 30), end: new Date() })},
+  { label: "All Time", value: "all-time", getDates: () => ({ start: undefined, end: new Date() })},
   // { label: "Custom", value: "custom" },
 ];
 
@@ -36,7 +36,7 @@ export function TimePicker({ dateRange, setDateRange }: TimePickerProps) {
 
     for (const { label, value, getDates } of options) {
       if (value === e) {
-        const { start, end} = getDates();
+        const { start, end } = getDates();
         setDateRange([start, end]);
         break;
       }

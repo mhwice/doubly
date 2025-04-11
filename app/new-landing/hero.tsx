@@ -33,7 +33,7 @@ export function Hero() {
         style={{ animationDuration: "1100ms" }}
       >
         <Button className="h-10 font-semibold">
-          <Link href="#">Start 14-day trial</Link>
+          <Link href="#">Get Started</Link>
         </Button>
         <Button
           asChild

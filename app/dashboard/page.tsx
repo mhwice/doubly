@@ -57,7 +57,7 @@ export default async function DemoPage() {
         <StatsHeader stats={stats} />
       </div>
       <div className="mb-8"></div>
-      <TableHeader />
+      {/* <TableHeader /> */}
       <DataTable data={links} columns={columns} />
     </div>
     </>
