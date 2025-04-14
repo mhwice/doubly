@@ -6,6 +6,8 @@ import {
   MousePointerClickIcon
 } from "lucide-react"
 
+import NumberFlow from '@number-flow/react'
+
 /*
 
 count of urls
@@ -36,7 +38,7 @@ export function StatsHeader({ stats }: StatsHeaderProps) {
           <LinkIcon className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{numUrls}</div>
+          <div className="text-2xl font-bold"><NumberFlow value={numUrls}/></div>
           <p className="text-xs text-muted-foreground">
             +20.1% from last month
           </p>
@@ -50,7 +52,7 @@ export function StatsHeader({ stats }: StatsHeaderProps) {
           <MousePointerClickIcon className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{numLinkClicks}</div>
+          <div className="text-2xl font-bold"><NumberFlow value={numLinkClicks} /></div>
           <p className="text-xs text-muted-foreground">
             +180.1% from last month
           </p>
@@ -62,7 +64,7 @@ export function StatsHeader({ stats }: StatsHeaderProps) {
           <QrCodeIcon className="h-4 w-4 text-muted-foreground"/>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{numQRClicks}</div>
+          <div className="text-2xl font-bold"><NumberFlow value={numQRClicks} /></div>
           <p className="text-xs text-muted-foreground">
             +19% from last month
           </p>

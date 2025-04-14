@@ -12,6 +12,8 @@ import { StatsHeader } from "../dashboard/stats-header";
 import { Badge } from "@/components/ui/badge";
 import { Tag } from "./tag";
 import { TagGroup } from "./tag-group";
+import { Chart } from "../dashboard/chart";
+import { Button } from "@/components/ui/button";
 
 export function ClientWrapper() {
 
@@ -49,7 +51,6 @@ export function ClientWrapper() {
 
         // console.log({chart})
         // console.log({json})
-
         setFilteredData(json);
         setChartData(chart);
         // setMenuData(buildNewMenu(json));
@@ -59,15 +60,6 @@ export function ClientWrapper() {
 
   return (
     <div className="flex flex-col">
-      {/* {filteredData && (
-        <div>
-          <StatsHeader stats={{
-            numUrls: filteredData.shortUrl.length,
-            numLinkClicks: filteredData.source[0].value === "link" ? filteredData.source[0].count : filteredData.source[1].count,
-            numQRClicks: filteredData.source[0].value === "qr" ? filteredData.source[0].count : filteredData.source[1].count
-          }} />
-        </div>
-      )} */}
       <TagGroup selectedValues={selectedValues} onRemoveTag={removeTag} />
       <div className="flex flex-row justify-start space-x-4">
       {/* <div className="flex flex-row justify-center items-center py-32"> */}
@@ -82,7 +74,10 @@ export function ClientWrapper() {
         />
       </div>
       <div className="my-4">
-        {chartData && <ChartAreaInteractive clickEvents={chartData} />}
+        {chartData && <Chart clickEvents={chartData} dateRange={dateRange} />}
+        {/* {chartData && <ChartAreaInteractive clickEvents={chartData} />} */}
+        {/* {chartData && <BarCharComponent clickEvents={chartData} />} */}
+        {/* {chartData && <LineCharComponent clickEvents={chartData} />} */}
       </div>
       { filteredData &&
         <div className="flex flex-row justify-between space-x-4">
@@ -112,3 +107,11 @@ const badgeStyle = (color: string) => ({
   backgroundColor: `${color}30`,
   color,
 });
+
+function getStatsData(filteredData: ClickEventTypes.JSONAgg) {
+  const source = filteredData.source;
+  const link = source.filter((x) => x.value === "link")[0];
+  const qr = source.filter((x) => x.value === "qr")[0];
+
+  return { linkCount: link?.count || 0, qrCount: qr?.count || 0 };
+}

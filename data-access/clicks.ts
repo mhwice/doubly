@@ -478,7 +478,7 @@ export class ClickEvents {
 
       let charQuery = "";
       if (dateRange[0] === undefined) {
-        console.log("alltime", dateRange)
+        // console.log("alltime", dateRange)
         charQuery = `
         WITH user_links AS (
           SELECT id, original_url, short_url
@@ -541,7 +541,7 @@ export class ClickEvents {
         ORDER BY date DESC;
       `;
       } else {
-        console.log("lastN", dateRange)
+        // console.log("lastN", dateRange)
         charQuery = `
           WITH user_links AS (
             SELECT id, original_url, short_url
@@ -647,7 +647,7 @@ export class ClickEvents {
       // console.log(lastNDaysQuery)
       // console.log(queryParams)
       const response2: QueryResponse = await sql(charQuery, queryParams);
-      console.log(response2);
+      // console.log(response2);
       const result2 = parseQueryResponse(response2, ClickEventSchemas.Chart);
 
       // TODO
