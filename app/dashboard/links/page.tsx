@@ -42,7 +42,7 @@ export default async function DemoPage() {
 
   return (
     <>
-    <div className="h-full mx-[5%]">
+    <div className="h-full mx-[15%]">
       {/* <Tabs defaultValue="dashboard" className="w-[500px] my-5">
         <TabsList>
           <Link href="/dashboard" passHref>

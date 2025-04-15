@@ -1,95 +1,50 @@
-"use client"
+"use client";
 
-// import { cn } from "@/lib/utils"
-// import useScroll from "../(marketing)/lib/use-scroll"
-
-// export function VercelNavbar() {
-//   const scrolled = useScroll(64);
-
-//   return (
-//     <div className="flex flex-col w-full">
-//       {/* Primary Navigation - Non-sticky */}
-//       <div className={
-//         cn("h-16 w-full bg-background border-b transition-all duration-300 ease-in-out bg-red-100"
-//       )}>
-//       </div>
-
-//       {/* Secondary Navigation - Sticky */}
-//       <div className={cn(
-//         "h-14 w-full bg-background border-b transition-all duration-300 ease-in-out z-50 bg-blue-100",
-//         scrolled ? "fixed top-0 left-0 shadow-sm" : "",
-//       )}>
-//       </div>
-//     </div>
-//   )
-// }
-
-// export function VercelNavbar() {
-//   return (
-//     <div>
-//       <div style={{ display: 'contents' }} className="flex flex-col w-full">
-//         {/* Primary Navigation - Non-sticky */}
-//         <div className="h-16 w-full bg-red-100 border-b">
-//           {/* Primary content here */}
-//         </div>
-
-//         {/* Secondary Navigation - Sticky using CSS sticky */}
-//         <div className="sticky top-0 h-14 w-full bg-blue-100 border-b shadow-sm z-50">
-//           {/* Secondary content here */}
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
-"use client"
-
-import { cn } from "@/lib/utils"
-import useScroll from "../(marketing)/lib/use-scroll"
 import { AnimatedTabs } from "./animated-tabs";
 import { DatabaseLogo } from "../landing/DatabaseLogo";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { User } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { BookOpen, ChevronsUpDown, House, LogOut, Settings2, User } from "lucide-react";
+import { DropdownUserProfile } from "./user-dropdown";
 
-export function VercelNavbar() {
-  const scrolled = useScroll(64);
+interface NavbarProps {
+  email: string
+}
 
+export function VercelNavbar({ email }: NavbarProps) {
   return (
-    <div className="flex flex-col w-full">
-      {/* Primary Navigation - Non-sticky */}
-      <div className="h-16 w-full bg-background transition-all duration-300 ease-in-out flex align-self justify-between items-center px-5">
+    <div style={{ display: 'contents' }} className="flex flex-col w-full">
+      <div className="h-14 w-full bg-background transition-all duration-300 ease-in-out mt-5">
+        <div className="flex align-self justify-between items-center mx-[15%]">
+          <DatabaseLogo className="w-28 md:w-32" />
+          <DropdownUserProfile email={email} />
+        </div>
+        {/* <DropdownMenu>
+          <DropdownMenuTrigger>
 
-        {/* Content for primary navigation */}
-        <DatabaseLogo className="w-28 md:w-32"/>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="rounded-full">
-              <User className="h-5 w-5" />
-              <span className="sr-only">User menu</span>
-            </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+
+          <DropdownMenuContent className="mt-2">
+            <DropdownMenuItem><House className="mr-1" />Homepage</DropdownMenuItem>
+            <DropdownMenuItem><BookOpen className="mr-1" />Learn More</DropdownMenuItem>
+            <DropdownMenuItem><Settings2 className="mr-1" />Preferences</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Profile</DropdownMenuItem>
-            <DropdownMenuItem>Settings</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Logout</DropdownMenuItem>
+            <DropdownMenuItem><LogOut className="mr-1" />Sign out</DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>
+        </DropdownMenu> */}
       </div>
 
-      {/* Secondary Navigation - Sticky */}
-      <div className={cn(
-        "h-11 w-full pt-2 px-5 bg-background border-b transition-all duration-300 ease-in-out z-50",
-        scrolled ? "fixed top-0 left-0 shadow-sm" : "",
-      )}>
-        <AnimatedTabs />
+      <div className="sticky top-0 py-[5px] w-full border-b shadow-sm z-50 transition-all duration-300 ease-in-out bg-white">
+        <div className="mx-[15%] flex flex-col justify-center">
+          <AnimatedTabs />
+        </div>
       </div>
-
-      {/* Placeholder to maintain layout */}
-      {scrolled && <div className="h-11"/>}
     </div>
-  )
+  );
 }

@@ -5,7 +5,7 @@ import { LogoutButton } from "./logout-button";
 
 export default async function Filter() {
   return (
-    <div className="h-full mx-[5%]">
+    <div className="h-full mx-[15%]">
       {/* <div className="flex flex-row justify-between mt-8"> */}
         {/* <Tabs defaultValue="analytics" className="w-[500px]">
           <TabsList>
