@@ -6,8 +6,8 @@ import { LogoutButton } from "./logout-button";
 export default async function Filter() {
   return (
     <div className="h-full mx-[5%]">
-      <div className="flex flex-row justify-between mt-20">
-        <Tabs defaultValue="analytics" className="w-[500px]">
+      {/* <div className="flex flex-row justify-between mt-8"> */}
+        {/* <Tabs defaultValue="analytics" className="w-[500px]">
           <TabsList>
             <Link href="/dashboard" passHref>
               <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
@@ -16,9 +16,9 @@ export default async function Filter() {
               <TabsTrigger value="analytics">Analytics</TabsTrigger>
             </Link>
           </TabsList>
-        </Tabs>
-        <LogoutButton />
-      </div>
+        </Tabs> */}
+        {/* <LogoutButton /> */}
+      {/* </div> */}
       <ClientWrapper />
     </div>
   );

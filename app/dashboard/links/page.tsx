@@ -2,7 +2,7 @@ import { columns } from "./components/columns";
 import { DataTable } from "./components/data-table";
 import { LinkTable } from "@/data-access/links"
 import { redirect } from "next/navigation";
-import { StatsHeader } from "@/app/dashboard/stats-header";
+import { StatsHeader } from "./stats-header";
 import { type LinkTypes } from "@/lib/zod/links";
 import { TableHeader } from "./table-header";
 import { getSession } from "@/lib/get-session";
@@ -43,7 +43,7 @@ export default async function DemoPage() {
   return (
     <>
     <div className="h-full mx-[5%]">
-      <Tabs defaultValue="dashboard" className="w-[500px] my-5">
+      {/* <Tabs defaultValue="dashboard" className="w-[500px] my-5">
         <TabsList>
           <Link href="/dashboard" passHref>
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
@@ -52,8 +52,8 @@ export default async function DemoPage() {
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </Link>
         </TabsList>
-      </Tabs>
-      <div className="mb-8">
+      </Tabs> */}
+      <div className="mb-8 mt-8">
         <StatsHeader stats={stats} />
       </div>
       <div className="mb-8"></div>

@@ -5,14 +5,14 @@ import { Combobox } from "./combobox";
 import { ClickEventSchemas, ClickEventTypes } from "@/lib/zod/clicks";
 import { TimePicker } from "./time-picker";
 import { deserialize, serialize, stringify } from "superjson";
-import { ChartAreaInteractive } from "../dashboard/chart-area-interactive";
+import { ChartAreaInteractive } from "../links/chart-area-interactive";
 import { TabGroup } from "./tab-group";
 import { TabStuff } from "./tab-content";
-import { StatsHeader } from "../dashboard/stats-header";
+import { StatsHeader } from "../links/stats-header";
 import { Badge } from "@/components/ui/badge";
 import { Tag } from "./tag";
 import { TagGroup } from "./tag-group";
-import { Chart } from "../dashboard/chart";
+import { Chart } from "../links/chart";
 import { Button } from "@/components/ui/button";
 
 export function ClientWrapper() {
