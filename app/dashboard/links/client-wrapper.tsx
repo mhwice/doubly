@@ -8,6 +8,7 @@ import { useCurrentDate } from "../date-context";
 import { ClickEventSchemas } from "@/lib/zod/clicks";
 import useSWR from "swr";
 import { deserialize } from "superjson";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function ClientWrapper() {
 
@@ -34,11 +35,17 @@ export function ClientWrapper() {
   params.append("dateEnd", now.toISOString());
   const url = `/api/links?${params.toString()}`;
 
-  const { data, error } = useSWR(url, fetcher, {
+  const { data, error, isLoading } = useSWR(url, fetcher, {
     revalidateIfStale: false,
     revalidateOnFocus: false,
     revalidateOnReconnect: false
   });
+
+  if (isLoading) return (
+    <div className="h-full mx-[15%]">
+      <Skeleton className="mt-20 h-[50%] w-[100%]" />
+    </div>
+  );
 
   if (error) throw new Error(); // todo - bad
   let stats = undefined;

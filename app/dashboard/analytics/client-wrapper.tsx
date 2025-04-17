@@ -11,6 +11,7 @@ import { TagGroup } from "./tag-group";
 import { Chart } from "../links/chart";
 import useSWR from 'swr'
 import { useCurrentDate } from "../date-context";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function ClientWrapper() {
 
@@ -46,7 +47,7 @@ export function ClientWrapper() {
   params.append("dateEnd", dateRange[1].toISOString());
   const url = `/api/filter?${params.toString()}`;
 
-  const { data, error } = useSWR(url, fetcher, {
+  const { data, error, isLoading } = useSWR(url, fetcher, {
     revalidateIfStale: false,
     revalidateOnFocus: false,
     revalidateOnReconnect: false
@@ -56,6 +57,12 @@ export function ClientWrapper() {
     if (data?.chart) setChartData(data.chart);
     if (data?.json) setFilteredData(data.json);
   }, [data]);
+
+  if (isLoading) return (
+    <>
+      <Skeleton className="mt-20 h-[50%] w-[100%]" />
+    </>
+  );
 
   return (
     <div className="flex flex-col">
