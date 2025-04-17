@@ -13,11 +13,6 @@ import { sql as localSQL } from "./local-connect-test";
 
 const sql = env.ENV === "dev" ? localSQL : neon(env.DATABASE_URL);
 
-interface Cities {
-  query: string,
-  userId: string
-}
-
 /**
  * Data-Access-Layer (DAL) for all ClickEvents
  */
@@ -105,41 +100,6 @@ export class ClickEvents {
   //   }
   // }
 
-
-
-  static async getCities(params: Cities): Promise<ServerResponseType<ClickEventTypes.Filter[]>> {
-    try {
-      const { userId, query } = CityDALLookup.parse(params);
-
-      const sqlQuery = `
-        WITH filtered_clicks AS (
-          SELECT
-            ce.city AS city
-          FROM click_events AS ce
-          JOIN (
-            SELECT *
-            FROM links
-            WHERE user_id = $1
-          ) AS user_links ON user_links.id = ce.link_id
-          WHERE ce.city ILIKE '%' || $2 || '%'
-        )
-
-        SELECT 'city' AS field, city::TEXT AS value, COUNT(*) AS count
-        FROM filtered_clicks
-        GROUP BY city
-        ORDER BY count DESC, value;
-      `;
-
-      const response: QueryResponse = await sql(sqlQuery, [userId, query]);
-      const result = parseQueryResponse(response, ClickEventSchemas.Filter, ["field"]);
-
-      return ServerResponse.success(result);
-    } catch (error: unknown) {
-      if (error instanceof ZodError) return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS);
-      return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
-    }
-  }
-
   /*
     Given some filter criteria, we need to return all of the unique items and their count, so we can
     use this in combobox filter.
@@ -179,8 +139,10 @@ export class ClickEvents {
         conditions.push(`ce.created_at >= $${placeholderIndex++}`);
       }
 
-      queryParams.push(dateRange[1].toISOString());
-      conditions.push(`ce.created_at <= $${placeholderIndex++}`);
+      if (dateRange[1]) {
+        queryParams.push(dateRange[1].toISOString());
+        conditions.push(`ce.created_at <= $${placeholderIndex++}`);
+      }
 
       if (queryString && queryField) {
         conditions.push(`${queryField} ILIKE '%' || $${placeholderIndex++} || '%'`);
@@ -280,16 +242,38 @@ export class ClickEvents {
 
       // TODO - can query params just have the raw date object?? i think so...
       // Note - zod ensures that dateRange[0] <= dateRange[1]
-      const datePlaceholders: [number, number] = ["", ""];
+
+      /*
+
+      TODO - Major issue
+
+      Zod allows for the date range to be of type [Date | undefined, Date | undefined].
+
+      I had not initially intended for this, but have since changed my mind so that
+      future API can be more flexible.
+
+      Because of that, the following logic for generating the query fails
+
+      also, we can pass nothing and get really incrorrect data.
+      a temporary pause here is I am goign to throw an error if
+      not in the old format
+
+      */
+
+      if (dateRange[1] === undefined) throw new Error('temp workaround, pass an end date for now');
+
+      const datePlaceholders: [number, number] = [-1, -1];
       if (dateRange[0]) {
         queryParams.push(dateRange[0].toISOString());
         conditions.push(`ce.created_at >= $${placeholderIndex}`);
         datePlaceholders[0] = placeholderIndex++;
       }
 
-      queryParams.push(dateRange[1].toISOString());
-      conditions.push(`ce.created_at <= $${placeholderIndex}`);
-      datePlaceholders[1] = placeholderIndex++;
+      if (dateRange[1]) {
+        queryParams.push(dateRange[1].toISOString());
+        conditions.push(`ce.created_at <= $${placeholderIndex}`);
+        datePlaceholders[1] = placeholderIndex++;
+      }
 
       if (queryString && queryField) {
         conditions.push(`${queryField} ILIKE '%' || $${placeholderIndex++} || '%'`);

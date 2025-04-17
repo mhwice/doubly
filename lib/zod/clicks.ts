@@ -134,7 +134,7 @@ export namespace ClickEventTypes {
  * @param dataSchema
  * @returns
  */
-function serverResponseSchema<T>(dataSchema: z.ZodType<T>) {
+export function serverResponseSchema<T>(dataSchema: z.ZodType<T>) {
   return z.discriminatedUnion("success", [
     z.object({
       success: z.literal(true),

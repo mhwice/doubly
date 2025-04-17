@@ -14,23 +14,24 @@ import {
 
 import { subYears, subMonths, subDays, startOfDay, endOfDay, getDate } from "date-fns";
 
-const options = [
-  { label: "Today", value: "today", getDates: () => ({ start: startOfDay(new Date()), end: new Date() }) },
-  { label: "Yesterday", value: "yesterday", getDates: () => ({ start: startOfDay(subDays(new Date(), 1)), end: endOfDay(subDays(new Date(), 1)) }) },
-  { label: "Last 7 Days", value: "last-7", getDates: () => ({ start: startOfDay(subDays(new Date(), 7)), end: new Date() }) },
-  { label: "Last 30 Days", value: "last-30", getDates: () => ({ start: startOfDay(subDays(new Date(), 30)), end: new Date() }) },
-  { label: "Last 90 Days", value: "last-90", getDates: () => ({ start: startOfDay(subDays(new Date(), 90)), end: new Date() }) },
-  { label: "Lasy Year", value: "last-year", getDates: () => ({ start: startOfDay(subYears(new Date(), 1)), end: new Date() }) },
-  { label: "All Time", value: "all-time", getDates: () => ({ start: undefined, end: new Date() })},
-  // { label: "Custom", value: "custom" },
-];
-
 interface TimePickerProps {
   dateRange: [Date | undefined, Date]
-  setDateRange: React.Dispatch<React.SetStateAction<[Date | undefined, Date]>>
+  setDateRange: React.Dispatch<React.SetStateAction<[Date | undefined, Date]>>,
+  now: Date
 }
 
-export function TimePicker({ dateRange, setDateRange }: TimePickerProps) {
+export function TimePicker({ dateRange, setDateRange, now }: TimePickerProps) {
+
+  const options = [
+    { label: "Today", value: "today", getDates: () => ({ start: startOfDay(now), end: now }) },
+    { label: "Yesterday", value: "yesterday", getDates: () => ({ start: startOfDay(subDays(now, 1)), end: endOfDay(subDays(now, 1)) }) },
+    { label: "Last 7 Days", value: "last-7", getDates: () => ({ start: startOfDay(subDays(now, 7)), end: now }) },
+    { label: "Last 30 Days", value: "last-30", getDates: () => ({ start: startOfDay(subDays(now, 30)), end: now }) },
+    { label: "Last 90 Days", value: "last-90", getDates: () => ({ start: startOfDay(subDays(now, 90)), end: now }) },
+    { label: "Lasy Year", value: "last-year", getDates: () => ({ start: startOfDay(subYears(now, 1)), end: now }) },
+    { label: "All Time", value: "all-time", getDates: () => ({ start: undefined, end: now })},
+    // { label: "Custom", value: "custom" },
+  ];
 
   const handleClick = (e: string) => {
 

@@ -26,9 +26,9 @@ import "server-only";
 
 import { env } from "@/data-access/env";
 import { neon } from '@neondatabase/serverless';
-import { ZodError } from 'zod';
+import { z, ZodError } from 'zod';
 import { parseQueryResponse, type QueryResponse } from "@/utils/helper";
-import { LinkSchemas, type LinkTypes } from "@/lib/zod/links";
+import { APILinkGetAllSchema, LinkSchemas, type LinkTypes } from "@/lib/zod/links";
 import { ERROR_MESSAGES } from "@/lib/error-messages";
 import { ServerResponse, ServerResponseType } from "@/lib/server-repsonse";
 import { sql as localSQL } from "./local-connect-test";
@@ -161,53 +161,13 @@ export class LinkTable {
     }
   }
 
-  // static async #getMockData(): Promise<ServerResponseType<LinkTypes.Link[]>> {
-  //   const links: LinkTypes.Link[] = [
-  //     {
-  //       id: 1,
-  //       originalUrl: "https://www.google.com",
-  //       shortUrl: "https://localhost:3000/jhb23xj",
-  //       code: "jhb23xj",
-  //       createdAt: new Date(Date.now()),
-  //       updatedAt: new Date(Date.now()),
-  //       userId: ""
-  //     },
-  //     {
-  //       id: 2,
-  //       originalUrl: "https://www.leetcode.com",
-  //       shortUrl: "https://localhost:3000/JdsidHu",
-  //       code: "JdsidHu",
-  //       createdAt: new Date(Date.now()),
-  //       updatedAt: new Date(Date.now()),
-  //       userId: ""
-  //     },
-  //     {
-  //       id: 3,
-  //       originalUrl: "https://www.reddit.com",
-  //       shortUrl: "https://localhost:3000/lsd9nk",
-  //       code: "lsd9nk",
-  //       createdAt: new Date(Date.now()),
-  //       updatedAt: new Date(Date.now()),
-  //       userId: ""
-  //     }
-  //   ];
-  //   return ServerResponse.success(links);
-  // }
+  static async getAllLinks(params: z.infer<typeof APILinkGetAllSchema>): Promise<ServerResponseType<LinkTypes.Dashboard[]>> {
 
-  static async getAllLinks(params: LinkTypes.GetAll): Promise<ServerResponseType<LinkTypes.Dashboard[]>> {
+    console.log("refetching")
 
-    // if (env.ENV === "dev") {
-    //   return this.#getMockData();
-    // }
-
+    // this needs to be updated so it takes in the (date optional) and filters using that
     try {
-      const { userId } = LinkSchemas.GetAll.parse(params);
-
-      // const query = `
-      //   SELECT *
-      //   FROM links
-      //   WHERE user_id = $1;
-      // `;
+      const { userId, dateEnd } = APILinkGetAllSchema.parse(params);
 
       const query = `
         SELECT
@@ -231,12 +191,12 @@ export class LinkTable {
         JOIN (
           SELECT *
           FROM links
-          WHERE user_id = $1
+          WHERE user_id = $1 AND links.created_at <= $2
         ) AS fl ON fl.id = ce.link_id
         GROUP BY (fl.id, fl.original_url, fl.short_url, fl.updated_at);
       `;
 
-      const response: QueryResponse = await sql(query, [userId]);
+      const response: QueryResponse = await sql(query, [userId, dateEnd]);
       const result = parseQueryResponse(response, LinkSchemas.Dashboard);
 
       // this should only return the dto, not full list of links

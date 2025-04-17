@@ -4,59 +4,58 @@ import { useEffect, useState } from "react";
 import { Combobox } from "./combobox";
 import { ClickEventSchemas, ClickEventTypes } from "@/lib/zod/clicks";
 import { TimePicker } from "./time-picker";
-import { deserialize, serialize, stringify } from "superjson";
-import { ChartAreaInteractive } from "../links/chart-area-interactive";
+import { deserialize } from "superjson";
 import { TabGroup } from "./tab-group";
 import { TabStuff } from "./tab-content";
-import { StatsHeader } from "../links/stats-header";
-import { Badge } from "@/components/ui/badge";
-import { Tag } from "./tag";
 import { TagGroup } from "./tag-group";
 import { Chart } from "../links/chart";
-import { Button } from "@/components/ui/button";
+import useSWR from 'swr'
+import { useCurrentDate } from "../date-context";
 
 export function ClientWrapper() {
 
+  const { date: now } = useCurrentDate();
+  // console.log("ClientWrapper", currd);
+
   // TODO: we can do better than string[][]
   const [selectedValues, setSelectedValues] = useState<string[][]>([]);
-  // const [menuData, setMenuData] = useState<MenuItem>();
 
   const [chartData, setChartData] = useState<ClickEventTypes.Chart[]>();
   const [filteredData, setFilteredData] = useState<ClickEventTypes.JSONAgg>();
 
-  const [now, setNow] = useState<Date>(new Date());
+  // const [now, setNow] = useState<Date>(new Date());
   const [dateRange, setDateRange] = useState<[Date | undefined, Date]>([undefined, now]);
 
   const removeTag = (tagToRemove: string[]) => {
     setSelectedValues((prev) => prev.filter(([k, v]) => !(k === tagToRemove[0] && v === tagToRemove[1])));
   };
 
+  const fetcher = async (url: string) => {
+    const response = await fetch(url);
+    const jsonResponse = await response.json();
+    const deserialized = deserialize(jsonResponse);
+    const validated = ClickEventSchemas.ServerResponseFilter.safeParse(deserialized);
+    if (!validated.success) throw new Error("failed to validate api response");
+    if (!validated.data.success) throw new Error(validated.data.error);
+    return validated.data.data;
+  }
+
+  const params = new URLSearchParams();
+  selectedValues.forEach((item) => params.append(item[0], item[1]));
+  if (dateRange[0] !== undefined) params.append("dateStart", dateRange[0].toISOString());
+  params.append("dateEnd", dateRange[1].toISOString());
+  const url = `/api/filter?${params.toString()}`;
+
+  const { data, error } = useSWR(url, fetcher, {
+    revalidateIfStale: false,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false
+  });
+
   useEffect(() => {
-
-    fetch("/api/filter", {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: stringify({ selectedValues, dateRange }),
-    })
-      .then((res) => {
-        return res.json()
-      })
-      .then((res) => {
-        const deserialized = deserialize(res);
-
-        const validated = ClickEventSchemas.ServerResponseFilter.safeParse(deserialized);
-        if (!validated.success) throw new Error("failed to validate api response");
-        if (!validated.data.success) throw new Error(validated.data.error);
-        const { chart, json } = validated.data.data;
-
-        // console.log({chart})
-        // console.log({json})
-        setFilteredData(json);
-        setChartData(chart);
-        // setMenuData(buildNewMenu(json));
-      })
-
-  }, [selectedValues, dateRange]);
+    if (data?.chart) setChartData(data.chart);
+    if (data?.json) setFilteredData(data.json);
+  }, [data]);
 
   return (
     <div className="flex flex-col">
@@ -71,13 +70,11 @@ export function ClientWrapper() {
         <TimePicker
           dateRange={dateRange}
           setDateRange={setDateRange}
+          now={now}
         />
       </div>
       <div className="my-4">
         {chartData && <Chart clickEvents={chartData} dateRange={dateRange} />}
-        {/* {chartData && <ChartAreaInteractive clickEvents={chartData} />} */}
-        {/* {chartData && <BarCharComponent clickEvents={chartData} />} */}
-        {/* {chartData && <LineCharComponent clickEvents={chartData} />} */}
       </div>
       { filteredData &&
         <div className="flex flex-row justify-between space-x-4">
