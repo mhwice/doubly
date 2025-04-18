@@ -10,7 +10,11 @@ import { DatabaseLogo } from "./DatabaseLogo"
 import { Button } from "./Button"
 import { useRouter } from 'next/navigation';
 
-export function Navbar() {
+interface NavbarProps {
+  isLoggedIn: boolean
+}
+
+export function Navbar({ isLoggedIn }: NavbarProps) {
   const scrolled = useScroll(15)
   const [open, setOpen] = useState(false)
   const router = useRouter();
@@ -31,7 +35,11 @@ export function Navbar() {
 
   const handleOnSignInClicked = () => {
     // console.log("sign in");
-    router.push("/auth/login");
+    if (isLoggedIn) {
+      router.push("/dashboard/links");
+    } else {
+      router.push("/auth/login");
+    }
   }
 
   return (
@@ -55,9 +63,9 @@ export function Navbar() {
               <Link className="px-2 py-1 text-gray-900 dark:text-gray-50" href={siteConfig.baseLinks.changelog}>Changelog</Link>
             </div>
           </nav>
-          <Button onClick={handleOnSignInClicked} className="hidden h-10 font-semibold md:flex">Sign In</Button>
+          <Button onClick={handleOnSignInClicked} className="hidden h-10 font-semibold md:flex">{isLoggedIn ? "Dashboard" : "Sign In"}</Button>
           <div className="flex gap-x-2 md:hidden">
-            <Button onClick={handleOnSignInClicked}>Sign In</Button>
+            <Button onClick={handleOnSignInClicked}>{isLoggedIn ? "Dashboard" : "Sign In"}</Button>
             <Button onClick={() => setOpen(!open)} variant="light" className="aspect-square p-2">
               {open ? (<RiCloseLine aria-hidden="true" className="size-5" />) : (<RiMenuLine aria-hidden="true" className="size-5" />)}
             </Button>

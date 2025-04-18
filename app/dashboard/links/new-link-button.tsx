@@ -23,7 +23,7 @@ export function NewLinkButton() {
 
   return (
     <>
-      <Button className="whitespace-nowrap" onClick={handleOnClick}>
+      <Button className="whitespace-nowrap shadow-none" onClick={handleOnClick}>
         <Plus className="h-4 w-4 mr-1" />
         Create Link
       </Button>

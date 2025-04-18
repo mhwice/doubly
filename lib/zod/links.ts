@@ -125,7 +125,7 @@ export const APILinkGetAllSchema = LinkTableSchema.pick({
       // which means, get everything up to now
       // which is what we want whenever the date range is not manually set
       z.date().optional(),
-      z.date()
+      z.date().optional()
     ]),
     queryString: z.string().min(1).optional(),
     queryField: FilterEnum.optional()

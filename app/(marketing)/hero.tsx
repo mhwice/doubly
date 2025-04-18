@@ -3,7 +3,11 @@ import Link from "next/link"
 import { Button } from "./Button"
 import { HeroImage } from "./hero-image"
 
-export function Hero() {
+interface HeroProps {
+  isLoggedIn: boolean
+}
+
+export function Hero({ isLoggedIn }: HeroProps) {
   return (
     <section
       aria-labelledby="hero-title"
@@ -33,7 +37,7 @@ export function Hero() {
         style={{ animationDuration: "1100ms" }}
       >
         <Button className="h-10 font-semibold">
-          <Link href="#">Get Started</Link>
+          <Link href={isLoggedIn ? "/dashboard/links" : "/auth/login"}>{isLoggedIn ? "Dashboard" : "Sign In"}</Link>
         </Button>
         <Button
           asChild

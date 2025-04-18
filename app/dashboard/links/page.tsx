@@ -41,7 +41,9 @@ export default async function LinksPage() {
   // const stats = makeStats(links);
 
   return (
-    <ClientWrapper />
+    <div className="bg-[var(--dashboard-bg)] h-full">
+      <ClientWrapper />
+    </div>
     // <div className="h-full mx-[15%]">
     //   <div className="mb-8 mt-8">
     //     <StatsHeader stats={stats} />

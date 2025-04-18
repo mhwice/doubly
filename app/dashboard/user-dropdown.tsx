@@ -24,6 +24,7 @@ import { useTheme } from "next-themes"
 import React from "react"
 import { cx } from "../(marketing)/lib/utils"
 import { focusRing } from "../(marketing)/lib/utils"
+import { Settings } from "lucide-react"
 
 interface DropdownProps {
   email: string
@@ -54,7 +55,7 @@ function DropdownUserProfile({ email }: DropdownProps) {
               className="flex size-8 shrink-0 items-center justify-center rounded-full border border-gray-300 bg-white text-xs font-medium text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300"
               aria-hidden="true"
             >
-              ES
+              <Settings className="h-4 w-4 stroke-gray-400"/>
             </span>
           </button>
         </DropdownMenuTrigger>

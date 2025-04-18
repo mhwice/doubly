@@ -193,7 +193,7 @@ export function Combobox({ filteredData, selectedValues, setSelectedValues }: Co
     <div className="flex flex-col">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button variant="outline" role="combobox" aria-expanded={open} className="w-[120px] justify-center" >
+          <Button variant="flat" role="combobox" aria-expanded={open} className="w-[120px] justify-center" >
             <IoFilter />
             Add Filter
           </Button>

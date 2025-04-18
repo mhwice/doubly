@@ -40,7 +40,7 @@ export function VercelNavbar({ email }: NavbarProps) {
         </DropdownMenu> */}
       </div>
 
-      <div className="sticky top-0 py-[5px] w-full border-b shadow-sm z-50 transition-all duration-300 ease-in-out bg-white">
+      <div className="sticky top-0 py-[5px] w-full border-b shadow-none z-50 transition-all duration-300 ease-in-out bg-white">
         <div className="mx-[15%] flex flex-col justify-center">
           <AnimatedTabs />
         </div>

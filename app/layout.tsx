@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
-import { Inter, Roboto, Montserrat, Lato, Fira_Sans, Raleway, Poppins, DM_Sans, Rubik } from 'next/font/google';
+import { Inter, Roboto, Montserrat, Lato, Fira_Sans, Raleway, Poppins, DM_Sans, Rubik, Geist } from 'next/font/google';
 
 // const font = Inter({ subsets: ['latin'], variable: '--font-inter' });
 // const font = Roboto({ weight: "400", subsets: ['latin'], variable: '--font-inter' });
@@ -10,7 +10,8 @@ import { Inter, Roboto, Montserrat, Lato, Fira_Sans, Raleway, Poppins, DM_Sans, 
 // const font = Fira_Sans({ weight: "400", subsets: ['latin'], variable: '--font-inter' });
 // const font = Raleway({ weight: "400", subsets: ['latin'], variable: '--font-inter' });
 // const font = Poppins({ weight: "400", subsets: ['latin'], variable: '--font-inter' });
-const font = DM_Sans({ weight: "400", subsets: ['latin'], variable: '--font-inter' });
+// const font = DM_Sans({ weight: "400", subsets: ['latin'], variable: '--font-inter' });
+const font = Geist({ weight: "400", subsets: ['latin'], variable: '--font-inter' });
 // const font = Rubik({ weight: "400", subsets: ["latin"], variable: '--font-inter' });
 
 export const metadata: Metadata = {

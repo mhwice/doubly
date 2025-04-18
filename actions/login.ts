@@ -15,7 +15,7 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
   console.log({ email, password });
   try {
     await auth.api.signInEmail({
-      body: { email, password, callbackURL: "/dashboard" },
+      body: { email, password, callbackURL: "/dashboard/links" },
     });
 
   } catch (error: unknown) {
@@ -24,5 +24,5 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
     return { error: "Something went wrong" };
   }
 
-  redirect("/dashboard");
+  redirect("/dashboard/links");
 }

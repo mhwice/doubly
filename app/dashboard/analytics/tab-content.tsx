@@ -12,7 +12,7 @@ interface propppy {
 
 export function TabStuff(params: propppy) {
   return (
-    <ScrollArea className="rounded-xl border bg-white p-6 shadow-sm h-[500px] mb-36">
+    <ScrollArea className="border bg-white p-6 h-[500px] mb-36 rounded-[var(--bradius)] border-[var(--border-color)]">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold tracking-tight">{params.title}</h2>
         <MousePointerClickIcon className="h-5 w-5 text-gray-400" />
@@ -29,7 +29,7 @@ export function TabStuff(params: propppy) {
                 <span className="font-medium">{count} <span className="text-xs font-mono font-thin text-muted-foreground">({Math.round(percent)}%)</span></span>
               </div>
               <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-                <div className="h-full bg-gray-500 rounded-full" style={{ width: `${percent}%` }}></div>
+                <div className="h-full bg-[var(--database)] rounded-full" style={{ width: `${percent}%` }}></div>
               </div>
             </div>
           );

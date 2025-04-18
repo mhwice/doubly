@@ -1,9 +1,12 @@
+import { getSession } from "@/lib/get-session";
 import { Hero } from "./hero";
 
-export default function Home() {
+export default async function Home() {
+  const session = await getSession();
+
   return (
     <main className="flex flex-col overflow-hidden">
-      <Hero />
+      <Hero isLoggedIn={!!session?.user} />
     </main>
   )
 }

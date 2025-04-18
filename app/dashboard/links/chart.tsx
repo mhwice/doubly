@@ -8,6 +8,7 @@ import { AreaChartContainer } from "./area-chart"
 import { BarCharContainer } from "./bar-chart"
 import { LineChartContainer } from "./line-chart"
 import { differenceInCalendarDays } from "date-fns";
+import { FaChartArea, FaChartLine, FaChartBar } from "react-icons/fa";
 
 interface ChartProps {
   clickEvents: ClickEventTypes.Chart[],
@@ -19,7 +20,7 @@ export function Chart({ clickEvents, dateRange }: ChartProps) {
   const [chartType, setChartType] = useState<"area" | "bar" | "line">("area");
 
   return (
-    <Card className="@container/card">
+    <Card className="@container/card rounded-[var(--bradius)] shadow-none">
       <CardHeader className="flex items-center gap-2 space-y-2 py-8 sm:flex-row">
         <div className="grid flex-1 gap-1 text-center sm:text-left">
           <CardTitle>Click Events</CardTitle>
@@ -30,21 +31,27 @@ export function Chart({ clickEvents, dateRange }: ChartProps) {
           </CardDescription>
         </div>
         <Select value={chartType} onValueChange={(value) => setChartType(value as "area" | "bar" | "line")}>
-          <SelectTrigger
-            className="w-[160px] rounded-lg sm:ml-auto"
-            aria-label="Select a value"
-          >
+            <SelectTrigger className="hover:bg-gray-100 border transition w-[160px] data-[placeholder]:text-primary shadow-none bg-white border-[var(--border-color)] rounded-[var(--bradius)]">
             <SelectValue placeholder="Area" />
           </SelectTrigger>
-          <SelectContent className="rounded-xl">
-            <SelectItem value="area" className="rounded-lg">
-              Area
+          <SelectContent className="border-[var(--border-color)] rounded-[var(--bradius)]">
+            <SelectItem value="area" className="rounded-[var(--bradius)]">
+              <div className="flex flex-row gap-2 items-center">
+                <FaChartArea className="text-muted-foreground"/>
+                Area
+              </div>
             </SelectItem>
-            <SelectItem value="bar" className="rounded-lg">
-              Bar
+            <SelectItem value="bar" className="rounded-[var(--bradius)]">
+              <div className="flex flex-row gap-2 items-center">
+                <FaChartBar className="text-muted-foreground"/>
+                Bar
+              </div>
             </SelectItem>
-            <SelectItem value="line" className="rounded-lg">
-              Line
+            <SelectItem value="line" className="rounded-[var(--bradius)]">
+              <div className="flex flex-row gap-2 items-center">
+                <FaChartLine className="text-muted-foreground"/>
+                Line
+              </div>
             </SelectItem>
           </SelectContent>
         </Select>

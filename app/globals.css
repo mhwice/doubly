@@ -36,6 +36,8 @@ body,
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
+    --database: #6366f1;
+    --database-secondary: #393b89;
     --radius: 0.5rem;
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -45,6 +47,9 @@ body,
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    --bradius: 8px;
+    --dashboard-bg: #fafafa;
+    --border-color: #e6e6e6;
   }
   .dark {
     --background: 240 10% 3.9%;

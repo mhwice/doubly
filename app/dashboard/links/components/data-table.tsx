@@ -80,7 +80,7 @@ export function DataTable<TData, TValue>({
           onChange={(event) =>
             table.getColumn("originalUrl")?.setFilterValue(event.target.value)
           }
-          className="max-w-sm"
+          className="max-w-sm bg-white rounded-[var(--bradius)] shadow-none border-[var(--border-color)]"
         />
         <div className="flex gap-2">
           {table.getFilteredSelectedRowModel().rows.length >= 2 && (
@@ -89,9 +89,9 @@ export function DataTable<TData, TValue>({
           <NewLinkButton />
         </div>
       </div>
-      <div className="border rounded-md overflow-hidden">
+      <div className="border overflow-hidden bg-white rounded-[var(--bradius)] shadow-none border-[var(--border-color)]">
         <Table>
-          <TableHeader className="bg-muted">
+          <TableHeader className="bg-white">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {

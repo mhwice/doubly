@@ -11,11 +11,11 @@ const chartConfig = {
   },
   linkCount: {
     label: "Link",
-    color: "hsl(var(--chart-1))",
+    color: "var(--database)",
   },
   qrCount: {
     label: "QR",
-    color: "hsl(var(--chart-2))",
+    color: "var(--database-secondary)",
   },
 } satisfies ChartConfig
 
