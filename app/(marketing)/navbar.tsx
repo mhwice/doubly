@@ -1,6 +1,5 @@
 "use client"
 
-import { siteConfig } from "./siteConfig"
 import useScroll from "./lib/use-scroll"
 import { cx } from "./lib/utils"
 import { RiCloseLine, RiMenuLine } from "@remixicon/react"
@@ -52,15 +51,15 @@ export function Navbar({ isLoggedIn }: NavbarProps) {
     )}>
       <div className="w-full md:my-auto">
         <div className="relative flex items-center justify-between">
-          <Link href={siteConfig.baseLinks.home} aria-label="Home">
+          <Link href="/" aria-label="Home">
             <span className="sr-only">Company logo</span>
             <DatabaseLogo className="w-28 md:w-32" />
           </Link>
           <nav className="hidden md:absolute md:left-1/2 md:top-1/2 md:block md:-translate-x-1/2 md:-translate-y-1/2 md:transform">
             <div className="flex items-center gap-10 font-medium">
-              <Link className="px-2 py-1 text-gray-900 dark:text-gray-50" href={siteConfig.baseLinks.about}>Solutions</Link>
-              <Link className="px-2 py-1 text-gray-900 dark:text-gray-50" href={siteConfig.baseLinks.pricing}>Resources</Link>
-              <Link className="px-2 py-1 text-gray-900 dark:text-gray-50" href={siteConfig.baseLinks.changelog}>Changelog</Link>
+              <Link className="px-2 py-1 text-gray-900 dark:text-gray-50" href="">Solutions</Link>
+              <Link className="px-2 py-1 text-gray-900 dark:text-gray-50" href="/learn-more">Resources</Link>
+              <Link className="px-2 py-1 text-gray-900 dark:text-gray-50" href="">Changelog</Link>
             </div>
           </nav>
           <Button onClick={handleOnSignInClicked} className="hidden h-10 font-semibold md:flex">{isLoggedIn ? "Dashboard" : "Sign In"}</Button>
@@ -74,13 +73,13 @@ export function Navbar({ isLoggedIn }: NavbarProps) {
         <nav className={cx("my-6 flex text-lg ease-in-out will-change-transform md:hidden", open ? "" : "hidden",)}>
           <ul className="space-y-4 font-medium">
             <li onClick={() => setOpen(false)}>
-              <Link href={siteConfig.baseLinks.about}>Solutions</Link>
+              <Link href="">Solutions</Link>
             </li>
             <li onClick={() => setOpen(false)}>
-              <Link href={siteConfig.baseLinks.pricing}>Resources</Link>
+              <Link href="/learn-more">Resources</Link>
             </li>
             <li onClick={() => setOpen(false)}>
-              <Link href={siteConfig.baseLinks.changelog}>Changelog</Link>
+              <Link href="">Changelog</Link>
             </li>
           </ul>
         </nav>

@@ -12,8 +12,8 @@ interface TagProps {
 export function Tag({ k, v, onRemove }: TagProps) {
   return (
     <Badge key={`${k},${v}`} variant="secondary" className="mx-1">
-      <span className="font-thin">{v}</span>
-      <button className="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2" onClick={onRemove}>
+      <span className="font-normal">{v}</span>
+      <button className="ml-1 py-1 pl-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2" onClick={onRemove}>
         <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
       </button>
     </Badge>

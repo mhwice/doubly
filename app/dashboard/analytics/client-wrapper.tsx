@@ -12,6 +12,7 @@ import { Chart } from "../links/chart";
 import useSWR from 'swr'
 import { useCurrentDate } from "../date-context";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StatsHeader } from "../links/stats-header";
 
 export function ClientWrapper() {
 
@@ -47,10 +48,11 @@ export function ClientWrapper() {
   params.append("dateEnd", dateRange[1].toISOString());
   const url = `/api/filter?${params.toString()}`;
 
-  const { data, error, isLoading } = useSWR(url, fetcher, {
+  const { data, error, isLoading, isValidating } = useSWR(url, fetcher, {
     revalidateIfStale: false,
     revalidateOnFocus: false,
-    revalidateOnReconnect: false
+    revalidateOnReconnect: false,
+    keepPreviousData: true
   });
 
   useEffect(() => {
@@ -58,14 +60,21 @@ export function ClientWrapper() {
     if (data?.json) setFilteredData(data.json);
   }, [data]);
 
-  if (isLoading) return (
+  let stats = undefined;
+  if (data?.json) stats = getStatsData(data.json);
+
+  if (isLoading && !data) return (
     <>
       <Skeleton className="mt-20 h-[50%] w-[100%]" />
+      <div> loading...</div>
     </>
   );
 
   return (
     <div className="flex flex-col">
+      <div className="pt-6">
+        {stats && <StatsHeader stats={stats} />}
+      </div>
       <TagGroup selectedValues={selectedValues} onRemoveTag={removeTag} />
       <div className="flex flex-row justify-start space-x-4">
       {/* <div className="flex flex-row justify-center items-center py-32"> */}
@@ -84,7 +93,7 @@ export function ClientWrapper() {
         {chartData && <Chart clickEvents={chartData} dateRange={dateRange} />}
       </div>
       { filteredData &&
-        <div className="flex flex-row justify-between space-x-4">
+        <div className="flex flex-row justify-between space-x-4 pt-5">
           <TabGroup items={[
             { title: "Browser", value: "browser", children: <TabStuff title="Browser" data={filteredData.browser} /> },
             { title: "OS", value: "os", children: <TabStuff title="OS" data={filteredData.os} /> },
@@ -117,5 +126,10 @@ function getStatsData(filteredData: ClickEventTypes.JSONAgg) {
   const link = source.filter((x) => x.value === "link")[0];
   const qr = source.filter((x) => x.value === "qr")[0];
 
-  return { linkCount: link?.count || 0, qrCount: qr?.count || 0 };
+  return {
+    numUrls: filteredData.shortUrl.length,
+    numLinkClicks: link?.count || 0,
+    numQRClicks: qr?.count || 0
+  };
 }
+

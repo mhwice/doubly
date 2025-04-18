@@ -81,7 +81,7 @@ export function AnimatedTabs() {
               tabRefs.current[index] = el;
             }}
             className={`px-3 py-2 cursor-pointer transition-colors duration-300 h-[30px] ${
-              index === activeIndex ? "text-[#0e0e10]" : "text-[#0e0f1199]"
+              index === activeIndex ? "text-[#0e0e10]" : "text-[#0e0f1199] hover:text-[#0e0e10]"
             }`}
             onMouseEnter={() => setHoveredIndex(index)}
             onMouseLeave={() => setHoveredIndex(null)}

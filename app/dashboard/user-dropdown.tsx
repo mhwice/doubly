@@ -25,6 +25,7 @@ import React from "react"
 import { cx } from "../(marketing)/lib/utils"
 import { focusRing } from "../(marketing)/lib/utils"
 import { Settings } from "lucide-react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 interface DropdownProps {
   email: string
@@ -56,6 +57,10 @@ function DropdownUserProfile({ email }: DropdownProps) {
               aria-hidden="true"
             >
               <Settings className="h-4 w-4 stroke-gray-400"/>
+              <Avatar className="h-8 w-8">
+                <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+                <AvatarFallback>CN</AvatarFallback>
+              </Avatar>
             </span>
           </button>
         </DropdownMenuTrigger>

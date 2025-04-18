@@ -43,7 +43,7 @@ export function ClientWrapper() {
 
   if (isLoading) return (
     <div className="h-full mx-[15%]">
-      <Skeleton className="pt-20 h-[50%] w-[100%]" />
+      <Skeleton className="pt-[200px] h-[50%] w-[100%]" />
     </div>
   );
 
@@ -53,10 +53,10 @@ export function ClientWrapper() {
 
   return (
     <div className="h-full mx-[15%]">
-      <div className="py-8">
+      {/* <div className="py-8">
         {stats && <StatsHeader stats={stats} />}
-      </div>
-      <div className="mb-8"></div>
+      </div> */}
+      <div className="pt-14"></div>
       {data && <DataTable data={data} columns={columns} />}
     </div>
   );

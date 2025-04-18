@@ -7,13 +7,12 @@ export default async function Layout({ children }: Readonly<{ children: React.Re
 
   const session = await getSession();
   if (!session) redirect("/");
-  const { email, name } = session.user;
-  console.log(name)
+  const { email, name, image } = session.user;
 
   const now = new Date();
   return (
     <>
-      <VercelNavbar email={email} />
+      <VercelNavbar email={email} name={name} image={image} />
       <DateProvider date={now}>
         {children}
       </DateProvider>
