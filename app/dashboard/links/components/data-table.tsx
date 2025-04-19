@@ -4,6 +4,7 @@ import * as React from "react"
 import {
   ColumnDef,
   ColumnFiltersState,
+  Row,
   SortingState,
   VisibilityState,
   flexRender,
@@ -29,6 +30,8 @@ import { DataTablePagination } from "../static-components/data-table-pagination"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { NewLinkButton } from "../new-link-button"
+import { LinkTypes } from "@/lib/zod/links"
+import { DeleteLinkModal } from "@/components/delete-link-modal"
 // import { DataTableToolbar } from "./data-table-toolbar"
 
 interface DataTableProps<TData, TValue> {
@@ -47,6 +50,8 @@ export function DataTable<TData, TValue>({
     []
   )
   const [sorting, setSorting] = React.useState<SortingState>([])
+  const [showDeleteModal, setShowDeleteModal] = React.useState<boolean>(false);
+  const [badIds, setBadIds] = React.useState<number[]>([]);
 
   const table = useReactTable({
     data,
@@ -70,8 +75,21 @@ export function DataTable<TData, TValue>({
     getFacetedUniqueValues: getFacetedUniqueValues(),
   })
 
+  const handleOnMultipleDeleteClicked = (rows: Row<TData>[]) => {
+    const ids = [];
+    for (const row of rows) {
+      const link = row.original as LinkTypes.Dashboard;
+      const linkId = link.id;
+      ids.push(linkId);
+    }
+
+    setBadIds(ids);
+    setShowDeleteModal(true);
+  }
+
   return (
     <div className="space-y-4">
+      <DeleteLinkModal isOpen={showDeleteModal} onOpenChange={setShowDeleteModal} linkIds={badIds}/>
       {/* <DataTableToolbar table={table} /> */}
       <div className="flex items-center w-full justify-between">
         <Input
@@ -84,7 +102,7 @@ export function DataTable<TData, TValue>({
         />
         <div className="flex gap-2">
           {table.getFilteredSelectedRowModel().rows.length >= 2 && (
-            <Button onClick={() => {console.log("delete em")}} variant="destructive">Delete {table.getFilteredSelectedRowModel().rows.length}</Button>
+            <Button onClick={() => handleOnMultipleDeleteClicked(table.getFilteredSelectedRowModel().rows)} variant="destructiveFlat">Delete {table.getFilteredSelectedRowModel().rows.length}</Button>
           )}
           <NewLinkButton />
         </div>

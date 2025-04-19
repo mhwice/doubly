@@ -12,10 +12,15 @@ const tabs = [
 export function AnimatedTabs() {
   const pathname = usePathname();
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [activeIndex, setActiveIndex] = useState(Math.max(0, tabs.findIndex((tab) => pathname === tab.path)));
+  const [activeIndex, setActiveIndex] = useState(tabs.findIndex((tab) => pathname === tab.path));
   const [hoverStyle, setHoverStyle] = useState({});
   const [activeStyle, setActiveStyle] = useState({ left: "0px", width: "0px" });
   const tabRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  useEffect(() => {
+    const idx = tabs.findIndex((tab) => pathname === tab.path);
+    if (idx !== activeIndex) setActiveIndex(idx);
+  }, [pathname]);
 
   useEffect(() => {
     requestAnimationFrame(() => {
@@ -34,6 +39,10 @@ export function AnimatedTabs() {
 
   useEffect(() => {
     requestAnimationFrame(() => {
+      if (activeIndex === -1) {
+        setActiveStyle({ left: "0px", width: "0px" });
+        return;
+      };
       const activeElement = tabRefs.current[activeIndex];
       if (activeElement) {
         const { offsetLeft, offsetWidth } = activeElement;
@@ -47,6 +56,10 @@ export function AnimatedTabs() {
 
   useEffect(() => {
     requestAnimationFrame(() => {
+      if (activeIndex === -1) {
+        setActiveStyle({ left: "0px", width: "0px" });
+        return;
+      };
       const overviewElement = tabRefs.current[activeIndex];
       if (overviewElement) {
         const { offsetLeft, offsetWidth } = overviewElement;

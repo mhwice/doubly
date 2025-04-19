@@ -75,7 +75,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
         shortUrl={url}
         code="123456"
       />
-      <DeleteLinkModal isOpen={showDeleteModal} onOpenChange={setShowDeleteModal} linkData={row.original}/>
+      <DeleteLinkModal isOpen={showDeleteModal} onOpenChange={setShowDeleteModal} linkIds={[row.original.id]}/>
       {/* <EditLinkModal
         title="Edit link"
         description="What would you like to change?"

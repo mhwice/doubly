@@ -50,9 +50,19 @@ const LinkDeleteSchema = LinkTableSchema.pick({
   userId: true,
 });
 
+export const LinkDeletesSchema = z.object({
+  ids: LinkTableSchema.shape.id.array(),
+  userId: LinkTableSchema.shape.userId
+});
+
+export type LinkDeletesSchemaType = z.infer<typeof LinkDeletesSchema>;
+
 const LinkDeleteLinkSchema = LinkTableSchema.pick({
   id: true,
 });
+
+export const LinkDeleteLinksSchema = LinkTableSchema.pick({ id: true }).shape.id.array();
+export type DeleteMultiple = z.infer<typeof LinkDeleteLinksSchema>;
 
 const LinkDTOSchema = LinkTableSchema.pick({
   id: true,
