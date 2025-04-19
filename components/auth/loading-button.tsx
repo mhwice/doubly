@@ -8,7 +8,7 @@ interface LoadingButtonProps {
 
 export const LoadingButton = ({ loading, children }: LoadingButtonProps) => {
   return (
-    <Button disabled={loading} type="submit" className="w-full">
+    <Button variant="defaultFlat" disabled={loading} type="submit" className="w-full">
       {loading && <Loader2 className="animate-spin"/>}
       {children}
     </Button>

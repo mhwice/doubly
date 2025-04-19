@@ -17,10 +17,10 @@ import { startTransition } from "react";
 interface ModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  linkData: LinkTypes.DTO
+  linkIds: number[]
 }
 
-export function DeleteLinkModal({ isOpen, onOpenChange, linkData }: ModalProps) {
+export function DeleteLinkModal({ isOpen, onOpenChange, linkIds }: ModalProps) {
 
   // const { userId } = useUser();
 
@@ -28,7 +28,7 @@ export function DeleteLinkModal({ isOpen, onOpenChange, linkData }: ModalProps) 
     // call a deleteLink action
     // IMPORTANT! this needs the user id as well.
     startTransition(async () => {
-      const response = await deleteLink({ id: linkData.id });
+      const response = await deleteLink(linkIds);
       if (response) onOpenChange(false);
       else throw new Error("failed to delete");
     });
@@ -38,15 +38,15 @@ export function DeleteLinkModal({ isOpen, onOpenChange, linkData }: ModalProps) 
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Delete Link</DialogTitle>
+          <DialogTitle>{linkIds.length >= 2 ? "Delete Links" : "Delete Link"}</DialogTitle>
           <DialogDescription>
-            Are you sure you want to delete this link? This will delete all analytics as well.
+            Are you sure you want to delete {linkIds.length >= 2 ? "these links" : "this link"}? This will delete all associated analytics as well.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="sm:justify-start">
           <DialogClose asChild>
-            <Button type="button" variant="destructive" onClick={handleOnDelete}>
-              Delete
+            <Button type="button" variant="destructiveFlat" onClick={handleOnDelete}>
+              {linkIds.length >= 2 ? `Delete ${linkIds.length} Links` : "Delete Link"}
             </Button>
           </DialogClose>
         </DialogFooter>

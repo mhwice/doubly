@@ -1,27 +1,13 @@
-/*
-
-NOTE: For now leave region as a placeholder 'ABC'
-TODO: Delete the qr_count and link_count columns from the links table.
-TODO: Add in other kinds of metadata:
-ua
-browser
-engine
-os
-device
-cpui
-sBot
-
-*/
-
 import pg from 'pg'
 const { Client } = pg;
 import { loadLocationData, getRandomInt, getRandomDate, makeCode } from './utils.js';
 import { faker } from '@faker-js/faker';
 import { UAParser } from 'ua-parser-js';
+import { eachDayOfInterval } from "date-fns";
 
 const NUM_USERS = [5, 5];
-const LINKS_PER_USER = [0, 50];
-const CLICKS_PER_LINK = [0, 100];
+const LINKS_PER_USER = [20, 50];
+const CLICKS_PER_LINK = [0, 200];
 const AVG_NUM_CITY_COLLISIONS = 5;
 const NUM_SUPER_USERS = 0;
 
@@ -41,6 +27,8 @@ async function seed() {
 
     let loc = await loadLocationData();
 
+    const allowedDates = getAllowedDates(new Date(2024, 0, 1), new Date());
+
     const randomNumUsers = getRandomInt(...NUM_USERS);
     for (let u = 0; u < randomNumUsers; u += 1) {
       const uid = await createUser(client);
@@ -50,7 +38,7 @@ async function seed() {
         const randomNumClicks = getRandomInt(...CLICKS_PER_LINK);
         const locSubset = pickFromLoc(loc, randomNumClicks);
         for (let c = 0; c < randomNumClicks; c += 1) {
-          await createClick(client, linkId, locSubset);
+          await createClick(client, linkId, locSubset, allowedDates);
           // console.log(`Clicks Created: ${c + 1}/${randomNumClicks}`);
         }
         // console.log(`Links Created: ${l + 1}/${randomNumLinks}`);
@@ -141,7 +129,7 @@ async function createLink(client, uid) {
   return linkId;
 }
 
-async function createClick(client, linkId, loc) {
+async function createClick(client, linkId, loc, allowedDates) {
   const randomLocation = loc[getRandomInt(0, loc.length - 1)];
 
   const QR_PERCENTAGE = Math.random();
@@ -152,7 +140,7 @@ async function createClick(client, linkId, loc) {
   const continent = randomLocation.continentCode;
   const latitude = randomLocation.lat;
   const longitude = randomLocation.lng;
-  const createdAt = getRandomDate(new Date(2024, 0, 1));
+  const createdAt = allowedDates[getRandomInt(0, allowedDates.length - 1)];
 
   const ua = faker.internet.userAgent();
   const parser = new UAParser(ua);
@@ -189,4 +177,12 @@ function pickFromLoc(loc, numClicks) {
     indexes.add(index);
   }
   return loc.filter((_, i) => indexes.has(i));
+}
+
+function getAllowedDates(startDate, endDate) {
+  const set = new Set();
+  for (const d of eachDayOfInterval({ start: startDate, end: endDate })) {
+    if (Math.random() <= 0.3) set.add(d);
+  }
+  return Array.from(set);
 }

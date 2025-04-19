@@ -13,11 +13,6 @@ import { sql as localSQL } from "./local-connect-test";
 
 const sql = env.ENV === "dev" ? localSQL : neon(env.DATABASE_URL);
 
-interface Cities {
-  query: string,
-  userId: string
-}
-
 /**
  * Data-Access-Layer (DAL) for all ClickEvents
  */
@@ -105,41 +100,6 @@ export class ClickEvents {
   //   }
   // }
 
-
-
-  static async getCities(params: Cities): Promise<ServerResponseType<ClickEventTypes.Filter[]>> {
-    try {
-      const { userId, query } = CityDALLookup.parse(params);
-
-      const sqlQuery = `
-        WITH filtered_clicks AS (
-          SELECT
-            ce.city AS city
-          FROM click_events AS ce
-          JOIN (
-            SELECT *
-            FROM links
-            WHERE user_id = $1
-          ) AS user_links ON user_links.id = ce.link_id
-          WHERE ce.city ILIKE '%' || $2 || '%'
-        )
-
-        SELECT 'city' AS field, city::TEXT AS value, COUNT(*) AS count
-        FROM filtered_clicks
-        GROUP BY city
-        ORDER BY count DESC, value;
-      `;
-
-      const response: QueryResponse = await sql(sqlQuery, [userId, query]);
-      const result = parseQueryResponse(response, ClickEventSchemas.Filter, ["field"]);
-
-      return ServerResponse.success(result);
-    } catch (error: unknown) {
-      if (error instanceof ZodError) return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS);
-      return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
-    }
-  }
-
   /*
     Given some filter criteria, we need to return all of the unique items and their count, so we can
     use this in combobox filter.
@@ -179,8 +139,10 @@ export class ClickEvents {
         conditions.push(`ce.created_at >= $${placeholderIndex++}`);
       }
 
-      queryParams.push(dateRange[1].toISOString());
-      conditions.push(`ce.created_at <= $${placeholderIndex++}`);
+      if (dateRange[1]) {
+        queryParams.push(dateRange[1].toISOString());
+        conditions.push(`ce.created_at <= $${placeholderIndex++}`);
+      }
 
       if (queryString && queryField) {
         conditions.push(`${queryField} ILIKE '%' || $${placeholderIndex++} || '%'`);
@@ -188,8 +150,6 @@ export class ClickEvents {
       }
 
       const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
-
-      // console.log({queryField})
 
       const testquery = `
         WITH filtered_clicks AS (
@@ -282,13 +242,38 @@ export class ClickEvents {
 
       // TODO - can query params just have the raw date object?? i think so...
       // Note - zod ensures that dateRange[0] <= dateRange[1]
+
+      /*
+
+      TODO - Major issue
+
+      Zod allows for the date range to be of type [Date | undefined, Date | undefined].
+
+      I had not initially intended for this, but have since changed my mind so that
+      future API can be more flexible.
+
+      Because of that, the following logic for generating the query fails
+
+      also, we can pass nothing and get really incrorrect data.
+      a temporary pause here is I am goign to throw an error if
+      not in the old format
+
+      */
+
+      if (dateRange[1] === undefined) throw new Error('temp workaround, pass an end date for now');
+
+      const datePlaceholders: [number, number] = [-1, -1];
       if (dateRange[0]) {
         queryParams.push(dateRange[0].toISOString());
-        conditions.push(`ce.created_at >= $${placeholderIndex++}`);
+        conditions.push(`ce.created_at >= $${placeholderIndex}`);
+        datePlaceholders[0] = placeholderIndex++;
       }
 
-      queryParams.push(dateRange[1].toISOString());
-      conditions.push(`ce.created_at <= $${placeholderIndex++}`);
+      if (dateRange[1]) {
+        queryParams.push(dateRange[1].toISOString());
+        conditions.push(`ce.created_at <= $${placeholderIndex}`);
+        datePlaceholders[1] = placeholderIndex++;
+      }
 
       if (queryString && queryField) {
         conditions.push(`${queryField} ILIKE '%' || $${placeholderIndex++} || '%'`);
@@ -430,42 +415,189 @@ export class ClickEvents {
         ) AS results;
       `;
 
+      /*
 
+      ,
+          'chart', (
+            SELECT coalesce(json_agg(t), '[]'::json)
+            FROM (
+              SELECT
+                date_trunc('day', created_at) AS date,
+                SUM(
+                  CASE
+                    WHEN source = 'qr' THEN 1
+                    ELSE 0
+                  END
+                ) AS qr_count,
+                SUM(
+                  CASE
+                    WHEN source = 'link' THEN 1
+                    ELSE 0
+                  END
+                ) AS link_count
+              FROM filtered_clicks
+              GROUP BY date
+              ORDER BY date DESC
+            ) t
+          ),
+          'extra', (
+            SELECT coalesce(json_agg(t), '[]'::json)
+            FROM (
+              SELECT (MAX(created_at)::date - MIN(created_at)::date) AS num_days
+              FROM filtered_clicks
+            ) t
+          )
 
-      // this query is aimed at getting the data for the charts/graphs
-      // cares about the bucketed rows
-      // same cte, but then the rest is a bit different
-      // for each valid row I want the, I split into 2 groups by source (qr, link)
-      // then, i want to group that by some 'bucket' for now it will be days, and return
-      // [day, linkCount, qrCount]
-      // and I want this sorted by day
-      const query2 = `
-        WITH filtered_clicks AS (
-          SELECT
-            ce.source AS source,
-            ce.city AS city,
-            ce.country AS country,
-            ce.continent AS continent,
-            user_links.short_url AS short_url,
-            user_links.original_url AS original_url,
-            ce.created_at AS created_at,
-            ce.browser AS browser,
-            ce.device AS device,
-            ce.os AS os
+      */
+
+      /**
+       *
+       * If dateRange[0] === undefind → AllTime query → used dateRange[1] in the WHERE
+       * but for the interval get the first and last click in that window
+       *
+       * If dateRange[1] !== undefined → LastNQuery → use dateRange[0] and dateRange[1] in WHERE
+       * and use dateRange[0] and dateRange[1] to compute interval
+       *
+       */
+
+      let charQuery = "";
+      if (dateRange[0] === undefined) {
+        // console.log("alltime", dateRange)
+        charQuery = `
+        WITH user_links AS (
+          SELECT id, original_url, short_url
+          FROM links
+          WHERE user_id = $1
+        ),
+        filtered_clicks AS (
+          SELECT ce.*, ul.short_url, ul.original_url
           FROM click_events AS ce
-          JOIN (
-            SELECT *
-            FROM links
-            -- TODO, if I filter our short_url and original_url here, then this becomes more efficient
-            -- as we aren't doing a join on as many records, and the subsequent steps are faster
-            WHERE user_id = $1
-          ) AS user_links ON user_links.id = ce.link_id
-          -- WHERE source IN ('qr') AND country IN ('CA', 'RO')
+          JOIN user_links AS ul ON ul.id = ce.link_id
           ${whereClause}
+        ),
+        date_range AS (
+          SELECT
+            (MAX(created_at)::date - MIN(created_at)::date) AS num_days,
+            MIN(created_at) AS start_date,
+            MAX(created_at) AS end_date
+          FROM filtered_clicks
+        ),
+        interval AS (
+          SELECT
+            CASE
+              WHEN num_days <= 2 THEN INTERVAL '1 hour'
+              WHEN num_days <= 4  THEN INTERVAL '6 hours'
+              WHEN num_days <= 30  THEN INTERVAL '1 day'
+              WHEN num_days <= 90  THEN INTERVAL '3 days'
+              WHEN num_days <= 180  THEN INTERVAL '1 week'
+              WHEN num_days <= 1460  THEN INTERVAL '1 month'
+              ELSE INTERVAL '1 year'
+            END AS interval
+          FROM date_range
+        ),
+        time_events AS (
+          SELECT *
+          FROM date_range
+          CROSS JOIN interval
+        ),
+        array_of_buckets AS (
+          SELECT ARRAY_AGG(series) AS buckets
+            FROM generate_series(
+            (SELECT start_date FROM time_events)::date,
+            (SELECT end_date FROM time_events)::date,
+            (SELECT interval FROM time_events)
+          ) AS series
+        ),
+        bucketed_clicks AS (
+          SELECT
+            WIDTH_BUCKET(created_at, array_of_buckets.buckets) AS bucket_number,
+            SUM(CASE WHEN fc.source = 'qr' THEN 1 ELSE 0 END) AS qr_count,
+            SUM(CASE WHEN fc.source = 'link' THEN 1 ELSE 0 END) AS link_count
+          FROM filtered_clicks AS fc
+          CROSS JOIN array_of_buckets
+          GROUP BY bucket_number
         )
 
-        SELECT
-          date_trunc('day', created_at) AS date,
+        SELECT buckets_with_dates.date, COALESCE(qr_count, 0) AS qr_count, COALESCE(link_count, 0) AS link_count
+        FROM array_of_buckets
+        CROSS JOIN UNNEST(buckets) WITH ORDINALITY AS buckets_with_dates(date, bucket_number)
+        LEFT JOIN bucketed_clicks ON buckets_with_dates.bucket_number = bucketed_clicks.bucket_number
+        ORDER BY date DESC;
+      `;
+      } else {
+        // console.log("lastN", dateRange)
+        charQuery = `
+          WITH user_links AS (
+            SELECT id, original_url, short_url
+            FROM links
+            WHERE user_id = $1
+          ),
+          filtered_clicks AS (
+            SELECT ce.*, ul.short_url, ul.original_url
+            FROM click_events AS ce
+            JOIN user_links AS ul ON ul.id = ce.link_id
+            ${whereClause}
+          ),
+          date_range AS (
+            SELECT
+              (MAX($${datePlaceholders[1]})::date - MIN($${datePlaceholders[0]})::date) AS num_days,
+              MIN($${datePlaceholders[0]}) AS start_date,
+              MAX($${datePlaceholders[1]}) AS end_date
+            FROM filtered_clicks
+          ),
+          interval AS (
+            SELECT
+              CASE
+                WHEN num_days <= 2 THEN INTERVAL '1 hour'
+                WHEN num_days <= 4  THEN INTERVAL '6 hours'
+                WHEN num_days <= 30  THEN INTERVAL '1 day'
+                WHEN num_days <= 90  THEN INTERVAL '3 days'
+                WHEN num_days <= 180  THEN INTERVAL '1 week'
+                WHEN num_days <= 1460  THEN INTERVAL '1 month'
+                ELSE INTERVAL '1 year'
+              END AS interval
+            FROM date_range
+          ),
+          time_events AS (
+            SELECT *
+            FROM date_range
+            CROSS JOIN interval
+          ),
+          array_of_buckets AS (
+            SELECT ARRAY_AGG(series) AS buckets
+              FROM generate_series(
+              (SELECT start_date FROM time_events)::date,
+              (SELECT end_date FROM time_events)::date,
+              (SELECT interval FROM time_events)
+            ) AS series
+          ),
+          bucketed_clicks AS (
+            SELECT
+              WIDTH_BUCKET(created_at, array_of_buckets.buckets) AS bucket_number,
+              SUM(CASE WHEN fc.source = 'qr' THEN 1 ELSE 0 END) AS qr_count,
+              SUM(CASE WHEN fc.source = 'link' THEN 1 ELSE 0 END) AS link_count
+            FROM filtered_clicks AS fc
+            CROSS JOIN array_of_buckets
+            GROUP BY bucket_number
+          )
+
+          SELECT buckets_with_dates.date, COALESCE(qr_count, 0) AS qr_count, COALESCE(link_count, 0) AS link_count
+          FROM array_of_buckets
+          CROSS JOIN UNNEST(buckets) WITH ORDINALITY AS buckets_with_dates(date, bucket_number)
+          LEFT JOIN bucketed_clicks ON buckets_with_dates.bucket_number = bucketed_clicks.bucket_number
+          ORDER BY date DESC;
+        `;
+      }
+
+      /*
+
+      SELECT
+          date_trunc(
+            CASE
+              WHEN (SELECT * num_days FROM date_range) > 365 THEN 'month'
+              ELSE 'day'
+            END
+          ) AS date,
           SUM(
             CASE
               WHEN source = 'qr' THEN 1
@@ -481,9 +613,6 @@ export class ClickEvents {
         FROM filtered_clicks
         GROUP BY date
         ORDER BY date DESC;
-      `;
-
-      /*
 
       TODO
       I am not yet sure if these queries will be done by PG or maybe Redis.
@@ -493,13 +622,16 @@ export class ClickEvents {
       */
 
       const testResponse: QueryResponse = await sql(testquery, [...queryParams, LIMIT]);
+      // console.log((testResponse[0]?.results?.extra) as any)
       const testResult = parseJSONQueryResponse(testResponse, ClickEventSchemas.JSONAgg);
-      // console.log(testResult)
 
       // const response: QueryResponse = await sql(query, queryParams);
       // const result = parseQueryResponse(response, ClickEventSchemas.Filter, ["field"]);
 
-      const response2: QueryResponse = await sql(query2, queryParams);
+      // console.log(lastNDaysQuery)
+      // console.log(queryParams)
+      const response2: QueryResponse = await sql(charQuery, queryParams);
+      // console.log(response2);
       const result2 = parseQueryResponse(response2, ClickEventSchemas.Chart);
 
       // TODO

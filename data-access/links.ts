@@ -26,9 +26,9 @@ import "server-only";
 
 import { env } from "@/data-access/env";
 import { neon } from '@neondatabase/serverless';
-import { ZodError } from 'zod';
+import { z, ZodError } from 'zod';
 import { parseQueryResponse, type QueryResponse } from "@/utils/helper";
-import { LinkSchemas, type LinkTypes } from "@/lib/zod/links";
+import { APILinkGetAllSchema, LinkDeletesSchema, LinkDeletesSchemaType, LinkSchemas, type LinkTypes } from "@/lib/zod/links";
 import { ERROR_MESSAGES } from "@/lib/error-messages";
 import { ServerResponse, ServerResponseType } from "@/lib/server-repsonse";
 import { sql as localSQL } from "./local-connect-test";
@@ -36,6 +36,7 @@ import { sql as localSQL } from "./local-connect-test";
 const sql = env.ENV === "dev" ? localSQL : neon(env.DATABASE_URL);
 
 export class LinkTable {
+
   static async createLink(params: LinkTypes.Create): Promise<ServerResponseType<LinkTypes.Link>> {
     try {
 
@@ -89,22 +90,23 @@ export class LinkTable {
     }
   }
 
-  static async deleteLinkById(params: LinkTypes.Delete): Promise<ServerResponseType<LinkTypes.Id>> {
+  static async deleteLinkById(params: LinkDeletesSchemaType): Promise<ServerResponseType<LinkTypes.Id[]>> {
     try {
-      const { id, userId } = LinkSchemas.Delete.parse(params);
+      const { ids, userId } = LinkDeletesSchema.parse(params);
 
       const query = `
         DELETE FROM links
-        WHERE id = $1 AND user_id = $2
+        WHERE id IN $1 AND user_id = $2
         RETURNING *;
       `;
 
-      const response: QueryResponse = await sql(query, [id, userId]);
+      const response: QueryResponse = await sql(query, [ids, userId]);
       const result = parseQueryResponse(response, LinkSchemas.Table);
 
-      if (result.length !== 1) return ServerResponse.fail(ERROR_MESSAGES.NOT_FOUND);
+      // if (result.length !== 1) return ServerResponse.fail(ERROR_MESSAGES.NOT_FOUND);
 
-      return ServerResponse.success(result[0].id);
+      const deletedIds = result.map((x) => x.id)
+      return ServerResponse.success(deletedIds);
 
     } catch (error: unknown) {
       if (error instanceof ZodError) return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS);
@@ -161,59 +163,20 @@ export class LinkTable {
     }
   }
 
-  // static async #getMockData(): Promise<ServerResponseType<LinkTypes.Link[]>> {
-  //   const links: LinkTypes.Link[] = [
-  //     {
-  //       id: 1,
-  //       originalUrl: "https://www.google.com",
-  //       shortUrl: "https://localhost:3000/jhb23xj",
-  //       code: "jhb23xj",
-  //       createdAt: new Date(Date.now()),
-  //       updatedAt: new Date(Date.now()),
-  //       userId: ""
-  //     },
-  //     {
-  //       id: 2,
-  //       originalUrl: "https://www.leetcode.com",
-  //       shortUrl: "https://localhost:3000/JdsidHu",
-  //       code: "JdsidHu",
-  //       createdAt: new Date(Date.now()),
-  //       updatedAt: new Date(Date.now()),
-  //       userId: ""
-  //     },
-  //     {
-  //       id: 3,
-  //       originalUrl: "https://www.reddit.com",
-  //       shortUrl: "https://localhost:3000/lsd9nk",
-  //       code: "lsd9nk",
-  //       createdAt: new Date(Date.now()),
-  //       updatedAt: new Date(Date.now()),
-  //       userId: ""
-  //     }
-  //   ];
-  //   return ServerResponse.success(links);
-  // }
+  static async getAllLinks(params: z.infer<typeof APILinkGetAllSchema>): Promise<ServerResponseType<LinkTypes.Dashboard[]>> {
 
-  static async getAllLinks(params: LinkTypes.GetAll): Promise<ServerResponseType<LinkTypes.Dashboard[]>> {
+    console.log("refetching")
 
-    // if (env.ENV === "dev") {
-    //   return this.#getMockData();
-    // }
-
+    // this needs to be updated so it takes in the (date optional) and filters using that
     try {
-      const { userId } = LinkSchemas.GetAll.parse(params);
-
-      // const query = `
-      //   SELECT *
-      //   FROM links
-      //   WHERE user_id = $1;
-      // `;
+      const { userId, dateEnd } = APILinkGetAllSchema.parse(params);
 
       const query = `
         SELECT
           fl.id AS id,
           fl.original_url AS original_url,
           fl.short_url AS short_url,
+          fl.updated_at AS updated_at,
           SUM(
             CASE
               WHEN ce.source = 'qr' THEN 1
@@ -230,12 +193,12 @@ export class LinkTable {
         JOIN (
           SELECT *
           FROM links
-          WHERE user_id = $1
+          WHERE user_id = $1 AND links.created_at <= $2
         ) AS fl ON fl.id = ce.link_id
-        GROUP BY (fl.id, fl.original_url, fl.short_url);
+        GROUP BY (fl.id, fl.original_url, fl.short_url, fl.updated_at);
       `;
 
-      const response: QueryResponse = await sql(query, [userId]);
+      const response: QueryResponse = await sql(query, [userId, dateEnd]);
       const result = parseQueryResponse(response, LinkSchemas.Dashboard);
 
       // this should only return the dto, not full list of links

@@ -24,7 +24,7 @@ export function PasswordInput({ disabled = false, placeholder = "", ...field }: 
 
   return (
     <div className="flex">
-      <Input className="pr-[36px]" disabled={disabled} type={showPassword ? "text" : "password"} placeholder={placeholder} {...field} />
+      <Input className="pr-[36px] shadow-none" disabled={disabled} type={showPassword ? "text" : "password"} placeholder={placeholder} {...field} />
       <button type="button" className="flex items-center justify-center w-[40px] ml-[-40px]" disabled={disabled} onClick={() => setShowPassword(!showPassword)}>
         {showPassword ? <LuEye className="h-4 w-4 text-muted-foreground" /> : <LuEyeClosed className="h-4 w-4 text-muted-foreground" />}
       </button>

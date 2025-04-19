@@ -64,7 +64,7 @@ export function QRCodeModal({ isOpen, onOpenChange, shortUrl, code }: QRCodeModa
             <div className="flex flex-col items-center space-y-4">
               <QRCode qrCodeDataUrl={qrCodeDataUrl} />
               <p className="text-sm text-center text-muted-foreground">Scan the QR code to open the link in your device's browser.</p>
-              <Button onClick={() => {console.log("click")}} className="w-full">
+              <Button variant="defaultFlat" onClick={() => {console.log("click")}} className="w-full">
                 <Download className="size-4 mr-2" />
                 Download QR Code
               </Button>
