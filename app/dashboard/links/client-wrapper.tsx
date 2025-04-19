@@ -52,7 +52,7 @@ export function ClientWrapper() {
   if (data) stats = makeStats(data);
 
   return (
-    <div className="h-full mx-[15%]">
+    <div className="flex flex-col pb-14">
       {/* <div className="py-8">
         {stats && <StatsHeader stats={stats} />}
       </div> */}

@@ -22,7 +22,7 @@ import { useRouter } from "next/navigation"
 import { startTransition } from "react"
 
 interface DropdownProps {
-  image: string,
+  image: string | undefined | null,
   name: string,
   email: string
 }
@@ -45,7 +45,7 @@ export function UserNav({ image, name, email }: DropdownProps) {
       <Button variant="ghost" className="relative h-8 w-8 rounded-full focus:outline-none focus:ring-0 shadow-none">
         <span className="absolute inset-0 rounded-full hover:ring-4 hover:ring-gray-100">
           <Avatar className="h-8 w-8">
-            <AvatarImage src={image} alt={name} />
+            <AvatarImage src={image || ""} alt={name} />
             <AvatarFallback className="bg-gradient-to-tr from-pink-500 to-yellow-500"></AvatarFallback>
           </Avatar>
         </span>

@@ -41,9 +41,20 @@ export default async function LinksPage() {
   // const stats = makeStats(links);
 
   return (
-    <div className="bg-[var(--dashboard-bg)] h-full">
-      <ClientWrapper />
+    <div className="bg-[var(--dashboard-bg)]">
+      <div className="h-full mx-[15%] flex flex-col">
+        <h1 className="font-medium text-3xl mt-14 mb-2">Link Management</h1>
+        <p className="text-xs font-light text-muted-foreground">Create new short links, copy urls and qr codes,<br/>perform bulk actions on multiple links at once.</p>
+      </div>
+      <div className="border-b border-[var(--border-color)] mt-14"></div>
+
+      <div className="h-full mx-[15%] flex flex-col">
+        <ClientWrapper />
+      </div>
     </div>
+    // <div className="bg-[var(--dashboard-bg)]">
+    //   <ClientWrapper />
+    // </div>
     // <div className="h-full mx-[15%]">
     //   <div className="mb-8 mt-8">
     //     <StatsHeader stats={stats} />

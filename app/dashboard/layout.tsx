@@ -2,6 +2,7 @@ import { getSession } from "@/lib/get-session";
 import { VercelNavbar } from "./navbar";
 import { redirect } from "next/navigation";
 import { DateProvider } from "./date-context";
+import { Footer } from "./footer";
 
 export default async function Layout({ children }: Readonly<{ children: React.ReactNode }>) {
 
@@ -16,6 +17,7 @@ export default async function Layout({ children }: Readonly<{ children: React.Re
       <DateProvider date={now}>
         {children}
       </DateProvider>
+      <Footer />
     </>
   )
 }

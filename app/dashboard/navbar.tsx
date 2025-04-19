@@ -15,7 +15,7 @@ import { DropdownUserProfile } from "./user-dropdown";
 import { UserNav } from "./new-user-dropdown";
 
 interface NavbarProps {
-  image: string,
+  image: string | undefined | null,
   name: string,
   email: string
 }
