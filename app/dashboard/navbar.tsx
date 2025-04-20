@@ -22,7 +22,7 @@ interface NavbarProps {
 
 export function VercelNavbar({ image, name, email }: NavbarProps) {
   return (
-    <div style={{ display: 'contents' }} className="flex flex-col w-full">
+    <div style={{ display: 'contents' }} className="flex flex-col w-full bg-white">
       <div className="h-14 w-full bg-background transition-all duration-300 ease-in-out mt-5">
         <div className="flex align-self justify-between items-center mx-[15%]">
           <DatabaseLogo className="w-28 md:w-32" />
@@ -31,7 +31,7 @@ export function VercelNavbar({ image, name, email }: NavbarProps) {
         </div>
       </div>
 
-      <div className="sticky top-0 py-[5px] w-full border-b shadow-none z-50 transition-all duration-300 ease-in-out bg-white">
+      <div className="sticky top-0 py-[5px] w-full border-b border-vborder shadow-none z-50 transition-all duration-300 ease-in-out bg-white">
         <div className="mx-[15%] flex flex-col justify-center">
           <AnimatedTabs />
         </div>

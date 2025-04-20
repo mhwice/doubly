@@ -30,42 +30,42 @@ export function StatsHeader({ stats }: StatsHeaderProps) {
   const { numUrls, numLinkClicks, numQRClicks } = stats;
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      <Card className="rounded-[var(--bradius)] shadow-none border-[var(--border-color)]">
+      <Card className="rounded-[var(--bradius)] shadow-none border-vborder">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">
+          <CardTitle className="text-sm font-medium text-vprimary">
             Urls
           </CardTitle>
-          <LinkIcon className="h-4 w-4 text-muted-foreground" />
+          <LinkIcon className="h-4 w-4 text-vsecondary" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold"><NumberFlow value={numUrls}/></div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-vsecondary">
             +20.1% from last month
           </p>
         </CardContent>
       </Card>
-      <Card className="rounded-[var(--bradius)] shadow-none border-[var(--border-color)]">
+      <Card className="rounded-[var(--bradius)] shadow-none border-vborder">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">
+          <CardTitle className="text-sm font-medium text-vprimary">
             Total Link Clicks
           </CardTitle>
-          <MousePointerClickIcon className="h-4 w-4 text-muted-foreground" />
+          <MousePointerClickIcon className="h-4 w-4 text-vsecondary" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold"><NumberFlow value={numLinkClicks} /></div>
-          <p className="text-xs text-muted-foreground">
+          <div className="text-2xl font-bold text-vprimary"><NumberFlow value={numLinkClicks} /></div>
+          <p className="text-xs text-vsecondary">
             +180.1% from last month
           </p>
         </CardContent>
       </Card>
-      <Card className="rounded-[var(--bradius)] shadow-none border-[var(--border-color)]">
+      <Card className="rounded-[var(--bradius)] shadow-none border-vborder">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total QR Clicks</CardTitle>
-          <QrCodeIcon className="h-4 w-4 text-muted-foreground"/>
+          <CardTitle className="text-sm font-medium text-vprimary">Total QR Clicks</CardTitle>
+          <QrCodeIcon className="h-4 w-4 text-vsecondary"/>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold"><NumberFlow value={numQRClicks} /></div>
-          <p className="text-xs text-muted-foreground">
+          <div className="text-2xl font-bold text-vprimary"><NumberFlow value={numQRClicks} /></div>
+          <p className="text-xs text-vsecondary">
             +19% from last month
           </p>
         </CardContent>

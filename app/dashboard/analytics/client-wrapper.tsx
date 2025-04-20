@@ -77,7 +77,6 @@ export function ClientWrapper() {
       </div>
       <TagGroup selectedValues={selectedValues} onRemoveTag={removeTag} />
       <div className="flex flex-row justify-start space-x-4">
-      {/* <div className="flex flex-row justify-center items-center py-32"> */}
         {filteredData && <Combobox
           filteredData={filteredData}
           selectedValues={selectedValues}
@@ -114,12 +113,6 @@ export function ClientWrapper() {
     </div>
   );
 }
-
-const badgeStyle = (color: string) => ({
-  borderColor: `${color}20`,
-  backgroundColor: `${color}30`,
-  color,
-});
 
 function getStatsData(filteredData: ClickEventTypes.JSONAgg) {
   const source = filteredData.source;

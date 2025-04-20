@@ -49,7 +49,11 @@ body,
     --sidebar-ring: 217.2 91.2% 59.8%;
     --bradius: 8px;
     --dashboard-bg: #fafafa;
-    --border-color: #e6e6e6;
+    --vercel-border-color: #ebebeb;
+    --vercel-primary: #171717;
+    --vercel-secondary: #666666;
+    --vercel-tertiary: #7d7d7d;
+    --vercel-red: #c40000;
   }
   .dark {
     --background: 240 10% 3.9%;

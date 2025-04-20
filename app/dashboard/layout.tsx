@@ -12,12 +12,14 @@ export default async function Layout({ children }: Readonly<{ children: React.Re
 
   const now = new Date();
   return (
-    <>
+    <div className="flex flex-col min-h-screen">
       <VercelNavbar email={email} name={name} image={image} />
-      <DateProvider date={now}>
-        {children}
-      </DateProvider>
+      <main className="flex-1 bg-[var(--dashboard-bg)]">
+        <DateProvider date={now}>
+          {children}
+        </DateProvider>
+      </main>
       <Footer />
-    </>
+    </div>
   )
 }

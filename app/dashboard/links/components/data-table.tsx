@@ -98,7 +98,7 @@ export function DataTable<TData, TValue>({
           onChange={(event) =>
             table.getColumn("originalUrl")?.setFilterValue(event.target.value)
           }
-          className="max-w-sm bg-white rounded-[var(--bradius)] shadow-none border-[var(--border-color)]"
+          className="max-w-sm bg-white rounded-[var(--bradius)] shadow-none border-vborder text-vprimary placeholder:text-vsecondary"
         />
         <div className="flex gap-2">
           {table.getFilteredSelectedRowModel().rows.length >= 2 && (
@@ -107,11 +107,11 @@ export function DataTable<TData, TValue>({
           <NewLinkButton />
         </div>
       </div>
-      <div className="border overflow-hidden bg-white rounded-[var(--bradius)] shadow-none border-[var(--border-color)]">
+      <div className="border overflow-hidden bg-white rounded-[var(--bradius)] shadow-none border-vborder">
         <Table>
           <TableHeader className="bg-white">
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
+              <TableRow key={headerGroup.id} className="border-vborder">
                 {headerGroup.headers.map((header) => {
                   return (
                     <TableHead key={header.id} colSpan={header.colSpan}>
@@ -133,7 +133,7 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  className="group"
+                  className="group border-vborder"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>

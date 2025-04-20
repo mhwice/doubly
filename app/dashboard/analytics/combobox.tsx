@@ -34,6 +34,7 @@ import { deserialize, stringify } from "superjson"
 import { type FilterEnumType } from "@/lib/zod/links"
 import { CircularCheckbox } from "./circular-checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cleanUrl } from "../links/components/columns";
 
 type ComboboxProps = {
   filteredData: ClickEventTypes.JSONAgg,
@@ -193,13 +194,13 @@ export function Combobox({ filteredData, selectedValues, setSelectedValues }: Co
     <div className="flex flex-col">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button variant="flat" role="combobox" aria-expanded={open} className="w-[120px] justify-center" >
-            <IoFilter />
+          <Button variant="flat" role="combobox" aria-expanded={open} className="w-[120px] justify-center font-normal text-vprimary" >
+            <IoFilter className="w-4 h-4 text-vprimary"/>
             Add Filter
           </Button>
         </PopoverTrigger>
         <PopoverContent
-          className="w-[300px] p-0"
+          className="w-[300px] p-0 border-vborder"
           onCloseAutoFocus={(e) => {
             e.preventDefault() ; // THIS IS THE KEY TO FIXING THE FOCUS BUG!
           }}
@@ -219,11 +220,11 @@ export function Combobox({ filteredData, selectedValues, setSelectedValues }: Co
         >
           {/* https://github.com/pacocoursey/cmdk/issues/267 */}
           <Command shouldFilter={!shouldUseServerFetch[page]}>
-            <div className="relative border-b w-full">
-              <CommandInput placeholder="search..." className="h-9" value={queryString} onValueChange={(e) => handleOnValueChange(e)}/>
+            <div className="relative w-full">
+              <CommandInput placeholder="search..." className="h-11 text-vprimary placeholder:text-vsecondary" value={queryString} onValueChange={(e) => handleOnValueChange(e)}/>
               {loading && (
                 <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center">
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin text-vsecondary" />
                 </div>
               )}
             </div>
@@ -238,16 +239,18 @@ export function Combobox({ filteredData, selectedValues, setSelectedValues }: Co
                         return (
                           <CommandItem key={item.label} onSelect={(value) => handleSelect(value, item)}>
                             {item.icon}
-                            <div className="max-w-[200px] truncate">{item.value}</div>
+                            <div className="max-w-[200px] truncate text-vprimary py-[2px]">{item.value}</div>
                           </CommandItem>
                         );
                       } else {
                         const selected = isSelected(page, item.value);
                         return (
                           <CommandItem key={item.label} onSelect={(value) => handleSelect(value, item)}>
-                            <CircularCheckbox checked={selected} />
-                            <div className="max-w-[200px] truncate">{item.value}</div>
-                            <span className="ml-auto font-mono text-muted-foreground">{item.count}</span>
+                            <CircularCheckbox className="bg-vborder" checked={selected} />
+                            <div className="max-w-[200px] truncate text-vprimary">
+                              {(page === "originalUrl" || page === "shortUrl") ? cleanUrl(item.value) : item.value}
+                            </div>
+                            <span className="ml-auto font-mono text-sm text-vsecondary">{item.count}</span>
                           </CommandItem>
                         );
                       }
@@ -256,7 +259,7 @@ export function Combobox({ filteredData, selectedValues, setSelectedValues }: Co
                   {shouldUseServerFetch[page] && currentMenu.length === LIMIT &&
                     <CommandGroup>
                       <CommandItem disabled>
-                        <span className="mx-auto font-mono text-muted-foreground">search to view more items</span>
+                        <span className="mx-auto font-mono text-vtertiary">search to view more items</span>
                       </CommandItem>
                     </CommandGroup>
                   }
@@ -285,16 +288,16 @@ function buildMenu(filteredData: ClickEventTypes.JSONAgg) {
     os: Menu;
   } = {
     root: [
-      { value: "Source", label: "source", icon: <IoOptionsSharp className="h-4 w-4 text-muted-foreground"/> },
-      { value: "Country", label: "country", icon: <IoFlag className="h-4 w-4 text-muted-foreground" /> },
-      { value: "Region", label: "region", icon: <PiMapPinAreaFill className="h-4 w-4 text-muted-foreground" /> },
-      { value: "City", label: "city", icon: <MdLocationCity className="h-4 w-4 text-muted-foreground" /> },
-      { value: "Continent", label: "continent", icon: <IoMdGlobe className="h-4 w-4 text-muted-foreground" /> },
-      { value: "Short Url", label: "shortUrl", icon:  <LinkIcon className="h-4 w-4 text-muted-foreground" /> },
-      { value: "Original Url", label: "originalUrl", icon: <BiLinkExternal className="h-4 w-4 text-muted-foreground" /> },
-      { value: "Browser", label: "browser", icon: <GoBrowser className="h-4 w-4 text-muted-foreground" /> },
-      { value: "Device", label: "device", icon: <HiOutlineDevicePhoneMobile className="h-4 w-4 text-muted-foreground" /> },
-      { value: "OS", label: "os", icon: <IoCubeOutline className="h-4 w-4 text-muted-foreground" /> },
+      { value: "Source", label: "source", icon: <IoOptionsSharp className="h-4 w-4 text-vsecondary"/> },
+      { value: "Country", label: "country", icon: <IoFlag className="h-4 w-4 text-vsecondary" /> },
+      { value: "Region", label: "region", icon: <PiMapPinAreaFill className="h-4 w-4 text-vsecondary" /> },
+      { value: "City", label: "city", icon: <MdLocationCity className="h-4 w-4 text-vsecondary" /> },
+      { value: "Continent", label: "continent", icon: <IoMdGlobe className="h-4 w-4 text-vsecondary" /> },
+      { value: "Short Url", label: "shortUrl", icon:  <LinkIcon className="h-4 w-4 text-vsecondary" /> },
+      { value: "Original Url", label: "originalUrl", icon: <BiLinkExternal className="h-4 w-4 text-vsecondary" /> },
+      { value: "Browser", label: "browser", icon: <GoBrowser className="h-4 w-4 text-vsecondary" /> },
+      { value: "Device", label: "device", icon: <HiOutlineDevicePhoneMobile className="h-4 w-4 text-vsecondary" /> },
+      { value: "OS", label: "os", icon: <IoCubeOutline className="h-4 w-4 text-vsecondary" /> },
     ],
     source: [],
     country: [],

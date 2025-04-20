@@ -41,16 +41,16 @@ export function DataTableColumnHeader<TData, TValue>({ column, title, className 
           className={cn(
             "-mb-1 h-3 w-3",
             column.getIsSorted() === "asc"
-              ? "text-accent-foreground"
-              : "text-gray-400"
+              ? "text-vprimary"
+              : "text-vsecondary"
           )}
         />
         <TiArrowSortedDown
           className={cn(
             "-mt-1 h-3 w-3",
             column.getIsSorted() === "desc"
-              ? "text-accent-foreground"
-              : "text-gray-400"
+              ? "text-vprimary"
+              : "text-vsecondary"
           )}
         />
       </span>

@@ -97,18 +97,16 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
             variant="ghost"
             className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
           >
-            <MoreHorizontal />
-            <span className="sr-only">Open menu</span>
+            <MoreHorizontal className="text-vprimary"/>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-[160px]">
-          <DropdownMenuItem onClick={onEditClicked}>Edit</DropdownMenuItem>
-          <DropdownMenuItem onClick={onViewQRClicked}>View QR Code</DropdownMenuItem>
-          <DropdownMenuItem onClick={onCopyClicked}>Copy Short Url</DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={onDeleteClicked}>
+        <DropdownMenuContent align="end" className="w-[160px] border-vborder">
+          <DropdownMenuItem className="py-3 font-normal text-sm text-vsecondary" onClick={onEditClicked}>Edit</DropdownMenuItem>
+          <DropdownMenuItem className="py-3 font-normal text-sm text-vsecondary" onClick={onViewQRClicked}>View QR Code</DropdownMenuItem>
+          <DropdownMenuItem className="py-3 font-normal text-sm text-vsecondary" onClick={onCopyClicked}>Copy Short Url</DropdownMenuItem>
+          <DropdownMenuSeparator className="bg-vborder"/>
+          <DropdownMenuItem className="py-3 font-normal text-sm text-vsecondary" onClick={onDeleteClicked}>
             Delete
-            <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
