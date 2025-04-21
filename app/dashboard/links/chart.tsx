@@ -9,6 +9,7 @@ import { BarCharContainer } from "./bar-chart"
 import { LineChartContainer } from "./line-chart"
 import { differenceInCalendarDays } from "date-fns";
 import { FaChartArea, FaChartLine, FaChartBar } from "react-icons/fa";
+import BarChartIcon from "./icons/bar-chart-icon"
 
 interface ChartProps {
   clickEvents: ClickEventTypes.Chart[],

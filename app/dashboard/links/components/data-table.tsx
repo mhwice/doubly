@@ -109,7 +109,7 @@ export function DataTable<TData, TValue>({
       </div>
       <div className="border overflow-hidden bg-white rounded-[var(--bradius)] shadow-none border-vborder">
         <Table>
-          <TableHeader className="bg-white">
+          <TableHeader className="bg-[var(--dashboard-bg)]">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className="border-vborder">
                 {headerGroup.headers.map((header) => {
@@ -136,7 +136,7 @@ export function DataTable<TData, TValue>({
                   className="group border-vborder"
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} className="py-5">
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()

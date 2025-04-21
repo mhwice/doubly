@@ -15,19 +15,21 @@ export const columns: ColumnDef<LinkTypes.Dashboard>[] = [
   {
     id: "select",
     header: ({ table }) => (
+      <div>
       <Checkbox checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-        className="translate-y-[2px]"
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
       />
+      </div>
     ),
     cell: ({ row }) => (
+      <div>
       <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-        className="translate-y-[2px]"
-      />
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label="Select row"
+        />
+      </div>
     ),
     enableSorting: false,
     enableHiding: false,
@@ -52,7 +54,7 @@ export const columns: ColumnDef<LinkTypes.Dashboard>[] = [
       //   </span>
       // </div>
       <div className="group max-w-[400px] overflow-hidden relative whitespace-nowrap">
-        <a href={row.getValue("originalUrl")} target="_blank" rel="noopener noreferrer" className="url-overflow text-blue-600 flex items-center gap-2 font-mono">
+        <a href={row.getValue("originalUrl")} target="_blank" rel="noopener noreferrer" className="url-overflow text-[#0168d6] inline-flex items-center gap-2 font-mono align-bottom">
           <GoLinkExternal className="h-4 w-4 flex-shrink-0"/>
           {cleanUrl(row.getValue("originalUrl"))}
         </a>
@@ -66,8 +68,8 @@ export const columns: ColumnDef<LinkTypes.Dashboard>[] = [
     header: ({ column }) => <DataTableColumnHeader column={column} title="Shortened Url" className="text-vsecondary text-sm" />,
     cell: ({ row }) => (
       <div className="flex space-x-1 items-center">
-        <BorderGlowButton text={cleanUrl(row.getValue("shortUrl"))}/>
-        {/* <Button className="font-mono font-normal text-xs text-muted-foreground bg-muted" variant="ghost">{row.getValue("shortUrl")}<IoCopyOutline className="h-2 w-2" /></Button> */}
+        {/* <BorderGlowButton text={cleanUrl(row.getValue("shortUrl"))}/> */}
+        <Button className="font-mono font-normal text-sm text-vsecondary" variant="ghost">{cleanUrl(row.getValue("shortUrl"))}</Button>
       </div>
     ),
     enableSorting: false,
@@ -76,12 +78,12 @@ export const columns: ColumnDef<LinkTypes.Dashboard>[] = [
   {
     accessorKey: "linkClicks",
     header: ({ column }) => <DataTableColumnHeader column={column} title="Link Clicks" className="text-vsecondary text-sm"/>,
-    cell: ({ row }) => <div className="w-[80px] font-mono text-vprimary">{row.getValue("linkClicks")}</div>,
+    cell: ({ row }) => <div className="w-[80px] font-mono text-vsecondary">{row.getValue("linkClicks")}</div>,
   },
   {
     accessorKey: "qrClicks",
     header: ({ column }) => <DataTableColumnHeader column={column} title="QR Clicks" className="text-vsecondary text-sm"/>,
-    cell: ({ row }) => <div className="w-[80px] font-mono text-vprimary">{row.getValue("qrClicks")}</div>,
+    cell: ({ row }) => <div className="w-[80px] font-mono text-vsecondary">{row.getValue("qrClicks")}</div>,
   },
   {
     accessorKey: "updatedAt",
