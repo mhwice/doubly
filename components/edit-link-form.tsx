@@ -78,7 +78,7 @@ export const EditLinkForm = ({ setIsOpen, link, isEditing, id }: EditLinkFormPro
             <FormItem>
               <FormLabel>Original link</FormLabel>
               <FormControl>
-                <Input {...field} disabled={isPending} placeholder="https://www.google.com" />
+                <Input {...field} disabled={isPending} placeholder="https://www.google.com" className="shadow-none border-vborder"/>
               </FormControl>
               <FormMessage />
             </FormItem>

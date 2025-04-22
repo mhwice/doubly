@@ -55,7 +55,7 @@ export const ForgotPasswordForm = () => {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input {...field} disabled={isPending} placeholder="john.doe@example.com" type="email" className="shadow-none"/>
+                    <Input {...field} disabled={isPending} placeholder="john.doe@example.com" type="email" className="shadow-none border-vborder"/>
                   </FormControl>
                   <FormMessage />
                 </FormItem>

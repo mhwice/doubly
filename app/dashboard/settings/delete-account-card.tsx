@@ -22,20 +22,20 @@ export default function DeleteAccountCard() {
   return (
     <>
       <DeleteAccountModal isOpen={showModal} onOpenChange={setShowModal} />
-      <Card className="w-full max-w-4xl border-red-100 overflow-hidden shadow-none">
+      <Card className="w-full max-w-3xl border-red-100 overflow-hidden shadow-none rounded-[var(--bradius)]">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold">Delete Account</CardTitle>
+          <CardTitle className="text-xl font-medium text-vprimary">Delete Account</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-foreground">
-            Permanently remove your Personal Account and all of its contents from
-            the Vercel platform. This action is not reversible, so please continue
+          <p className="text-vsecondary text-sm">
+            Permanently remove your account and all of its contents from
+            the Database platform. This action is not reversible, so please continue
             with caution.
           </p>
         </CardContent>
         <CardFooter className="bg-red-50 p-3 flex justify-end border-t border-red-100">
           <Button variant="destructiveFlat" className="bg-red-600 hover:bg-red-700" onClick={onDeleteClicked}>
-            Delete Personal Account
+            Delete Account
           </Button>
         </CardFooter>
       </Card>

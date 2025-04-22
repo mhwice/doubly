@@ -4,7 +4,6 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogOverlay,
   DialogTitle,
 } from "@/components/ui/dialog";
 
@@ -14,24 +13,24 @@ interface CustomDialogProps {
   isOpen: boolean;
   onOpenChange: React.Dispatch<React.SetStateAction<boolean>>;
   children: React.ReactNode
+  footer: React.ReactNode
 }
 
-export function CustomDialog({ title, description, isOpen, onOpenChange, children }: CustomDialogProps) {
+export function VercelDialog({ title, description, isOpen, onOpenChange, children, footer }: CustomDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md border-[#dedede] p-0 overflow-hidden">
-        <DialogHeader className="px-6 pb-2">
-          <DialogTitle className="text-vprimary">{title}</DialogTitle>
+      <DialogContent className="sm:max-w-lg border-[#dedede] p-0 overflow-hidden sm:rounded-xl shadow-custom">
+        <DialogHeader className="px-6 pb-2 pt-7">
+          <DialogTitle className="text-vprimary text-2xl">{title}</DialogTitle>
           {description && (
             <DialogDescription className="text-vsecondary">
               {description}
             </DialogDescription>
           )}
         </DialogHeader>
-        <div className="px-6 py-5">{children}</div>
-        {/* <DialogFooter className="bg-red-200 absolute bottom-0 right-0 left-0 h-10"> */}
-        <DialogFooter className="flex justify-between border-t border-vborder bg-[#f4f4f4] p-4 px-6">
-          Hello
+        <div className="px-6 py-4">{children}</div>
+        <DialogFooter className="border-t border-vborder bg-[var(--dashboard-bg)] p-4 px-6">
+          {footer}
         </DialogFooter>
       </DialogContent>
     </Dialog>

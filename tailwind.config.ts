@@ -73,8 +73,23 @@ export default {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
-  		}
-  	}
+  		},
+      boxShadow: {
+        custom: [
+          "0 8px 16px -4px rgba(0, 0, 0, 0.04)",
+          "0 24px 32px -8px rgba(0, 0, 0, 0.06)",
+        ].join(", "),
+      },
+      transitionProperty: {
+        // now you can use `transition-color-shadow`
+        'color-shadow': 'color, box-shadow',
+      },
+  	},
+    variants: {
+      extend: {
+        transitionProperty: ['hover', 'focus-within'],
+      },
+    },
   },
   plugins: [require("tailwindcss-animate")],
 } satisfies Config;

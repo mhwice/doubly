@@ -1,10 +1,12 @@
 "use client";
 
 import { createLink } from "@/actions/safe-create-link";
+import { CreateLinkModal } from "@/components/create-link-modal";
 import { CustomDialog } from "@/components/custom-dialog";
 import { EditLinkForm } from "@/components/edit-link-form";
 import { EditLinkModal } from "@/components/edit-link-modal";
 import { Button } from "@/components/ui/button";
+import { VercelDialog } from "@/components/vercel-modal";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 
@@ -34,14 +36,31 @@ export function NewLinkButton() {
         onOpenChange={setIsModalOpen}
         linkData={undefined}
       /> */}
-      <CustomDialog
+      {/* <CustomDialog
+        title="Create a new link"
+        description="Enter the url of something you'd like to track"
+        isOpen={true}//{isModalOpen} // testing
+        onOpenChange={setIsModalOpen}
+      >
+        <EditLinkForm setIsOpen={setIsModalOpen} isEditing={false} />
+      </CustomDialog> */}
+
+      {/* <VercelDialog
         title="Create a new link"
         description="Enter the url of something you'd like to track"
         isOpen={isModalOpen}
         onOpenChange={setIsModalOpen}
+        footer={(
+          <div className="flex flex-row justify-between w-full">
+            <Button size="lg" variant="flat">Cancel</Button>
+            <Button size="lg" variant="defaultFlat">Create</Button>
+          </div>
+        )}
       >
         <EditLinkForm setIsOpen={setIsModalOpen} isEditing={false} />
-      </CustomDialog>
+      </VercelDialog> */}
+
+      <CreateLinkModal isOpen={isModalOpen} onOpenChange={setIsModalOpen}/>
     </>
   );
 }
