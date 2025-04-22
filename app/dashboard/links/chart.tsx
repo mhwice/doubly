@@ -8,8 +8,7 @@ import { AreaChartContainer } from "./area-chart"
 import { BarCharContainer } from "./bar-chart"
 import { LineChartContainer } from "./line-chart"
 import { differenceInCalendarDays } from "date-fns";
-import { FaChartArea, FaChartLine, FaChartBar } from "react-icons/fa";
-import BarChartIcon from "./icons/bar-chart-icon"
+import { ChartArea, ChartColumn, ChartLine } from "lucide-react"
 
 interface ChartProps {
   clickEvents: ClickEventTypes.Chart[],
@@ -37,19 +36,22 @@ export function Chart({ clickEvents, dateRange }: ChartProps) {
           <SelectContent className="border-vborder rounded-[var(--bradius)]">
             <SelectItem value="area" className="rounded-[var(--bradius)]">
               <div className="flex flex-row gap-2 items-center py-[2px] text-vprimary">
-                <FaChartArea className="text-vsecondary"/>
+                {/* <FaChartArea className="text-vsecondary"/> */}
+                <ChartArea strokeWidth={1.8} size={13} className="text-vsecondary"/>
                 Area
               </div>
             </SelectItem>
             <SelectItem value="bar" className="rounded-[var(--bradius)]">
               <div className="flex flex-row gap-2 items-center py-[2px] text-vprimary">
-                <FaChartBar className="text-vsecondary"/>
+                {/* <FaChartBar className="text-vsecondary"/> */}
+                <ChartColumn strokeWidth={1.8} size={13} className="text-vsecondary"/>
                 Bar
               </div>
             </SelectItem>
             <SelectItem value="line" className="rounded-[var(--bradius)]">
               <div className="flex flex-row gap-2 items-center py-[2px] text-vprimary">
-                <FaChartLine className="text-vsecondary"/>
+                {/* <FaChartLine className="text-vsecondary"/> */}
+                <ChartLine strokeWidth={1.8} size={13} className="text-vsecondary"/>
                 Line
               </div>
             </SelectItem>

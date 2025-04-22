@@ -10,6 +10,7 @@ import CopyButton from "../copy-button"
 import { Button } from "@/components/ui/button"
 import { IoCopyOutline } from "react-icons/io5"
 import { BorderGlowButton } from "../border-glow-button"
+import { SquareArrowOutUpRight } from "lucide-react"
 
 export const columns: ColumnDef<LinkTypes.Dashboard>[] = [
   {
@@ -54,8 +55,8 @@ export const columns: ColumnDef<LinkTypes.Dashboard>[] = [
       //   </span>
       // </div>
       <div className="group max-w-[400px] overflow-hidden relative whitespace-nowrap">
-        <a href={row.getValue("originalUrl")} target="_blank" rel="noopener noreferrer" className="url-overflow text-[#0168d6] inline-flex items-center gap-2 font-mono align-bottom">
-          <GoLinkExternal className="h-4 w-4 flex-shrink-0"/>
+        <a href={row.getValue("originalUrl")} target="_blank" rel="noopener noreferrer" className="url-overflow text-[#0168d6] inline-flex items-center gap-1 font-mono align-bottom">
+          <SquareArrowOutUpRight strokeWidth={1.5} className="h-4 w-4 flex-shrink-0"/>
           {cleanUrl(row.getValue("originalUrl"))}
         </a>
       </div>
@@ -65,7 +66,7 @@ export const columns: ColumnDef<LinkTypes.Dashboard>[] = [
   },
   {
     accessorKey: "shortUrl",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Shortened Url" className="text-vsecondary text-sm" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Shortened Url" className="text-vsecondary text-sm px-4" />,
     cell: ({ row }) => (
       <div className="flex space-x-1 items-center">
         {/* <BorderGlowButton text={cleanUrl(row.getValue("shortUrl"))}/> */}

@@ -1,18 +1,11 @@
 "use client"
 
 import { useState, useEffect, Dispatch, SetStateAction, useRef } from "react"
-import { CheckIcon, ChevronsUpDown, QrCodeIcon, LinkIcon, MousePointerClickIcon, Loader2 } from "lucide-react"
-import { IoOptionsSharp, IoFlag } from "react-icons/io5";
-import { MdLocationCity } from "react-icons/md";
-import { PiMapPinAreaFill } from "react-icons/pi";
-import { IoMdGlobe } from "react-icons/io";
-import { BiLinkExternal } from "react-icons/bi";
-import { GoBrowser } from "react-icons/go";
-import { HiOutlineDevicePhoneMobile } from "react-icons/hi2";
-import { IoCubeOutline } from "react-icons/io5";
-import { IoFilter } from "react-icons/io5";
+import { LinkIcon, Loader2, Filter, Flag, Building2, SquareArrowOutUpRight, AppWindow, Smartphone, CodeXml, Globe, MapPinned, MousePointerClick } from "lucide-react"
+// import { IoOptionsSharp } from "react-icons/io5";
+// import { PiMapPinAreaFill } from "react-icons/pi";
+// import { IoMdGlobe } from "react-icons/io";
 
-import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
   Command,
@@ -195,7 +188,8 @@ export function Combobox({ filteredData, selectedValues, setSelectedValues }: Co
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button variant="flat" role="combobox" aria-expanded={open} className="w-[120px] justify-center font-normal text-vprimary" >
-            <IoFilter className="w-4 h-4 text-vprimary"/>
+            {/* <IoFilter className="w-4 h-4 text-vprimary"/> */}
+            <Filter strokeWidth={1.75} className="text-vprimary"/>
             Add Filter
           </Button>
         </PopoverTrigger>
@@ -288,16 +282,25 @@ function buildMenu(filteredData: ClickEventTypes.JSONAgg) {
     os: Menu;
   } = {
     root: [
-      { value: "Source", label: "source", icon: <IoOptionsSharp className="h-4 w-4 text-vsecondary"/> },
-      { value: "Country", label: "country", icon: <IoFlag className="h-4 w-4 text-vsecondary" /> },
-      { value: "Region", label: "region", icon: <PiMapPinAreaFill className="h-4 w-4 text-vsecondary" /> },
-      { value: "City", label: "city", icon: <MdLocationCity className="h-4 w-4 text-vsecondary" /> },
-      { value: "Continent", label: "continent", icon: <IoMdGlobe className="h-4 w-4 text-vsecondary" /> },
-      { value: "Short Url", label: "shortUrl", icon:  <LinkIcon className="h-4 w-4 text-vsecondary" /> },
-      { value: "Original Url", label: "originalUrl", icon: <BiLinkExternal className="h-4 w-4 text-vsecondary" /> },
-      { value: "Browser", label: "browser", icon: <GoBrowser className="h-4 w-4 text-vsecondary" /> },
-      { value: "Device", label: "device", icon: <HiOutlineDevicePhoneMobile className="h-4 w-4 text-vsecondary" /> },
-      { value: "OS", label: "os", icon: <IoCubeOutline className="h-4 w-4 text-vsecondary" /> },
+      { value: "Source", label: "source", icon: <MousePointerClick strokeWidth={1.75} size={16} className="h-4 w-4 text-vsecondary"/> },
+      { value: "Country", label: "country", icon: <Flag strokeWidth={1.75} size={16} className="h-4 w-4 text-vsecondary" /> },
+      { value: "Region", label: "region", icon: <MapPinned strokeWidth={1.75} size={16} className="h-4 w-4 text-vsecondary" /> },
+      { value: "City", label: "city", icon: <Building2 strokeWidth={1.75} size={16} className="h-4 w-4 text-vsecondary" /> },
+      { value: "Continent", label: "continent", icon: <Globe strokeWidth={1.75} size={16} className="h-4 w-4 text-vsecondary" /> },
+      { value: "Short Url", label: "shortUrl", icon:  <LinkIcon strokeWidth={1.75} size={16} className="h-4 w-4 text-vsecondary" /> },
+      { value: "Original Url", label: "originalUrl", icon: <SquareArrowOutUpRight strokeWidth={1.75} size={16} className="h-4 w-4 text-vsecondary" /> },
+      { value: "Browser", label: "browser", icon: <AppWindow strokeWidth={1.75} size={16} className="h-4 w-4 text-vsecondary" /> },
+      { value: "Device", label: "device", icon: <Smartphone strokeWidth={1.75} size={16} className="h-4 w-4 text-vsecondary" /> },
+      { value: "OS", label: "os", icon: <CodeXml strokeWidth={1.75} size={16} className="h-4 w-4 text-vsecondary" /> },
+      // { value: "Source", label: "source", icon: <IoOptionsSharp className="h-4 w-4 text-vsecondary"/> },
+      // { value: "Country", label: "country", icon: <IoFlag className="h-4 w-4 text-vsecondary" /> },
+      // { value: "Region", label: "region", icon: <PiMapPinAreaFill className="h-4 w-4 text-vsecondary" /> },
+      // { value: "City", label: "city", icon: <MdLocationCity className="h-4 w-4 text-vsecondary" /> },
+      // { value: "Continent", label: "continent", icon: <IoMdGlobe className="h-4 w-4 text-vsecondary" /> },
+      // { value: "Original Url", label: "originalUrl", icon: <BiLinkExternal className="h-4 w-4 text-vsecondary" /> },
+      // { value: "Browser", label: "browser", icon: <GoBrowser className="h-4 w-4 text-vsecondary" /> },
+      // { value: "Device", label: "device", icon: <HiOutlineDevicePhoneMobile className="h-4 w-4 text-vsecondary" /> },
+      // { value: "OS", label: "os", icon: <IoCubeOutline className="h-4 w-4 text-vsecondary" /> },
     ],
     source: [],
     country: [],
