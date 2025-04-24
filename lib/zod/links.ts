@@ -26,8 +26,6 @@ const LinkDashboardSchema = LinkTableSchema.pick({
 
 const LinkCreateLinkSchema = z.object({
   originalUrl: z.string(),
-  password: z.string().optional(),
-  expiresAt: z.date().optional(),
 });
 
 const LinkCreateSchema = LinkTableSchema.pick({
@@ -35,14 +33,12 @@ const LinkCreateSchema = LinkTableSchema.pick({
   shortUrl: true,
   code: true,
   userId: true,
-  expiresAt: true,
-  password: true,
 }).transform((data) => {
   return Object.fromEntries(
     Object.entries(data)
       .filter(([_, value]) => value !== undefined)
       .map(([key, value]) => [snakeCase(key), value])
-  );
+    );
 });
 
 const LinkDeleteSchema = LinkTableSchema.pick({
@@ -75,30 +71,6 @@ const LinkLookupSchema = LinkTableSchema.pick({
 }).extend({
   source: z.enum(["qr", "link"]),
 });
-
-// I want to have a tighter bound on the key here.
-// It must be one of ["source", "continent", "country", "city", "originalUrl", "shortUrl"]
-// can I make it into:
-
-/*
-
-const ex = [
-  { key: "source", values: ["qr"] },
-  { key: "country", values: ["CA", "RO"] },
-];
-
-array of objects, where key is an enum, and values are an array of strings?
-*/
-
-// const LinkGetAllSchema = LinkTableSchema.pick({
-//   userId: true
-// }).extend({
-//   options: z.tuple([
-//     z.string().trim().min(1), // key
-//     z.string().trim().min(1)  // value
-//   ]).array().optional()
-// });
-
 
 const FilterEnum = z.enum([
   "source",
@@ -262,19 +234,19 @@ export const QueryArraySchema = z
   .transform((arr) => {
     const result = {
       options: new Map<FilterEnumType, string[]>(),
-      queryString: undefined as string | undefined,
-      queryField: undefined as FilterEnumType | undefined,
+      // queryString: undefined as string | undefined,
+      // queryField: undefined as FilterEnumType | undefined,
       dateRange: [undefined, undefined] as [Date | undefined, Date | undefined],
     };
 
     for (const [key, value] of arr) {
       switch (key) {
-        case "queryString":
-          result.queryString = value;
-          break;
-        case "queryField":
-          result.queryField = value as FilterEnumType;
-          break;
+        // case "queryString":
+        //   result.queryString = value;
+        //   break;
+        // case "queryField":
+        //   result.queryField = value as FilterEnumType;
+        //   break;
         case "dateStart":
           result.dateRange[0] = new Date(value);
           break;
@@ -294,15 +266,15 @@ export const QueryArraySchema = z
     return result;
   })
   // 6. Ensure queryString & queryField are both present or both absent
-  .refine(
-    (obj) =>
-      (obj.queryString != null && obj.queryField != null) ||
-      (obj.queryString == null && obj.queryField == null),
-    {
-      message: "Both 'queryString' and 'queryField' must be provided together or omitted together",
-      path: ["queryString", "queryField"],
-    }
-  )
+  // .refine(
+  //   (obj) =>
+  //     (obj.queryString != null && obj.queryField != null) ||
+  //     (obj.queryString == null && obj.queryField == null),
+  //   {
+  //     message: "Both 'queryString' and 'queryField' must be provided together or omitted together",
+  //     path: ["queryString", "queryField"],
+  //   }
+  // )
   // 7. If both dates provided, start <= end
   .refine(
     (obj) => {
@@ -362,31 +334,6 @@ export const NewAPIContents = z
     }
   );
 
-type API = z.infer<typeof APIContents>;
-
-export const CityLookup = z.object({
-  query: z.string(),
-});
-
-export const CityDALLookup = z.object({
-  query: z.string(),
-  userId: z.string(),
-});
-
-// function refineFn(val: [string,string][]) {
-//   const map = new Map();
-//   for (const [k, v] of val) {
-//     if (map.has(k)) {
-//       if (map.get(k).has(v)) return false;
-//       map.get(k).add(v);
-//     } else {
-//       map.set(k, [v]);
-//     }
-//   }
-
-//   return true;
-// }
-
 const LinkEditSchema = LinkTableSchema.pick({
   userId: true,
   id: true,
@@ -400,11 +347,6 @@ const LinkEditLinkSchema = LinkTableSchema.pick({
   updates: LinkTableSchema.pick({ originalUrl: true }),
 });
 
-const LinkClickEventSchema = LinkTableSchema.pick({
-  id: true,
-  userId: true,
-});
-
 export namespace LinkSchemas {
   export const Table = LinkTableSchema;
   export const Create = LinkCreateSchema;
@@ -416,7 +358,6 @@ export namespace LinkSchemas {
   export const DTO = LinkDTOSchema;
   export const GetAll = LinkGetAllSchema;
   export const Lookup = LinkLookupSchema;
-  // export const ClickEvent = LinkClickEventSchema;
   export const Dashboard = LinkDashboardSchema;
 }
 
@@ -432,6 +373,5 @@ export namespace LinkTypes {
   export type Id = Delete["id"];
   export type Lookup = z.infer<typeof LinkLookupSchema>;
   export type GetAll = z.infer<typeof LinkGetAllSchema>;
-  // export type ClickEvent = z.infer<typeof LinkClickEventSchema>;
   export type Dashboard = z.infer<typeof LinkDashboardSchema>;
 }

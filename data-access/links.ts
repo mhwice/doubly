@@ -60,6 +60,7 @@ export class LinkTable {
       return ServerResponse.success(result[0]);
 
     } catch (error: unknown) {
+      console.log(error)
       if (error instanceof ZodError) return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS);
       return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
     }
@@ -190,7 +191,7 @@ export class LinkTable {
             END
           ) AS link_clicks
         FROM click_events AS ce
-        JOIN (
+        RIGHT JOIN (
           SELECT *
           FROM links
           WHERE user_id = $1 AND links.created_at <= $2

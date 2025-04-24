@@ -5,7 +5,7 @@ import { neon } from '@neondatabase/serverless';
 import { ZodError } from 'zod';
 import { parseJSONQueryResponse, parseQueryResponse, type QueryResponse } from "@/utils/helper";
 import { ClickEventSchemas, type ClickEventTypes } from "@/lib/zod/clicks";
-import { CityDALLookup, LinkSchemas, LinkTypes } from "@/lib/zod/links";
+import { LinkSchemas, LinkTypes } from "@/lib/zod/links";
 import { snakeCase } from "change-case";
 import { ERROR_MESSAGES } from "@/lib/error-messages";
 import { ServerResponse, ServerResponseType } from "@/lib/server-repsonse";
@@ -145,7 +145,7 @@ export class ClickEvents {
       }
 
       if (queryString && queryField) {
-        conditions.push(`${queryField} ILIKE '%' || $${placeholderIndex++} || '%'`);
+        conditions.push(`${snakeCase(queryField)} ILIKE '%' || $${placeholderIndex++} || '%'`);
         queryParams.push(queryString);
       }
 
@@ -154,6 +154,7 @@ export class ClickEvents {
       const testquery = `
         WITH filtered_clicks AS (
           SELECT
+            user_links.id AS id,
             ce.source AS source,
             ce.city AS city,
             ce.country AS country,
@@ -187,12 +188,700 @@ export class ClickEvents {
         LIMIT $${placeholderIndex}
       `;
 
-      // console.log(testquery)
 
       const testResponse: QueryResponse = await sql(testquery, [...queryParams, LIMIT]);
+      console.log(testResponse)
       const testResult = parseQueryResponse(testResponse, ClickEventSchemas.Query);
 
       return ServerResponse.success(testResult);
+
+    } catch (error: unknown) {
+      console.log({ error })
+      if (error instanceof ZodError) return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS);
+      return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
+    }
+  }
+
+  static async getFilteredData(params: LinkTypes.GetAll): Promise<ServerResponseType<ClickEventTypes.AnalyticsJSON>> {
+    try {
+      const { userId, options, dateRange } = LinkSchemas.GetAll.parse(params);
+
+      const LIMIT = "50";
+
+      // const conditions = [];
+      const queryParams = [userId];
+      let placeholderIndex = queryParams.length + 1;
+
+      /*
+
+      placeholderMap = {
+        source: ["$2", "$3"],
+        continent: ["$4"],
+        country: "$5, $6, $7",
+        ...
+      }
+
+      */
+
+      const placeholderMap = new Map<string, string>();
+      for (let [key, values] of options) {
+        if (values.length === 0) continue;
+        const formattedKey = snakeCase(key);
+
+        const placeholders = values.map(() => `$${placeholderIndex++}`).join(", ");
+        placeholderMap.set(formattedKey, `${formattedKey} IN (${placeholders})`);
+
+        queryParams.push(...values);
+      }
+
+      /*
+      TODO - Major issue
+      Zod allows for the date range to be of type [Date | undefined, Date | undefined].
+      I had not initially intended for this, but have since changed my mind so that
+      future API can be more flexible.
+      Because of that, the following logic for generating the query fails
+      also, we can pass nothing and get really incrorrect data.
+      a temporary pause here is I am goign to throw an error if
+      not in the old format
+      */
+      if (dateRange[1] === undefined) throw new Error('temp workaround, pass an end date for now');
+
+      const datePlaceholders: [number, number] = [-1, -1];
+      const dateConditions = [];
+      if (dateRange[0]) {
+        queryParams.push(dateRange[0].toISOString());
+        dateConditions.push(`created_at >= $${placeholderIndex}`);
+        datePlaceholders[0] = placeholderIndex++;
+      }
+
+      if (dateRange[1]) {
+        queryParams.push(dateRange[1].toISOString());
+        dateConditions.push(`created_at <= $${placeholderIndex}`);
+        datePlaceholders[1] = placeholderIndex++;
+      }
+
+      function makeWhereClause(placeholderMap: Map<string, string>, dateConditions: string[], excludedField?: string) {
+        // console.log("**********")
+        // console.log({ placeholderMap })
+        // console.log({ dateConditions })
+        // console.log({ excludedField })
+
+        const conditions = [];
+        for (const [field, condition] of placeholderMap) {
+          if (excludedField && (field === excludedField)) continue;
+          conditions.push(condition);
+        }
+
+        for (const dateCondition of dateConditions) conditions.push(dateCondition);
+
+        const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+        // console.log({ whereClause });
+        // console.log("**********")
+        return whereClause;
+      }
+
+      // const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+
+      /*
+              STRATEGY
+
+              Create a single query for each piece of place I need data.
+              1. StatsHeader (statsHeaderQuery)
+                 We need the total number of short_urls after all filters applied (not limited)
+                 We need the total number of link clicks after all filters applied (not limited)
+                 We need the total number of qr clicks after all filters applied (not limited)
+              2. Chart
+                 This is already done (chartQuery)
+              3. TabGroup
+                 This is already done (jsonQuery)
+              4. Combobox
+
+                 This is similar to jsonQuery, but we handle the WHERE a bit differently.
+                 Say our filters are continent:{na, eu} and country:{fr, ca}
+
+                 Then for the 'continent' propety on the json, we don't apply the continent filters,
+                 but we still apply all other filters.
+
+      */
+
+      const query = `
+        WITH user_links AS (
+          SELECT *
+          FROM links
+          WHERE user_id = $1
+        ),
+        unfiltered_clicks AS (
+          SELECT
+            user_links.id 				    AS link_id,
+            ce.id 						        AS click_id,
+            ce.source 					      AS source,
+            ce.city 					        AS city,
+            ce.country 					      AS country,
+            ce.region 					      AS region,
+            ce.continent 				      AS continent,
+            user_links.short_url 		  AS short_url,
+            user_links.original_url 	AS original_url,
+            ce.created_at 				    AS created_at,
+            ce.browser 					      AS browser,
+            ce.device 					      AS device,
+            ce.os 						        AS os
+          FROM click_events AS ce
+          JOIN user_links ON user_links.id = ce.link_id
+        ),
+        filtered_clicks AS (
+          SELECT *
+          FROM unfiltered_clicks
+          ${makeWhereClause(placeholderMap, dateConditions)}
+        ),
+        date_range AS (
+          ${dateRange[0] === undefined ?
+            `SELECT
+              (MAX(created_at)::date - MIN(created_at)::date) AS num_days,
+              MIN(created_at) AS start_date,
+              MAX(created_at) AS end_date
+            FROM filtered_clicks`
+            :
+            `SELECT
+              (MAX($${datePlaceholders[1]})::date - MIN($${datePlaceholders[0]})::date) AS num_days,
+              MIN($${datePlaceholders[0]}) AS start_date,
+              MAX($${datePlaceholders[1]}) AS end_date
+            FROM filtered_clicks`
+          }
+        ),
+        interval AS (
+          SELECT
+            CASE
+              WHEN num_days <= 2 THEN INTERVAL '1 hour'
+              WHEN num_days <= 4  THEN INTERVAL '6 hours'
+              WHEN num_days <= 30  THEN INTERVAL '1 day'
+              WHEN num_days <= 90  THEN INTERVAL '3 days'
+              WHEN num_days <= 180  THEN INTERVAL '1 week'
+              WHEN num_days <= 1460  THEN INTERVAL '1 month'
+              ELSE INTERVAL '1 year'
+            END AS interval
+          FROM date_range
+        ),
+        time_events AS (
+          SELECT *
+          FROM date_range
+          CROSS JOIN interval
+        ),
+        array_of_buckets AS (
+          SELECT ARRAY_AGG(series) AS buckets
+            FROM generate_series(
+            (SELECT start_date FROM time_events)::date,
+            (SELECT end_date FROM time_events)::date,
+            (SELECT interval FROM time_events)
+          ) AS series
+        ),
+        bucketed_clicks AS (
+          SELECT
+            WIDTH_BUCKET(created_at, array_of_buckets.buckets) AS bucket_number,
+            SUM(CASE WHEN fc.source = 'qr' THEN 1 ELSE 0 END) AS qr_count,
+            SUM(CASE WHEN fc.source = 'link' THEN 1 ELSE 0 END) AS link_count
+          FROM filtered_clicks AS fc
+          CROSS JOIN array_of_buckets
+          GROUP BY bucket_number
+        )
+
+        SELECT json_build_object(
+          'tabs', json_build_object(
+            'source', (
+              SELECT coalesce(json_agg(t), '[]'::json)
+              FROM (
+                SELECT
+                  source::TEXT AS value,
+                  'source:' || source::TEXT AS label,
+                  COUNT(*) AS count,
+                  (COUNT(*) * 100.0 / (SELECT COUNT(*) FROM filtered_clicks)) AS percent
+                FROM filtered_clicks
+                GROUP BY source
+                ORDER BY count DESC, value
+                LIMIT 50
+              ) AS t
+            ),
+            'country', (
+              SELECT coalesce(json_agg(t), '[]'::json)
+              FROM (
+                SELECT
+                  country::TEXT AS value,
+                  'country:' || country::TEXT AS label,
+                  COUNT(*) AS count,
+                  (COUNT(*) * 100.0 / (SELECT COUNT(*) FROM filtered_clicks)) AS percent
+                FROM filtered_clicks
+                GROUP BY country
+                ORDER BY count DESC, value
+                LIMIT 50
+              ) AS t
+            ),
+            'region', (
+              SELECT coalesce(json_agg(t), '[]'::json)
+              FROM (
+                SELECT
+                  region::TEXT AS value,
+                  'region:' || region::TEXT AS label,
+                  COUNT(*) AS count,
+                  (COUNT(*) * 100.0 / (SELECT COUNT(*) FROM filtered_clicks)) AS percent
+                FROM filtered_clicks
+                GROUP BY region
+                ORDER BY count DESC, value
+                LIMIT 50
+              ) AS t
+            ),
+            'continent', (
+              SELECT coalesce(json_agg(t), '[]'::json)
+              FROM (
+                SELECT
+                  continent::TEXT AS value,
+                  'continent:' || continent::TEXT AS label,
+                  COUNT(*) AS count,
+                  (COUNT(*) * 100.0 / (SELECT COUNT(*) FROM filtered_clicks)) AS percent
+                FROM filtered_clicks
+                GROUP BY continent
+                ORDER BY count DESC, value
+                LIMIT 50
+              ) AS t
+            ),
+            'city', (
+              SELECT coalesce(json_agg(t), '[]'::json)
+              FROM (
+                SELECT
+                  city::TEXT AS value,
+                  'city:' || city::TEXT AS label,
+                  COUNT(*) AS count,
+                  (COUNT(*) * 100.0 / (SELECT COUNT(*) FROM filtered_clicks)) AS percent
+                FROM filtered_clicks
+                GROUP BY city
+                ORDER BY count DESC, value
+                LIMIT 50
+              ) AS t
+            ),
+            'short_url', (
+              SELECT coalesce(json_agg(t), '[]'::json)
+              FROM (
+                SELECT
+                  short_url::TEXT AS value,
+                  'short_url:' || short_url::TEXT AS label,
+                  COUNT(*) AS count,
+                  (COUNT(*) * 100.0 / (SELECT COUNT(*) FROM filtered_clicks)) AS percent
+                FROM filtered_clicks
+                GROUP BY short_url
+                ORDER BY count DESC, value
+                LIMIT 50
+              ) AS t
+            ),
+            'original_url', (
+              SELECT coalesce(json_agg(t), '[]'::json)
+              FROM (
+                SELECT
+                  original_url::TEXT AS value,
+                  'original_url:' || original_url::TEXT AS label,
+                  COUNT(*) AS count,
+                  (COUNT(*) * 100.0 / (SELECT COUNT(*) FROM filtered_clicks)) AS percent
+                FROM filtered_clicks
+                GROUP BY original_url
+                ORDER BY count DESC, value
+                LIMIT 50
+              ) AS t
+            ),
+            'browser', (
+              SELECT coalesce(json_agg(t), '[]'::json)
+              FROM (
+                SELECT
+                  browser::TEXT AS value,
+                  'browser:' || browser::TEXT AS label,
+                  COUNT(*) AS count,
+                  (COUNT(*) * 100.0 / (SELECT COUNT(*) FROM filtered_clicks)) AS percent
+                FROM filtered_clicks
+                GROUP BY browser
+                ORDER BY count DESC, value
+                LIMIT 50
+              ) AS t
+            ),
+            'device', (
+              SELECT coalesce(json_agg(t), '[]'::json)
+              FROM (
+                SELECT
+                  device::TEXT AS value,
+                  'device:' || device::TEXT AS label,
+                  COUNT(*) AS count,
+                  (COUNT(*) * 100.0 / (SELECT COUNT(*) FROM filtered_clicks)) AS percent
+                FROM filtered_clicks
+                GROUP BY device
+                ORDER BY count DESC, value
+                LIMIT 50
+              ) AS t
+            ),
+            'os', (
+              SELECT coalesce(json_agg(t), '[]'::json)
+              FROM (
+                SELECT
+                  os::TEXT AS value,
+                  'os:' || os::TEXT AS label,
+                  COUNT(*) AS count,
+                  (COUNT(*) * 100.0 / (SELECT COUNT(*) FROM filtered_clicks)) AS percent
+                FROM filtered_clicks
+                GROUP BY os
+                ORDER BY count DESC, value
+                LIMIT 50
+              ) AS t
+            )
+          ),
+          'stats', json_build_object(
+            'num_links', (SELECT COUNT(*) FROM user_links),
+            'link_clicks', (SELECT COUNT(*) FROM filtered_clicks WHERE source = 'link'),
+            'qr_clicks', (SELECT COUNT(*) FROM filtered_clicks WHERE source = 'qr')
+          ),
+          'combobox', json_build_object(
+            'source', (
+              SELECT coalesce(json_agg(t), '[]'::json)
+              FROM (
+                SELECT
+                  source::TEXT AS value,
+                  'source:' || source::TEXT AS label,
+                  COUNT(*) AS count
+                FROM unfiltered_clicks
+                ${makeWhereClause(placeholderMap, dateConditions, "source")}
+                GROUP BY source
+                ORDER BY count DESC, value
+                LIMIT 50
+              ) AS t
+            ),
+            'country', (
+              SELECT coalesce(json_agg(t), '[]'::json)
+              FROM (
+                SELECT
+                  country::TEXT AS value,
+                  'country:' || country::TEXT AS label,
+                  COUNT(*) AS count
+                FROM unfiltered_clicks
+                ${makeWhereClause(placeholderMap, dateConditions, "country")}
+                GROUP BY country
+                ORDER BY count DESC, value
+                LIMIT 50
+              ) AS t
+            ),
+            'region', (
+              SELECT coalesce(json_agg(t), '[]'::json)
+              FROM (
+                SELECT
+                  region::TEXT AS value,
+                  'region:' || region::TEXT AS label,
+                  COUNT(*) AS count
+                FROM unfiltered_clicks
+                ${makeWhereClause(placeholderMap, dateConditions, "region")}
+                GROUP BY region
+                ORDER BY count DESC, value
+                LIMIT 50
+              ) AS t
+            ),
+            'continent', (
+              SELECT coalesce(json_agg(t), '[]'::json)
+              FROM (
+                SELECT
+                  continent::TEXT AS value,
+                  'continent:' || continent::TEXT AS label,
+                  COUNT(*) AS count
+                FROM unfiltered_clicks
+                ${makeWhereClause(placeholderMap, dateConditions, "continent")}
+                GROUP BY continent
+                ORDER BY count DESC, value
+                LIMIT 50
+              ) AS t
+            ),
+            'city', (
+              SELECT coalesce(json_agg(t), '[]'::json)
+              FROM (
+                SELECT
+                  city::TEXT AS value,
+                  'city:' || city::TEXT AS label,
+                  COUNT(*) AS count
+                FROM unfiltered_clicks
+                ${makeWhereClause(placeholderMap, dateConditions, "city")}
+                GROUP BY city
+                ORDER BY count DESC, value
+                LIMIT 50
+              ) AS t
+            ),
+            'short_url', (
+              SELECT coalesce(json_agg(t), '[]'::json)
+              FROM (
+                SELECT
+                  short_url::TEXT AS value,
+                  'short_url:' || short_url::TEXT AS label,
+                  COUNT(*) AS count
+                FROM unfiltered_clicks
+                ${makeWhereClause(placeholderMap, dateConditions, "short_url")}
+                GROUP BY short_url
+                ORDER BY count DESC, value
+                LIMIT 50
+              ) AS t
+            ),
+            'original_url', (
+              SELECT coalesce(json_agg(t), '[]'::json)
+              FROM (
+                SELECT
+                  original_url::TEXT AS value,
+                  'original_url:' || original_url::TEXT AS label,
+                  COUNT(*) AS count
+                FROM unfiltered_clicks
+                ${makeWhereClause(placeholderMap, dateConditions, "original_url")}
+                GROUP BY original_url
+                ORDER BY count DESC, value
+                LIMIT 50
+              ) AS t
+            ),
+            'browser', (
+              SELECT coalesce(json_agg(t), '[]'::json)
+              FROM (
+                SELECT
+                  browser::TEXT AS value,
+                  'browser:' || browser::TEXT AS label,
+                  COUNT(*) AS count
+                FROM unfiltered_clicks
+                ${makeWhereClause(placeholderMap, dateConditions, "browser")}
+                GROUP BY browser
+                ORDER BY count DESC, value
+                LIMIT 50
+              ) AS t
+            ),
+            'device', (
+              SELECT coalesce(json_agg(t), '[]'::json)
+              FROM (
+                SELECT
+                  device::TEXT AS value,
+                  'device:' || device::TEXT AS label,
+                  COUNT(*) AS count
+                FROM unfiltered_clicks
+                ${makeWhereClause(placeholderMap, dateConditions, "device")}
+                GROUP BY device
+                ORDER BY count DESC, value
+                LIMIT 50
+              ) AS t
+            ),
+            'os', (
+              SELECT coalesce(json_agg(t), '[]'::json)
+              FROM (
+                SELECT
+                  os::TEXT AS value,
+                  'os:' || os::TEXT AS label,
+                  COUNT(*) AS count
+                FROM unfiltered_clicks
+                ${makeWhereClause(placeholderMap, dateConditions, "os")}
+                GROUP BY os
+                ORDER BY count DESC, value
+                LIMIT 50
+              ) AS t
+            )
+          ),
+          'chart', (
+            SELECT json_agg(
+              json_build_object(
+                'date',       buckets_with_dates.date,
+                'qr_count',   COALESCE(bucketed_clicks.qr_count, 0),
+                'link_count', COALESCE(bucketed_clicks.link_count, 0)
+              )
+              ORDER BY buckets_with_dates.date DESC
+            )
+            FROM array_of_buckets
+            CROSS JOIN UNNEST(buckets) WITH ORDINALITY AS buckets_with_dates(date, bucket_number)
+            LEFT JOIN bucketed_clicks ON buckets_with_dates.bucket_number = bucketed_clicks.bucket_number
+          )
+        ) as data;
+      `;
+
+      /*
+
+      ,
+
+
+          chart', (
+            SELECT json_agg(
+              json_build_object(
+                'date',       buckets_with_dates.date,
+                'qr_count',   COALESCE(bucketed_clicks.qr_count, 0),
+                'link_count', COALESCE(bucketed_clicks.link_count, 0)
+              )
+              ORDER BY buckets_with_dates.date DESC
+            )
+            FROM array_of_buckets
+            CROSS JOIN UNNEST(buckets) WITH ORDINALITY AS buckets_with_dates(date, bucket_number)
+            LEFT JOIN bucketed_clicks ON buckets_with_dates.bucket_number = bucketed_clicks.bucket_number
+          )
+
+      */
+
+      /*
+
+      'chart', (
+        SELECT
+          buckets_with_dates.date,
+          COALESCE(qr_count, 0) AS qr_count,
+          COALESCE(link_count, 0) AS link_count
+        FROM array_of_buckets
+        CROSS JOIN UNNEST(buckets) WITH ORDINALITY AS buckets_with_dates(date, bucket_number)
+        LEFT JOIN bucketed_clicks ON buckets_with_dates.bucket_number = bucketed_clicks.bucket_number
+        ORDER BY date DESC;
+      )
+
+
+      */
+
+      // console.log(query)
+      // console.log(queryParams)
+
+      const response: QueryResponse = await sql(query, [...queryParams]);
+      // console.log(response[0].data);
+      const validatedResponse = ClickEventSchemas.AnalyticsJSON.parse(response);
+      return ServerResponse.success(validatedResponse);
+
+      /**
+       *
+       * If dateRange[0] === undefind → AllTime query → used dateRange[1] in the WHERE
+       * but for the interval get the first and last click in that window
+       *
+       * If dateRange[1] !== undefined → LastNQuery → use dateRange[0] and dateRange[1] in WHERE
+       * and use dateRange[0] and dateRange[1] to compute interval
+       *
+       */
+
+      // let chartQuery = "";
+      // if (dateRange[0] === undefined) {
+      //   chartQuery = `
+      //   WITH user_links AS (
+      //     SELECT id, original_url, short_url
+      //     FROM links
+      //     WHERE user_id = $1
+      //   ),
+      //   filtered_clicks AS (
+      //     SELECT ce.*, ul.short_url, ul.original_url
+      //     FROM click_events AS ce
+      //     JOIN user_links AS ul ON ul.id = ce.link_id
+      //     ${whereClause}
+      //   ),
+      //   date_range AS (
+      //     SELECT
+      //       (MAX(created_at)::date - MIN(created_at)::date) AS num_days,
+      //       MIN(created_at) AS start_date,
+      //       MAX(created_at) AS end_date
+      //     FROM filtered_clicks
+      //   ),
+      //   interval AS (
+      //     SELECT
+      //       CASE
+      //         WHEN num_days <= 2 THEN INTERVAL '1 hour'
+      //         WHEN num_days <= 4  THEN INTERVAL '6 hours'
+      //         WHEN num_days <= 30  THEN INTERVAL '1 day'
+      //         WHEN num_days <= 90  THEN INTERVAL '3 days'
+      //         WHEN num_days <= 180  THEN INTERVAL '1 week'
+      //         WHEN num_days <= 1460  THEN INTERVAL '1 month'
+      //         ELSE INTERVAL '1 year'
+      //       END AS interval
+      //     FROM date_range
+      //   ),
+      //   time_events AS (
+      //     SELECT *
+      //     FROM date_range
+      //     CROSS JOIN interval
+      //   ),
+      //   array_of_buckets AS (
+      //     SELECT ARRAY_AGG(series) AS buckets
+      //       FROM generate_series(
+      //       (SELECT start_date FROM time_events)::date,
+      //       (SELECT end_date FROM time_events)::date,
+      //       (SELECT interval FROM time_events)
+      //     ) AS series
+      //   ),
+      //   bucketed_clicks AS (
+      //     SELECT
+      //       WIDTH_BUCKET(created_at, array_of_buckets.buckets) AS bucket_number,
+      //       SUM(CASE WHEN fc.source = 'qr' THEN 1 ELSE 0 END) AS qr_count,
+      //       SUM(CASE WHEN fc.source = 'link' THEN 1 ELSE 0 END) AS link_count
+      //     FROM filtered_clicks AS fc
+      //     CROSS JOIN array_of_buckets
+      //     GROUP BY bucket_number
+      //   )
+
+      //   SELECT buckets_with_dates.date, COALESCE(qr_count, 0) AS qr_count, COALESCE(link_count, 0) AS link_count
+      //   FROM array_of_buckets
+      //   CROSS JOIN UNNEST(buckets) WITH ORDINALITY AS buckets_with_dates(date, bucket_number)
+      //   LEFT JOIN bucketed_clicks ON buckets_with_dates.bucket_number = bucketed_clicks.bucket_number
+      //   ORDER BY date DESC;
+      // `;
+      // } else {
+      //   chartQuery = `
+      //     WITH user_links AS (
+      //       SELECT id, original_url, short_url
+      //       FROM links
+      //       WHERE user_id = $1
+      //     ),
+      //     filtered_clicks AS (
+      //       SELECT ce.*, ul.short_url, ul.original_url
+      //       FROM click_events AS ce
+      //       JOIN user_links AS ul ON ul.id = ce.link_id
+      //       ${whereClause}
+      //     ),
+      //     date_range AS (
+      //       SELECT
+      //         (MAX($${datePlaceholders[1]})::date - MIN($${datePlaceholders[0]})::date) AS num_days,
+      //         MIN($${datePlaceholders[0]}) AS start_date,
+      //         MAX($${datePlaceholders[1]}) AS end_date
+      //       FROM filtered_clicks
+      //     ),
+      //     interval AS (
+      //       SELECT
+      //         CASE
+      //           WHEN num_days <= 2 THEN INTERVAL '1 hour'
+      //           WHEN num_days <= 4  THEN INTERVAL '6 hours'
+      //           WHEN num_days <= 30  THEN INTERVAL '1 day'
+      //           WHEN num_days <= 90  THEN INTERVAL '3 days'
+      //           WHEN num_days <= 180  THEN INTERVAL '1 week'
+      //           WHEN num_days <= 1460  THEN INTERVAL '1 month'
+      //           ELSE INTERVAL '1 year'
+      //         END AS interval
+      //       FROM date_range
+      //     ),
+      //     time_events AS (
+      //       SELECT *
+      //       FROM date_range
+      //       CROSS JOIN interval
+      //     ),
+      //     array_of_buckets AS (
+      //       SELECT ARRAY_AGG(series) AS buckets
+      //         FROM generate_series(
+      //         (SELECT start_date FROM time_events)::date,
+      //         (SELECT end_date FROM time_events)::date,
+      //         (SELECT interval FROM time_events)
+      //       ) AS series
+      //     ),
+      //     bucketed_clicks AS (
+      //       SELECT
+      //         WIDTH_BUCKET(created_at, array_of_buckets.buckets) AS bucket_number,
+      //         SUM(CASE WHEN fc.source = 'qr' THEN 1 ELSE 0 END) AS qr_count,
+      //         SUM(CASE WHEN fc.source = 'link' THEN 1 ELSE 0 END) AS link_count
+      //       FROM filtered_clicks AS fc
+      //       CROSS JOIN array_of_buckets
+      //       GROUP BY bucket_number
+      //     )
+
+      //     SELECT buckets_with_dates.date, COALESCE(qr_count, 0) AS qr_count, COALESCE(link_count, 0) AS link_count
+      //     FROM array_of_buckets
+      //     CROSS JOIN UNNEST(buckets) WITH ORDINALITY AS buckets_with_dates(date, bucket_number)
+      //     LEFT JOIN bucketed_clicks ON buckets_with_dates.bucket_number = bucketed_clicks.bucket_number
+      //     ORDER BY date DESC;
+      //   `;
+      // }
+
+      // const jsonResponse: QueryResponse = await sql(jsonQuery, [...queryParams, LIMIT]);
+      // const jsonResult = parseJSONQueryResponse(jsonResponse, ClickEventSchemas.JSONAgg);
+
+      // const chartResponse: QueryResponse = await sql(chartQuery, queryParams);
+      // const chartResult = parseQueryResponse(chartResponse, ClickEventSchemas.Chart);
+
+      // return ServerResponse.success({
+      //   chart: chartResult,
+      //   json: jsonResult
+      // });
 
     } catch (error: unknown) {
       console.log({ error })
@@ -285,6 +974,7 @@ export class ClickEvents {
       const testquery = `
         WITH filtered_clicks AS (
           SELECT
+            user_links.id AS id,
             ce.source AS source,
             ce.city AS city,
             ce.country AS country,
@@ -375,9 +1065,14 @@ export class ClickEvents {
           'original_url', (
             SELECT coalesce(json_agg(t), '[]'::json)
             FROM (
-              SELECT original_url::TEXT AS value, 'source:' || original_url::TEXT AS label, COUNT(*) AS count, (COUNT(*) * 100.0 / (SELECT total FROM total_count)) AS percent
+              SELECT ul.original_url::TEXT AS value, 'source:' || ul.original_url::TEXT AS label, COUNT(filtered_clicks.id) AS count, (COUNT(filtered_clicks.id) * 100.0 / (SELECT total FROM total_count)) AS percent
               FROM filtered_clicks
-              GROUP BY original_url
+              RIGHT JOIN (
+                SELECT *
+                FROM links
+                WHERE user_id = $1
+              ) AS ul ON ul.id = filtered_clicks.id
+              GROUP BY (ul.id, ul.original_url)
               ORDER BY count DESC, value
               LIMIT $${placeholderIndex}
             ) t

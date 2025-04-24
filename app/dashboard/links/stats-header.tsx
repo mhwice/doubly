@@ -20,14 +20,14 @@ I can give some additional info like how many urls/clicks now vs last week or so
 
 interface StatsHeaderProps {
   stats: {
-    numUrls: number,
-    numLinkClicks: number,
-    numQRClicks: number
+    numLinks: number,
+    linkClicks: number,
+    qrClicks: number
   }
 }
 
 export function StatsHeader({ stats }: StatsHeaderProps) {
-  const { numUrls, numLinkClicks, numQRClicks } = stats;
+  const { numLinks, linkClicks, qrClicks } = stats;
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       <Card className="rounded-[var(--bradius)] shadow-none border-vborder">
@@ -38,7 +38,7 @@ export function StatsHeader({ stats }: StatsHeaderProps) {
           <LinkIcon className="h-4 w-4 text-vsecondary" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold"><NumberFlow value={numUrls}/></div>
+          <div className="text-2xl font-bold"><NumberFlow value={numLinks}/></div>
           <p className="text-xs text-vsecondary">
             +20.1% from last month
           </p>
@@ -52,7 +52,7 @@ export function StatsHeader({ stats }: StatsHeaderProps) {
           <MousePointerClickIcon className="h-4 w-4 text-vsecondary" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-vprimary"><NumberFlow value={numLinkClicks} /></div>
+          <div className="text-2xl font-bold text-vprimary"><NumberFlow value={linkClicks} /></div>
           <p className="text-xs text-vsecondary">
             +180.1% from last month
           </p>
@@ -64,7 +64,7 @@ export function StatsHeader({ stats }: StatsHeaderProps) {
           <QrCodeIcon className="h-4 w-4 text-vsecondary"/>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-vprimary"><NumberFlow value={numQRClicks} /></div>
+          <div className="text-2xl font-bold text-vprimary"><NumberFlow value={qrClicks} /></div>
           <p className="text-xs text-vsecondary">
             +19% from last month
           </p>

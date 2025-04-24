@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Combobox } from "./combobox";
-import { ClickEventSchemas, ClickEventTypes } from "@/lib/zod/clicks";
+import { AnalyticsServerResponseSchema, ClickEventSchemas, ClickEventTypes, ComboboxType } from "@/lib/zod/clicks";
 import { TimePicker } from "./time-picker";
 import { deserialize } from "superjson";
 import { TabGroup } from "./tab-group";
@@ -14,6 +14,12 @@ import { useCurrentDate } from "../date-context";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatsHeader } from "../links/stats-header";
 
+interface StatsHeaderProps {
+  numLinks: number,
+  linkClicks: number,
+  qrClicks: number
+}
+
 export function ClientWrapper() {
 
   const { date: now } = useCurrentDate();
@@ -24,6 +30,8 @@ export function ClientWrapper() {
 
   const [chartData, setChartData] = useState<ClickEventTypes.Chart[]>();
   const [filteredData, setFilteredData] = useState<ClickEventTypes.JSONAgg>();
+  const [statsHeaderData, setStatsHeaderData] = useState<StatsHeaderProps>();
+  const [comboboxData, setComboboxData] = useState<ComboboxType>();
 
   // const [now, setNow] = useState<Date>(new Date());
   const [dateRange, setDateRange] = useState<[Date | undefined, Date]>([undefined, now]);
@@ -36,7 +44,7 @@ export function ClientWrapper() {
     const response = await fetch(url);
     const jsonResponse = await response.json();
     const deserialized = deserialize(jsonResponse);
-    const validated = ClickEventSchemas.ServerResponseFilter.safeParse(deserialized);
+    const validated = AnalyticsServerResponseSchema.safeParse(deserialized);
     if (!validated.success) throw new Error("failed to validate api response");
     if (!validated.data.success) throw new Error(validated.data.error);
     return validated.data.data;
@@ -46,7 +54,7 @@ export function ClientWrapper() {
   selectedValues.forEach((item) => params.append(item[0], item[1]));
   if (dateRange[0] !== undefined) params.append("dateStart", dateRange[0].toISOString());
   params.append("dateEnd", dateRange[1].toISOString());
-  const url = `/api/filter?${params.toString()}`;
+  const url = `/api/new-filter?${params.toString()}`;
 
   const { data, error, isLoading, isValidating } = useSWR(url, fetcher, {
     revalidateIfStale: false,
@@ -56,12 +64,14 @@ export function ClientWrapper() {
   });
 
   useEffect(() => {
-    if (data?.chart) setChartData(data.chart);
-    if (data?.json) setFilteredData(data.json);
+    setChartData(data?.chart);
+    setFilteredData(data?.tabs);
+    setStatsHeaderData(data?.stats);
+    setComboboxData(data?.combobox);
   }, [data]);
 
-  let stats = undefined;
-  if (data?.json) stats = getStatsData(data.json);
+  // let stats = undefined;
+  // if (data?.tabs) stats = getStatsData(data.tabs);
 
   if (isLoading && !data) return (
     <>
@@ -73,7 +83,7 @@ export function ClientWrapper() {
   return (
     <div className="flex flex-col">
       <div className="pt-6">
-        {stats && <StatsHeader stats={stats} />}
+        {statsHeaderData && <StatsHeader stats={statsHeaderData} />}
       </div>
       <TagGroup selectedValues={selectedValues} onRemoveTag={removeTag} />
       <div className="flex flex-row justify-start space-x-4">
@@ -120,7 +130,7 @@ function getStatsData(filteredData: ClickEventTypes.JSONAgg) {
   const qr = source.filter((x) => x.value === "qr")[0];
 
   return {
-    numUrls: filteredData.shortUrl.length,
+    numUrls: filteredData.shortUrl.length, // very wrong!
     numLinkClicks: link?.count || 0,
     numQRClicks: qr?.count || 0
   };

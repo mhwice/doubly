@@ -9,18 +9,15 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "./ui/button";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { FormError } from "@/components/form-error";
-import { LoadingButton } from "@/components/auth/loading-button";
 import { createLink } from "@/actions/safe-create-link";
-import { editLink } from "@/actions/safe-edit-link";
 import { Loader2 } from "lucide-react";
 import { UrlInput } from "./url-input";
 
@@ -29,17 +26,18 @@ interface CustomDialogProps {
   onOpenChange: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
+// Todo validate that the string looks like a url
 const LinkSchema = z.object({
-  link: z.string().trim().url().min(1, { message: "link is required" }),
-  // password: z.string().min(1, { message: "pass is required" }),
+  link: z.string().trim().min(1, { message: "link is required" })
+}).transform(({ link }) => {
+  if (link.startsWith("https://")) return { link };
+  return { link : "https://" + link };
 });
 
 export function CreateLinkModal({ isOpen, onOpenChange }: CustomDialogProps) {
 
   const [error, setError] = useState<string | undefined>();
   const [isPending, startTransition] = useTransition();
-
-  // const { userId } = useUser();
 
   const form = useForm<z.infer<typeof LinkSchema>>({
     resolver: zodResolver(LinkSchema),
@@ -49,10 +47,11 @@ export function CreateLinkModal({ isOpen, onOpenChange }: CustomDialogProps) {
   });
 
   const onSubmit = (values: z.infer<typeof LinkSchema>) => {
-    console.log("submitting")
 
+    console.log("before", values)
     const validatedFields = LinkSchema.safeParse(values);
     if (!validatedFields.success) return { error: "invalid fields" };
+    console.log("after", validatedFields.data)
 
     const { link } = validatedFields.data;
 
@@ -70,7 +69,7 @@ export function CreateLinkModal({ isOpen, onOpenChange }: CustomDialogProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg border-[#dedede] p-0 overflow-hidden sm:rounded-xl shadow-custom">
+      <DialogContent onCloseAutoFocus={() => form.reset({})} className="sm:max-w-lg border-[#dedede] p-0 overflow-hidden sm:rounded-xl shadow-custom">
         <DialogHeader className="px-6 pb-2 pt-7">
           <DialogTitle className="text-vprimary text-2xl">Create Link</DialogTitle>
           <DialogDescription className="text-vsecondary">
@@ -84,7 +83,6 @@ export function CreateLinkModal({ isOpen, onOpenChange }: CustomDialogProps) {
               <FormField control={form.control} name="link" render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    {/* <Input {...field} disabled={isPending} placeholder="https://www.google.com" className="shadow-none border-vborder"/> */}
                     <UrlInput {...field} placeholder="www.google.com" disabled={false}/>
                   </FormControl>
                   <FormMessage />
@@ -92,7 +90,6 @@ export function CreateLinkModal({ isOpen, onOpenChange }: CustomDialogProps) {
               )} />
             </div>
             <FormError message={error} />
-            {/* <LoadingButton loading={isPending}>Create</LoadingButton> */}
           </form>
         </Form>
         </div>
