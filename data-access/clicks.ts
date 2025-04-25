@@ -260,24 +260,25 @@ export class ClickEvents {
         datePlaceholders[1] = placeholderIndex++;
       }
 
-      function makeWhereClause(placeholderMap: Map<string, string>, dateConditions: string[], excludedField?: string) {
-        // console.log("**********")
-        // console.log({ placeholderMap })
-        // console.log({ dateConditions })
-        // console.log({ excludedField })
-
+      function makeWhereClause(placeholderMap: Map<string, string>, dateConditions: string[], negateFilters: boolean = false, excludedField?: string) {
         const conditions = [];
         for (const [field, condition] of placeholderMap) {
           if (excludedField && (field === excludedField)) continue;
           conditions.push(condition);
         }
 
-        for (const dateCondition of dateConditions) conditions.push(dateCondition);
+        if (conditions.length === 0) {
+          if (dateConditions.length > 0) return `WHERE ${dateConditions.join(" AND ")}`;
+          return "";
+        }
 
-        const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
-        // console.log({ whereClause });
-        // console.log("**********")
-        return whereClause;
+        if (negateFilters) {
+          if (dateConditions.length > 0) return `WHERE NOT(${conditions.join(" AND ")}) AND ${dateConditions.join(" AND ")}`;
+          return `WHERE NOT(${conditions.join(" AND ")})`;
+        } else {
+          if (dateConditions.length > 0) return `WHERE ${conditions.join(" AND ")} AND ${dateConditions.join(" AND ")}`;
+          return `WHERE ${conditions.join(" AND ")}`;
+        }
       }
 
       // const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
@@ -541,25 +542,37 @@ export class ClickEvents {
                   'source:' || source::TEXT AS label,
                   COUNT(*) AS count
                 FROM unfiltered_clicks
-                ${makeWhereClause(placeholderMap, dateConditions, "source")}
+                ${makeWhereClause(placeholderMap, dateConditions, false, "source")}
                 GROUP BY source
                 ORDER BY count DESC, value
                 LIMIT 50
               ) AS t
             ),
             'country', (
-              SELECT coalesce(json_agg(t), '[]'::json)
+              SELECT coalesce(json_agg(row ORDER BY row.count DESC, row.value), '[]'::json)
               FROM (
-                SELECT
-                  country::TEXT AS value,
-                  'country:' || country::TEXT AS label,
-                  COUNT(*) AS count
-                FROM unfiltered_clicks
-                ${makeWhereClause(placeholderMap, dateConditions, "country")}
-                GROUP BY country
+                SELECT * FROM (
+                  SELECT
+                    country::TEXT AS value,
+                    'country:' || country::TEXT AS label,
+                    COUNT(*) AS count
+                  FROM unfiltered_clicks
+                  ${makeWhereClause(placeholderMap, dateConditions, false, "country")}
+                  GROUP BY country
+
+                  UNION ALL
+
+                  SELECT
+                    country::TEXT AS value,
+                    'country:' || country::TEXT AS label,
+                    0 AS count
+                  FROM unfiltered_clicks
+                  ${makeWhereClause(placeholderMap, dateConditions, true, "country")}
+                  GROUP BY country
+                ) AS unioned
                 ORDER BY count DESC, value
                 LIMIT 50
-              ) AS t
+              ) AS row
             ),
             'region', (
               SELECT coalesce(json_agg(t), '[]'::json)
@@ -569,7 +582,7 @@ export class ClickEvents {
                   'region:' || region::TEXT AS label,
                   COUNT(*) AS count
                 FROM unfiltered_clicks
-                ${makeWhereClause(placeholderMap, dateConditions, "region")}
+                ${makeWhereClause(placeholderMap, dateConditions, false, "region")}
                 GROUP BY region
                 ORDER BY count DESC, value
                 LIMIT 50
@@ -583,7 +596,7 @@ export class ClickEvents {
                   'continent:' || continent::TEXT AS label,
                   COUNT(*) AS count
                 FROM unfiltered_clicks
-                ${makeWhereClause(placeholderMap, dateConditions, "continent")}
+                ${makeWhereClause(placeholderMap, dateConditions, false, "continent")}
                 GROUP BY continent
                 ORDER BY count DESC, value
                 LIMIT 50
@@ -597,7 +610,7 @@ export class ClickEvents {
                   'city:' || city::TEXT AS label,
                   COUNT(*) AS count
                 FROM unfiltered_clicks
-                ${makeWhereClause(placeholderMap, dateConditions, "city")}
+                ${makeWhereClause(placeholderMap, dateConditions, false, "city")}
                 GROUP BY city
                 ORDER BY count DESC, value
                 LIMIT 50
@@ -611,7 +624,7 @@ export class ClickEvents {
                   'short_url:' || short_url::TEXT AS label,
                   COUNT(*) AS count
                 FROM unfiltered_clicks
-                ${makeWhereClause(placeholderMap, dateConditions, "short_url")}
+                ${makeWhereClause(placeholderMap, dateConditions, false, "short_url")}
                 GROUP BY short_url
                 ORDER BY count DESC, value
                 LIMIT 50
@@ -625,7 +638,7 @@ export class ClickEvents {
                   'original_url:' || original_url::TEXT AS label,
                   COUNT(*) AS count
                 FROM unfiltered_clicks
-                ${makeWhereClause(placeholderMap, dateConditions, "original_url")}
+                ${makeWhereClause(placeholderMap, dateConditions, false, "original_url")}
                 GROUP BY original_url
                 ORDER BY count DESC, value
                 LIMIT 50
@@ -639,7 +652,7 @@ export class ClickEvents {
                   'browser:' || browser::TEXT AS label,
                   COUNT(*) AS count
                 FROM unfiltered_clicks
-                ${makeWhereClause(placeholderMap, dateConditions, "browser")}
+                ${makeWhereClause(placeholderMap, dateConditions, false, "browser")}
                 GROUP BY browser
                 ORDER BY count DESC, value
                 LIMIT 50
@@ -653,7 +666,7 @@ export class ClickEvents {
                   'device:' || device::TEXT AS label,
                   COUNT(*) AS count
                 FROM unfiltered_clicks
-                ${makeWhereClause(placeholderMap, dateConditions, "device")}
+                ${makeWhereClause(placeholderMap, dateConditions, false, "device")}
                 GROUP BY device
                 ORDER BY count DESC, value
                 LIMIT 50
@@ -667,7 +680,7 @@ export class ClickEvents {
                   'os:' || os::TEXT AS label,
                   COUNT(*) AS count
                 FROM unfiltered_clicks
-                ${makeWhereClause(placeholderMap, dateConditions, "os")}
+                ${makeWhereClause(placeholderMap, dateConditions, false, "os")}
                 GROUP BY os
                 ORDER BY count DESC, value
                 LIMIT 50
@@ -675,17 +688,23 @@ export class ClickEvents {
             )
           ),
           'chart', (
-            SELECT json_agg(
-              json_build_object(
-                'date',       buckets_with_dates.date,
-                'qr_count',   COALESCE(bucketed_clicks.qr_count, 0),
-                'link_count', COALESCE(bucketed_clicks.link_count, 0)
-              )
-              ORDER BY buckets_with_dates.date DESC
-            )
+            SELECT
+              COALESCE(
+                json_agg(
+                  json_build_object(
+                    'date',       buckets_with_dates.date,
+                    'qr_count',   COALESCE(bucketed_clicks.qr_count, 0),
+                    'link_count', COALESCE(bucketed_clicks.link_count, 0)
+                  )
+                  ORDER BY buckets_with_dates.date DESC
+                ),
+                '[]'::json
+              ) AS chart_array
             FROM array_of_buckets
-            CROSS JOIN UNNEST(buckets) WITH ORDINALITY AS buckets_with_dates(date, bucket_number)
-            LEFT JOIN bucketed_clicks ON buckets_with_dates.bucket_number = bucketed_clicks.bucket_number
+            CROSS JOIN UNNEST(buckets) WITH ORDINALITY
+              AS buckets_with_dates(date, bucket_number)
+            LEFT JOIN bucketed_clicks
+              ON buckets_with_dates.bucket_number = bucketed_clicks.bucket_number
           )
         ) as data;
       `;
@@ -731,7 +750,7 @@ export class ClickEvents {
       // console.log(queryParams)
 
       const response: QueryResponse = await sql(query, [...queryParams]);
-      // console.log(response[0].data);
+      console.log(response);
       const validatedResponse = ClickEventSchemas.AnalyticsJSON.parse(response);
       return ServerResponse.success(validatedResponse);
 

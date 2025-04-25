@@ -1,10 +1,7 @@
 "use client"
 
-import { useState, useEffect, Dispatch, SetStateAction, useRef } from "react"
+import { useState, useEffect, Dispatch, SetStateAction } from "react"
 import { LinkIcon, Loader2, Filter, Flag, Building2, SquareArrowOutUpRight, AppWindow, Smartphone, CodeXml, Globe, MapPinned, MousePointerClick } from "lucide-react"
-// import { IoOptionsSharp } from "react-icons/io5";
-// import { PiMapPinAreaFill } from "react-icons/pi";
-// import { IoMdGlobe } from "react-icons/io";
 
 import { Button } from "@/components/ui/button"
 import {
@@ -21,7 +18,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 
-import { ClickEventSchemas, ClickEventTypes } from "@/lib/zod/clicks"
+import { ClickEventSchemas, ClickEventTypes, ComboboxType } from "@/lib/zod/clicks"
 import { useDebounce } from "./use-debounce"
 import { deserialize, stringify } from "superjson"
 import { type FilterEnumType } from "@/lib/zod/links"
@@ -30,7 +27,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cleanUrl } from "../links/components/columns";
 
 type ComboboxProps = {
-  filteredData: ClickEventTypes.JSONAgg,
+  comboboxData: ComboboxType,
   selectedValues: string[][],
   setSelectedValues: Dispatch<SetStateAction<string[][]>>
 };
@@ -46,24 +43,38 @@ type MenuItem = {
 
 type Menu = MenuItem[];
 
-export function Combobox({ filteredData, selectedValues, setSelectedValues }: ComboboxProps) {
+const rootPage = [
+  { value: "Source", label: "source", icon: <MousePointerClick strokeWidth={1.75} size={16} className="h-4 w-4 text-vsecondary"/> },
+  { value: "Country", label: "country", icon: <Flag strokeWidth={1.75} size={16} className="h-4 w-4 text-vsecondary" /> },
+  { value: "Region", label: "region", icon: <MapPinned strokeWidth={1.75} size={16} className="h-4 w-4 text-vsecondary" /> },
+  { value: "City", label: "city", icon: <Building2 strokeWidth={1.75} size={16} className="h-4 w-4 text-vsecondary" /> },
+  { value: "Continent", label: "continent", icon: <Globe strokeWidth={1.75} size={16} className="h-4 w-4 text-vsecondary" /> },
+  { value: "Short Url", label: "shortUrl", icon:  <LinkIcon strokeWidth={1.75} size={16} className="h-4 w-4 text-vsecondary" /> },
+  { value: "Original Url", label: "originalUrl", icon: <SquareArrowOutUpRight strokeWidth={1.75} size={16} className="h-4 w-4 text-vsecondary" /> },
+  { value: "Browser", label: "browser", icon: <AppWindow strokeWidth={1.75} size={16} className="h-4 w-4 text-vsecondary" /> },
+  { value: "Device", label: "device", icon: <Smartphone strokeWidth={1.75} size={16} className="h-4 w-4 text-vsecondary" /> },
+  { value: "OS", label: "os", icon: <CodeXml strokeWidth={1.75} size={16} className="h-4 w-4 text-vsecondary" /> }
+];
+
+export function Combobox({ comboboxData, selectedValues, setSelectedValues }: ComboboxProps) {
   // this is temporary. going to need to use useMemo to acutally prevent re-renders
-  const frozen = useRef(filteredData);
+  // const frozen = useRef(filteredData);
 
   // use to determine if we should be doing local queries or server-queries
+
   const LIMIT = 50;
   const shouldUseServerFetch = {
     root: false,
-    source: frozen.current.source.length >= LIMIT,
-    country: frozen.current.country.length >= LIMIT,
-    region: frozen.current.region.length >= LIMIT,
-    city: frozen.current.city.length >= LIMIT,
-    continent: frozen.current.continent.length >= LIMIT,
-    shortUrl: frozen.current.shortUrl.length >= LIMIT,
-    originalUrl: frozen.current.originalUrl.length >= LIMIT,
-    browser: frozen.current.browser.length >= LIMIT,
-    device: frozen.current.device.length >= LIMIT,
-    os: frozen.current.os.length >= LIMIT,
+    source: comboboxData.source.length >= LIMIT,
+    country: comboboxData.country.length >= LIMIT,
+    region: comboboxData.region.length >= LIMIT,
+    city: comboboxData.city.length >= LIMIT,
+    continent: comboboxData.continent.length >= LIMIT,
+    shortUrl: comboboxData.shortUrl.length >= LIMIT,
+    originalUrl: comboboxData.originalUrl.length >= LIMIT,
+    browser: comboboxData.browser.length >= LIMIT,
+    device: comboboxData.device.length >= LIMIT,
+    os: comboboxData.os.length >= LIMIT,
   };
 
   // Combobox state
@@ -72,10 +83,11 @@ export function Combobox({ filteredData, selectedValues, setSelectedValues }: Co
   const [loading, setLoading] = useState(false);
 
   // What to display is no query
-  const [fallbackMenu, setFallbackMenu] = useState(buildMenu(frozen.current));
+  // const [fallbackMenu, setFallbackMenu] = useState(buildMenu(frozen.current));
+  // const [wholeMenu, setWholeMenu] = useState(buildMenu(comboboxData));
 
   // What to display if there is a query
-  const [currentMenu, setCurrentMenu] = useState<Menu>(fallbackMenu.root);
+  const [currentPage, setCurrentPage] = useState<Menu>(rootPage);
 
   // The thing we are displaying
   const [page, setPage] = useState<Page>("root");
@@ -83,6 +95,10 @@ export function Combobox({ filteredData, selectedValues, setSelectedValues }: Co
   // Search state
   const [queryString, setQueryString] = useState<string>("");
   const debouncedQueryString = useDebounce(queryString, 2000);
+
+  // useEffect(() => {
+  //   console.log({wholeMenu})
+  // }, [wholeMenu]);
 
   // Clear when closed
   useEffect(() => {
@@ -96,7 +112,7 @@ export function Combobox({ filteredData, selectedValues, setSelectedValues }: Co
       setValue("");
       setQueryString("");
       setPage("root");
-      setCurrentMenu(fallbackMenu.root);
+      setCurrentPage(rootPage);
     }, 50);
 
     return () => clearTimeout(timer);
@@ -110,7 +126,12 @@ export function Combobox({ filteredData, selectedValues, setSelectedValues }: Co
 
     if (queryString === "") {
       // set menu to fallback
-      setCurrentMenu(fallbackMenu[page]);
+      if (page === "root") {
+        setCurrentPage(rootPage);
+      } else {
+        setCurrentPage(comboboxData[page]);
+        // setCurrentPage(wholeMenu[page]);
+      }
       return;
     }
 
@@ -141,7 +162,7 @@ export function Combobox({ filteredData, selectedValues, setSelectedValues }: Co
 
         // console.log(currentMenu)
         setLoading(false);
-        setCurrentMenu(x);
+        setCurrentPage(x);
         // console.log(currentMenu)
       })
 
@@ -149,14 +170,10 @@ export function Combobox({ filteredData, selectedValues, setSelectedValues }: Co
 
   const handleSelect = (value: string, item: MenuItem) => {
 
-    if (item.label in fallbackMenu) {
-      if (item.label === "root") {
-        // not possible...
-      } else {
-        setQueryString("");
-        setPage(item.label as FilterEnumType);
-        setCurrentMenu(fallbackMenu[item.label as FilterEnumType]);
-      }
+    if (item.label in comboboxData) {
+      setQueryString("");
+      setPage(item.label as FilterEnumType);
+      setCurrentPage(comboboxData[item.label as FilterEnumType]);
     } else {
       // select this thing
       // console.log("selected", item.value);
@@ -228,7 +245,7 @@ export function Combobox({ filteredData, selectedValues, setSelectedValues }: Co
                 <>
                   <CommandEmpty>Not found.</CommandEmpty>
                   <CommandGroup heading={value || ""} >
-                    {currentMenu.map((item) => {
+                    {currentPage.map((item) => {
                       if (page === "root") {
                         return (
                           <CommandItem key={item.label} onSelect={(value) => handleSelect(value, item)}>
@@ -250,7 +267,7 @@ export function Combobox({ filteredData, selectedValues, setSelectedValues }: Co
                       }
                     })}
                   </CommandGroup>
-                  {shouldUseServerFetch[page] && currentMenu.length === LIMIT &&
+                  {shouldUseServerFetch[page] && currentPage.length === LIMIT &&
                     <CommandGroup>
                       <CommandItem disabled>
                         <span className="mx-auto font-mono text-vtertiary">search to view more items</span>
@@ -265,60 +282,6 @@ export function Combobox({ filteredData, selectedValues, setSelectedValues }: Co
       </Popover>
     </div>
   )
-}
-
-function buildMenu(filteredData: ClickEventTypes.JSONAgg) {
-  const menu: {
-    root: Menu
-    source: Menu;
-    country: Menu;
-    region: Menu;
-    city: Menu;
-    continent: Menu;
-    shortUrl: Menu;
-    originalUrl: Menu;
-    browser: Menu;
-    device: Menu;
-    os: Menu;
-  } = {
-    root: [
-      { value: "Source", label: "source", icon: <MousePointerClick strokeWidth={1.75} size={16} className="h-4 w-4 text-vsecondary"/> },
-      { value: "Country", label: "country", icon: <Flag strokeWidth={1.75} size={16} className="h-4 w-4 text-vsecondary" /> },
-      { value: "Region", label: "region", icon: <MapPinned strokeWidth={1.75} size={16} className="h-4 w-4 text-vsecondary" /> },
-      { value: "City", label: "city", icon: <Building2 strokeWidth={1.75} size={16} className="h-4 w-4 text-vsecondary" /> },
-      { value: "Continent", label: "continent", icon: <Globe strokeWidth={1.75} size={16} className="h-4 w-4 text-vsecondary" /> },
-      { value: "Short Url", label: "shortUrl", icon:  <LinkIcon strokeWidth={1.75} size={16} className="h-4 w-4 text-vsecondary" /> },
-      { value: "Original Url", label: "originalUrl", icon: <SquareArrowOutUpRight strokeWidth={1.75} size={16} className="h-4 w-4 text-vsecondary" /> },
-      { value: "Browser", label: "browser", icon: <AppWindow strokeWidth={1.75} size={16} className="h-4 w-4 text-vsecondary" /> },
-      { value: "Device", label: "device", icon: <Smartphone strokeWidth={1.75} size={16} className="h-4 w-4 text-vsecondary" /> },
-      { value: "OS", label: "os", icon: <CodeXml strokeWidth={1.75} size={16} className="h-4 w-4 text-vsecondary" /> },
-      // { value: "Source", label: "source", icon: <IoOptionsSharp className="h-4 w-4 text-vsecondary"/> },
-      // { value: "Country", label: "country", icon: <IoFlag className="h-4 w-4 text-vsecondary" /> },
-      // { value: "Region", label: "region", icon: <PiMapPinAreaFill className="h-4 w-4 text-vsecondary" /> },
-      // { value: "City", label: "city", icon: <MdLocationCity className="h-4 w-4 text-vsecondary" /> },
-      // { value: "Continent", label: "continent", icon: <IoMdGlobe className="h-4 w-4 text-vsecondary" /> },
-      // { value: "Original Url", label: "originalUrl", icon: <BiLinkExternal className="h-4 w-4 text-vsecondary" /> },
-      // { value: "Browser", label: "browser", icon: <GoBrowser className="h-4 w-4 text-vsecondary" /> },
-      // { value: "Device", label: "device", icon: <HiOutlineDevicePhoneMobile className="h-4 w-4 text-vsecondary" /> },
-      // { value: "OS", label: "os", icon: <IoCubeOutline className="h-4 w-4 text-vsecondary" /> },
-    ],
-    source: [],
-    country: [],
-    region: [],
-    city: [],
-    continent: [],
-    shortUrl: [],
-    originalUrl: [],
-    browser: [],
-    device: [],
-    os: [],
-  }
-
-  for (const { label } of menu.root) {
-    menu[label as FilterEnumType] = filteredData[label as FilterEnumType];
-  }
-
-  return menu;
 }
 
 const LoadingSkeleton = () => {

@@ -64,6 +64,7 @@ export function ClientWrapper() {
   });
 
   useEffect(() => {
+    console.log(data)
     setChartData(data?.chart);
     setFilteredData(data?.tabs);
     setStatsHeaderData(data?.stats);
@@ -87,8 +88,8 @@ export function ClientWrapper() {
       </div>
       <TagGroup selectedValues={selectedValues} onRemoveTag={removeTag} />
       <div className="flex flex-row justify-start space-x-4">
-        {filteredData && <Combobox
-          filteredData={filteredData}
+        {comboboxData && <Combobox
+          comboboxData={comboboxData}
           selectedValues={selectedValues}
           setSelectedValues={setSelectedValues}
         />}

@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
     ...validated.data
   });
 
-  // console.log(response);
+  // if (response.success) console.log({combobox: response.data.combobox.country})
   // console.log(serialize(response));
 
   // 5 - Handle DAL response
