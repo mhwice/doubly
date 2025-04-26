@@ -1,3 +1,16 @@
+/*
+
+  TODO
+
+  • StatsHeader numUrls is wrong. Think about how to handle when no filters, and when filters.
+  • Right now, things that don't match the current filters all have a count of 0, and therefore get sorted
+  alphabetically. I don't really like this. I still want them to have a count of 0, but think it makes more sense
+  to sort them by how many click events they had when no filters were applied.
+
+  So the first result with a 0, would actually be the country with the most clicks that doesn't match the filters.
+
+*/
+
 "use client"
 
 import { useState, useEffect, Dispatch, SetStateAction } from "react"
