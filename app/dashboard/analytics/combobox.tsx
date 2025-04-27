@@ -31,18 +31,20 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 
-import { ClickEventSchemas, ClickEventTypes, ComboboxType } from "@/lib/zod/clicks"
+import { AnalyticsServerResponseSchema, ClickEventSchemas, ClickEventTypes, ComboboxType, ServerResponseComboboxSchema } from "@/lib/zod/clicks"
 import { useDebounce } from "./use-debounce"
 import { deserialize, stringify } from "superjson"
 import { type FilterEnumType } from "@/lib/zod/links"
 import { CircularCheckbox } from "./circular-checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cleanUrl } from "../links/components/columns";
+import useSWR from 'swr';
 
 type ComboboxProps = {
   comboboxData: ComboboxType,
   selectedValues: string[][],
-  setSelectedValues: Dispatch<SetStateAction<string[][]>>
+  setSelectedValues: Dispatch<SetStateAction<string[][]>>,
+  dateRange: [Date | undefined, Date]
 };
 
 type Page = FilterEnumType | "root";
@@ -69,11 +71,13 @@ const rootPage = [
   { value: "OS", label: "os", icon: <CodeXml strokeWidth={1.75} size={16} className="h-4 w-4 text-vsecondary" /> }
 ];
 
-export function Combobox({ comboboxData, selectedValues, setSelectedValues }: ComboboxProps) {
+export function Combobox({ comboboxData, selectedValues, setSelectedValues, dateRange }: ComboboxProps) {
   // this is temporary. going to need to use useMemo to acutally prevent re-renders
   // const frozen = useRef(filteredData);
 
   // use to determine if we should be doing local queries or server-queries
+
+  const [mounted, setMounted] = useState(false);
 
   const LIMIT = 50;
   const shouldUseServerFetch = {
@@ -93,7 +97,7 @@ export function Combobox({ comboboxData, selectedValues, setSelectedValues }: Co
   // Combobox state
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loadingSpinner, setLoadingSpinner] = useState(false);
 
   // What to display is no query
   // const [fallbackMenu, setFallbackMenu] = useState(buildMenu(frozen.current));
@@ -107,7 +111,49 @@ export function Combobox({ comboboxData, selectedValues, setSelectedValues }: Co
 
   // Search state
   const [queryString, setQueryString] = useState<string>("");
-  const debouncedQueryString = useDebounce(queryString, 2000);
+  const debouncedQueryString = useDebounce(queryString, 300);
+
+  const fetcher = async (url: string) => {
+    const response = await fetch(url);
+    const jsonResponse = await response.json();
+    const deserialized = deserialize(jsonResponse);
+    const validated = ServerResponseComboboxSchema.safeParse(deserialized);
+    if (!validated.success) throw new Error("failed to validate api response");
+    if (!validated.data.success) throw new Error(validated.data.error);
+    return validated.data.data;
+  }
+
+  // Do we want to also filter by date here????
+  const params = new URLSearchParams();
+  selectedValues.forEach((item) => params.append(item[0], item[1]));
+  if (dateRange[0] !== undefined) params.append("dateStart", dateRange[0].toISOString());
+  params.append("dateEnd", dateRange[1].toISOString());
+
+  if (queryString !== "" && page !== "root") {
+    params.append("queryString", debouncedQueryString);
+    params.append("queryField", page);
+  }
+
+  const url = `/api/new-query?${params.toString()}`;
+
+  function allowedUrl() {
+    if (debouncedQueryString === "") return null;
+    if (queryString === "") return null;
+    if (page === "root") return null;
+    // console.log({ debouncedQueryString, queryString, page });
+    return url;
+  }
+
+  const { data, error, isLoading, isValidating } = useSWR(allowedUrl(), fetcher, {
+    revalidateIfStale: false,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    keepPreviousData: true
+  });
+
+  useEffect(() => {
+    if (data) setCurrentPage(data);
+  }, [data]);
 
   // useEffect(() => {
   //   console.log({wholeMenu})
@@ -126,7 +172,7 @@ export function Combobox({ comboboxData, selectedValues, setSelectedValues }: Co
       setQueryString("");
       setPage("root");
       setCurrentPage(rootPage);
-    }, 50);
+    }, 100);
 
     return () => clearTimeout(timer);
   }, [open]);
@@ -153,31 +199,32 @@ export function Combobox({ comboboxData, selectedValues, setSelectedValues }: Co
       return;
     }
 
-    console.log("fetching...");
+    setMounted(true);
+    // console.log("fetching...");
 
-    setLoading(true);
+    // setLoading(true);
 
-    fetch("/api/query", {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: stringify({ selectedValues: [], dateRange: [undefined, new Date()], queryString: debouncedQueryString, queryField: page }),
-    })
-      .then((res) => {
-        return res.json()
-      })
-      .then((res) => {
-        const deserialized = deserialize(res);
-        const validated = ClickEventSchemas.ServerResponsQuery.safeParse(deserialized);
-        if (!validated.success) throw new Error("failed to validate api response");
-        if (!validated.data.success) throw new Error(validated.data.error);
-        const x = validated.data.data;
-        // console.log(x);
+    // fetch("/api/query", {
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: stringify({ selectedValues: [], dateRange: [undefined, new Date()], queryString: debouncedQueryString, queryField: page }),
+    // })
+    //   .then((res) => {
+    //     return res.json()
+    //   })
+    //   .then((res) => {
+    //     const deserialized = deserialize(res);
+    //     const validated = ClickEventSchemas.ServerResponsQuery.safeParse(deserialized);
+    //     if (!validated.success) throw new Error("failed to validate api response");
+    //     if (!validated.data.success) throw new Error(validated.data.error);
+    //     const x = validated.data.data;
+    //     // console.log(x);
 
-        // console.log(currentMenu)
-        setLoading(false);
-        setCurrentPage(x);
-        // console.log(currentMenu)
-      })
+    //     // console.log(currentMenu)
+    //     setLoading(false);
+    //     setCurrentPage(x);
+    //     // console.log(currentMenu)
+    //   })
 
   }, [debouncedQueryString]);
 
@@ -246,7 +293,7 @@ export function Combobox({ comboboxData, selectedValues, setSelectedValues }: Co
           <Command shouldFilter={!shouldUseServerFetch[page]}>
             <div className="relative w-full">
               <CommandInput placeholder="search..." className="h-11 text-vprimary placeholder:text-vsecondary" value={queryString} onValueChange={(e) => handleOnValueChange(e)}/>
-              {loading && (
+              {isLoading && (
                 <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center">
                   <Loader2 className="h-4 w-4 animate-spin text-vsecondary" />
                 </div>
@@ -254,7 +301,7 @@ export function Combobox({ comboboxData, selectedValues, setSelectedValues }: Co
             </div>
             {/* <CommandInput placeholder="search..." className="h-9" value={queryString} onValueChange={(e) => handleOnValueChange(e)}/> */}
             <CommandList>
-              {loading ? <LoadingSkeleton /> :
+              {isLoading ? <LoadingSkeleton /> :
                 <>
                   <CommandEmpty>Not found.</CommandEmpty>
                   <CommandGroup heading={value || ""} >

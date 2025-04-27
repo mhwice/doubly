@@ -123,6 +123,25 @@ export const APILinkGetAllSchema = LinkTableSchema.pick({
     }
   );
 
+  export const QueryGetAllSchema = LinkTableSchema.pick({
+    userId: true
+  }).extend({
+    options: z.map(
+      FilterEnum,
+      z.string().trim().min(1).array()
+    ),
+    dateRange: z.tuple([
+      // I am making this tuple of type [date|undefined, date]
+      // so that we can just pass a second value [undefined, Date.now()]
+      // which means, get everything up to now
+      // which is what we want whenever the date range is not manually set
+      z.date().optional(),
+      z.date().optional()
+    ]),
+    queryString: z.string().min(1),
+    queryField: FilterEnum
+  });
+
 export const ServerResponseLinksGetAllSchema = serverResponseSchema(LinkDashboardSchema.array());
 
 export const APIContents = z
@@ -289,6 +308,104 @@ export const QueryArraySchema = z
 
 
 export type QueryArraySchema = z.infer<typeof QueryArraySchema>;
+
+export const QuerySchema = z
+  .array(Pair).max(50)
+  // 4a. No duplicate tuples
+  .refine(
+    (arr) => new Set(arr.map((x) => JSON.stringify(x))).size === arr.length,
+    { message: "Duplicate key/value pairs are not allowed" }
+  )
+  // 4b. Super-refine singleton cardinality + key validity
+  .superRefine((arr, ctx) => {
+    const counts: Record<string, number> = {};
+    for (const [key] of arr) {
+      counts[key] = (counts[key] || 0) + 1;
+    }
+
+    // Check singleton constraints
+    for (const key of singletonKeys) {
+      if ((counts[key] || 0) > 1) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: [],
+          message: `At most one '${key}' pair is allowed`,
+        });
+      }
+    }
+
+    // Validate other keys against FilterEnum
+    for (const [key] of arr) {
+      if (!singletonKeys.includes(key as SingletonKey)) {
+        const ok = FilterEnum.safeParse(key).success;
+        if (!ok) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: [],
+            message: `Invalid filter key '${key}'`,
+          });
+        }
+      }
+    }
+  })
+  // 5. Convert flat tuple array into structured object
+  .transform((arr) => {
+    const result = {
+      options: new Map<FilterEnumType, string[]>(),
+      queryString: undefined as string | undefined,
+      queryField: undefined as FilterEnumType | undefined,
+      dateRange: [undefined, undefined] as [Date | undefined, Date | undefined],
+    };
+
+    for (const [key, value] of arr) {
+      switch (key) {
+        case "queryString":
+          result.queryString = value;
+          break;
+        case "queryField":
+          result.queryField = value as FilterEnumType;
+          break;
+        case "dateStart":
+          result.dateRange[0] = new Date(value);
+          break;
+        case "dateEnd":
+          result.dateRange[1] = new Date(value);
+          break;
+        default:
+          {
+            const k = key as FilterEnumType;
+            const bucket = result.options.get(k) ?? [];
+            bucket.push(value);
+            result.options.set(k, bucket);
+          }
+      }
+    }
+
+    return result;
+  })
+  // 6. Ensure queryString & queryField are both present or both absent
+  .refine(
+    (obj) =>
+      (obj.queryString != null && obj.queryField != null) ||
+      (obj.queryString == null && obj.queryField == null),
+    {
+      message: "Both 'queryString' and 'queryField' must be provided together or omitted together",
+      path: ["queryString", "queryField"],
+    }
+  )
+  // 7. If both dates provided, start <= end
+  .refine(
+    (obj) => {
+      const [start, end] = obj.dateRange;
+      return !(start && end) || start.getTime() <= end.getTime();
+    },
+    {
+      message: "If both dateStart and dateEnd are provided, dateStart must be before or equal to dateEnd",
+      path: ["dateRange"],
+    }
+  );
+
+export type QuerySchema = z.infer<typeof QuerySchema>;
 
 export const NewAPIContents = z
   .object({

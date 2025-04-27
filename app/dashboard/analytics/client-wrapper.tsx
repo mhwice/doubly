@@ -9,7 +9,7 @@ import { TabGroup } from "./tab-group";
 import { TabStuff } from "./tab-content";
 import { TagGroup } from "./tag-group";
 import { Chart } from "../links/chart";
-import useSWR from 'swr'
+import useSWR from 'swr';
 import { useCurrentDate } from "../date-context";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatsHeader } from "../links/stats-header";
@@ -92,6 +92,7 @@ export function ClientWrapper() {
           comboboxData={comboboxData}
           selectedValues={selectedValues}
           setSelectedValues={setSelectedValues}
+          dateRange={dateRange}
         />}
         <TimePicker
           dateRange={dateRange}

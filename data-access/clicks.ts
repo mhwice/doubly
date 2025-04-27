@@ -4,8 +4,8 @@ import { env } from "@/data-access/env";
 import { neon } from '@neondatabase/serverless';
 import { ZodError } from 'zod';
 import { parseJSONQueryResponse, parseQueryResponse, type QueryResponse } from "@/utils/helper";
-import { ClickEventSchemas, type ClickEventTypes } from "@/lib/zod/clicks";
-import { LinkSchemas, LinkTypes } from "@/lib/zod/links";
+import { ClickEventSchemas, ComboboxJSONEntitySchema, ComboboxQuery, type ClickEventTypes } from "@/lib/zod/clicks";
+import { LinkSchemas, LinkTypes, QueryGetAllSchema } from "@/lib/zod/links";
 import { snakeCase } from "change-case";
 import { ERROR_MESSAGES } from "@/lib/error-messages";
 import { ServerResponse, ServerResponseType } from "@/lib/server-repsonse";
@@ -114,11 +114,19 @@ export class ClickEvents {
 
   */
 
-  static async getQueriedData(params: LinkTypes.GetAll): Promise<ServerResponseType<ClickEventTypes.Query[]>> {
-    try {
-      const { userId, options, dateRange, queryString, queryField } = LinkSchemas.GetAll.parse(params);
+  /*
 
-      const LIMIT = "50";
+    So we get all of these params, and what do we want to do with them?
+    We want to get the unfilited_clicks and then perform the text search.
+    This gives us up to 50 items that match the text search. Then we want to set their count based on how
+    many rows have that.
+
+  */
+  static async getQueriedData(params: LinkTypes.GetAll): Promise<ServerResponseType<ComboboxQuery[]>> {
+    try {
+      const { userId, options, dateRange, queryString, queryField } = QueryGetAllSchema.parse(params);
+
+      "50";
 
       const conditions = [];
       const queryParams = [userId];
@@ -136,64 +144,152 @@ export class ClickEvents {
 
       if (dateRange[0]) {
         queryParams.push(dateRange[0].toISOString());
-        conditions.push(`ce.created_at >= $${placeholderIndex++}`);
+        conditions.push(`created_at >= $${placeholderIndex++}`);
       }
 
       if (dateRange[1]) {
         queryParams.push(dateRange[1].toISOString());
-        conditions.push(`ce.created_at <= $${placeholderIndex++}`);
+        conditions.push(`created_at <= $${placeholderIndex++}`);
       }
 
-      if (queryString && queryField) {
-        conditions.push(`${snakeCase(queryField)} ILIKE '%' || $${placeholderIndex++} || '%'`);
-        queryParams.push(queryString);
-      }
+      queryParams.push(queryString);
+      let snakeCaseQueryField = snakeCase(queryField);
 
       const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
-      const testquery = `
-        WITH filtered_clicks AS (
-          SELECT
-            user_links.id AS id,
-            ce.source AS source,
-            ce.city AS city,
-            ce.country AS country,
-            ce.region AS region,
-            ce.continent AS continent,
-            user_links.short_url AS short_url,
-            user_links.original_url AS original_url,
-            ce.created_at AS created_at,
-            ce.browser AS browser,
-            ce.device AS device,
-            ce.os AS os
-          FROM click_events AS ce
-          JOIN (
-            SELECT *
-            FROM links
-            -- TODO, if I filter our short_url and original_url here, then this becomes more efficient
-            -- as we aren't doing a join on as many records, and the subsequent steps are faster
-            WHERE user_id = $1
-          ) AS user_links ON user_links.id = ce.link_id
-          -- WHERE source IN ('qr') AND country IN ('CA', 'RO')
-          ${whereClause}
+      const query = `
+        WITH user_links AS (
+          SELECT *
+          FROM links
+          WHERE user_id = $1
         ),
-        total_count AS (
-          SELECT COUNT(*) AS total FROM filtered_clicks
+        unfiltered_clicks AS (
+          SELECT
+            user_links.id 				    AS link_id,
+            ce.id 						        AS click_id,
+            ce.source 					      AS source,
+            ce.city 					        AS city,
+            ce.country 					      AS country,
+            ce.region 					      AS region,
+            ce.continent 				      AS continent,
+            user_links.short_url 		  AS short_url,
+            user_links.original_url 	AS original_url,
+            ce.created_at 				    AS created_at,
+            ce.browser 					      AS browser,
+            ce.device 					      AS device,
+            ce.os 						        AS os
+          FROM click_events AS ce
+          JOIN user_links ON user_links.id = ce.link_id
+        ),
+        search_countries AS (
+          SELECT DISTINCT ${snakeCaseQueryField}
+          FROM unfiltered_clicks
+          WHERE ${snakeCaseQueryField} ILIKE '%' || $${placeholderIndex++} || '%'
+        ),
+        filtered_counts AS (
+          SELECT
+            ${snakeCaseQueryField},
+            COUNT(*) AS count
+          FROM unfiltered_clicks
+          ${whereClause}
+          GROUP BY ${snakeCaseQueryField}
         )
 
-        SELECT ${queryField}::TEXT AS value, '${queryField}:' || ${queryField} AS label, COUNT(*) AS count, (COUNT(*) * 100.0 / (SELECT total FROM total_count)) AS percent
-        FROM filtered_clicks
-        GROUP BY ${queryField}
-        ORDER BY count DESC, value
-        LIMIT $${placeholderIndex}
-      `;
+        SELECT
+          sc.${snakeCaseQueryField}                 AS value,
+          '${snakeCaseQueryField}:' || sc.${snakeCaseQueryField}   AS label,
+          COALESCE(fc.count, 0)      AS count
+        FROM search_countries AS sc
+        LEFT JOIN filtered_counts AS fc ON fc.${snakeCaseQueryField} = sc.${snakeCaseQueryField}
+        ORDER BY count DESC, sc.${snakeCaseQueryField}
+        LIMIT 50;
+        `;
+
+      // console.log(query);
+      // console.log(queryParams);
+      const response: QueryResponse = await sql(query, [...queryParams]);
+
+      const result = parseQueryResponse(response, ComboboxJSONEntitySchema);
+      // console.log('combo',result)
+      return ServerResponse.success(result);
 
 
-      const testResponse: QueryResponse = await sql(testquery, [...queryParams, LIMIT]);
-      console.log(testResponse)
-      const testResult = parseQueryResponse(testResponse, ClickEventSchemas.Query);
+      // const LIMIT = "50";
 
-      return ServerResponse.success(testResult);
+      // const conditions = [];
+      // const queryParams = [userId];
+      // let placeholderIndex = queryParams.length + 1;
+
+      // for (let [key, values] of options) {
+      //   if (values.length === 0) continue;
+      //   const formattedKey = snakeCase(key);
+
+      //   const placeholders = values.map(() => `$${placeholderIndex++}`).join(", ");
+      //   conditions.push(`${formattedKey} IN (${placeholders})`);
+
+      //   queryParams.push(...values);
+      // }
+
+      // if (dateRange[0]) {
+      //   queryParams.push(dateRange[0].toISOString());
+      //   conditions.push(`ce.created_at >= $${placeholderIndex++}`);
+      // }
+
+      // if (dateRange[1]) {
+      //   queryParams.push(dateRange[1].toISOString());
+      //   conditions.push(`ce.created_at <= $${placeholderIndex++}`);
+      // }
+
+      // if (queryString && queryField) {
+      //   conditions.push(`${snakeCase(queryField)} ILIKE '%' || $${placeholderIndex++} || '%'`);
+      //   queryParams.push(queryString);
+      // }
+
+      // const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+
+      // const testquery = `
+      //   WITH filtered_clicks AS (
+      //     SELECT
+      //       user_links.id AS id,
+      //       ce.source AS source,
+      //       ce.city AS city,
+      //       ce.country AS country,
+      //       ce.region AS region,
+      //       ce.continent AS continent,
+      //       user_links.short_url AS short_url,
+      //       user_links.original_url AS original_url,
+      //       ce.created_at AS created_at,
+      //       ce.browser AS browser,
+      //       ce.device AS device,
+      //       ce.os AS os
+      //     FROM click_events AS ce
+      //     JOIN (
+      //       SELECT *
+      //       FROM links
+      //       -- TODO, if I filter our short_url and original_url here, then this becomes more efficient
+      //       -- as we aren't doing a join on as many records, and the subsequent steps are faster
+      //       WHERE user_id = $1
+      //     ) AS user_links ON user_links.id = ce.link_id
+      //     -- WHERE source IN ('qr') AND country IN ('CA', 'RO')
+      //     ${whereClause}
+      //   ),
+      //   total_count AS (
+      //     SELECT COUNT(*) AS total FROM filtered_clicks
+      //   )
+
+      //   SELECT ${queryField}::TEXT AS value, '${queryField}:' || ${queryField} AS label, COUNT(*) AS count, (COUNT(*) * 100.0 / (SELECT total FROM total_count)) AS percent
+      //   FROM filtered_clicks
+      //   GROUP BY ${queryField}
+      //   ORDER BY count DESC, value
+      //   LIMIT $${placeholderIndex}
+      // `;
+
+
+      // const testResponse: QueryResponse = await sql(testquery, [...queryParams, LIMIT]);
+      // console.log(testResponse)
+      // const testResult = parseQueryResponse(testResponse, ClickEventSchemas.Query);
+
+      // return ServerResponse.success(testResult);
 
     } catch (error: unknown) {
       console.log({ error })
@@ -882,7 +978,7 @@ export class ClickEvents {
               ${tabsQuery.join(",")}
           ),
           'stats', json_build_object(
-            'num_links', (SELECT COUNT(*) FROM user_links),
+            'num_links', (SELECT COUNT(DISTINCT short_url) FROM filtered_clicks),
             'link_clicks', (SELECT COUNT(*) FROM filtered_clicks WHERE source = 'link'),
             'qr_clicks', (SELECT COUNT(*) FROM filtered_clicks WHERE source = 'qr')
           ),
@@ -953,9 +1049,9 @@ export class ClickEvents {
       // console.log(queryParams)
 
       const response: QueryResponse = await sql(newQuery, [...queryParams]);
-      console.log(response[0]?.data?.combobox?.country);
-      console.log(response[0]?.data?.combobox?.continent);
-      console.log(response[0]?.data?.combobox?.browser);
+      // console.log(response[0]?.data?.combobox?.country);
+      // console.log(response[0]?.data?.combobox?.continent);
+      // console.log(response[0]?.data?.combobox?.browser);
       const validatedResponse = ClickEventSchemas.AnalyticsJSON.parse(response);
       return ServerResponse.success(validatedResponse);
 

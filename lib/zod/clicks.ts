@@ -99,11 +99,15 @@ const FakeClickEventSchema = z.object({
 
 const ServerResponseQuerySchema = serverResponseSchema(JSONEntitySchema.array());
 
-const ComboboxJSONEntitySchema = z.object({
+export const ComboboxJSONEntitySchema = z.object({
   value: z.string(),
   count: z.number(),
   label: z.string()
 });
+
+export type ComboboxQuery = z.infer<typeof ComboboxJSONEntitySchema>;
+
+export const ServerResponseComboboxSchema = serverResponseSchema(ComboboxJSONEntitySchema.array());
 
 // I expect an array with 1 element who is a object with a single key called "data".
 // data has an object with 4 keys which are tabs, stats, combobox, and chart.
