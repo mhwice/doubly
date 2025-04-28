@@ -32,6 +32,8 @@ import { Button } from "@/components/ui/button"
 import { NewLinkButton } from "../new-link-button"
 import { LinkTypes } from "@/lib/zod/links"
 import { DeleteLinkModal } from "@/components/delete-link-modal"
+import { useCurrentFilters } from "../../filters-context"
+import { useRouter } from "next/navigation"
 // import { DataTableToolbar } from "./data-table-toolbar"
 
 interface DataTableProps<TData, TValue> {
@@ -52,6 +54,9 @@ export function DataTable<TData, TValue>({
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [showDeleteModal, setShowDeleteModal] = React.useState<boolean>(false);
   const [badIds, setBadIds] = React.useState<number[]>([]);
+
+  const router = useRouter();
+  const { filters, addFilter, hasFilter, deleteFilter, clearFilters, setFilters } = useCurrentFilters();
 
   const table = useReactTable({
     data,
@@ -87,6 +92,20 @@ export function DataTable<TData, TValue>({
     setShowDeleteModal(true);
   }
 
+  const viewManyAnalytics = (rows: Row<TData>[]) => {
+    const shortUrls: [string, string][] = [];
+    for (const row of rows) {
+      const link = row.original as LinkTypes.Dashboard;
+      const linkId = link.shortUrl;
+      shortUrls.push(['shortUrl', linkId]);
+    }
+
+    // console.log(`view analytics for: ${JSON.stringify(shortUrls)}`);
+    setFilters(shortUrls);
+    router.push("/dashboard/analytics");
+    // useRouter here???
+  }
+
   return (
     <div className="space-y-4">
       <DeleteLinkModal isOpen={showDeleteModal} onOpenChange={setShowDeleteModal} linkIds={badIds}/>
@@ -102,7 +121,10 @@ export function DataTable<TData, TValue>({
         />
         <div className="flex gap-2">
           {table.getFilteredSelectedRowModel().rows.length >= 2 && (
-            <Button onClick={() => handleOnMultipleDeleteClicked(table.getFilteredSelectedRowModel().rows)} variant="destructiveFlat">Delete {table.getFilteredSelectedRowModel().rows.length}</Button>
+            <>
+              <Button onClick={() => handleOnMultipleDeleteClicked(table.getFilteredSelectedRowModel().rows)} variant="destructiveFlat">Delete {table.getFilteredSelectedRowModel().rows.length}</Button>
+              <Button disabled={table.getFilteredSelectedRowModel().rows.length > 50} onClick={() => viewManyAnalytics(table.getFilteredSelectedRowModel().rows)} variant="flat">View Analytics for {table.getFilteredSelectedRowModel().rows.length} Links</Button>
+            </>
           )}
           <NewLinkButton />
         </div>

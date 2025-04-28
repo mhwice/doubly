@@ -25,6 +25,9 @@ import { EditLinkModal } from "@/components/edit-link-modal"
 import { type LinkTypes } from "@/lib/zod/links";
 import { CustomDialog } from "@/components/custom-dialog"
 import { EditLinkForm } from "@/components/edit-link-form"
+import { useRouter, useSearchParams } from "next/navigation"
+import Link from "next/link"
+import { useCurrentFilters } from "../../filters-context"
 
 // interface DataTableRowActionsProps<TData> {
 //   row: Row<TData>
@@ -35,6 +38,10 @@ interface DataTableRowActionsProps {
 }
 
 export function DataTableRowActions({ row }: DataTableRowActionsProps) {
+
+  const { filters, addFilter, hasFilter, deleteFilter, clearFilters, setFilters } = useCurrentFilters();
+
+  const router = useRouter();
 
   const [showQRModal, setShowQRModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -65,6 +72,12 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   const onCopyClicked = () => {
     const { shortUrl } = row.original;
     navigator.clipboard.writeText(shortUrl);
+  }
+
+  const viewAnalytics = () => {
+    const { shortUrl } = row.original;
+    setFilters([['shortUrl', shortUrl]]);
+    router.push('/dashboard/analytics');
   }
 
   return (
@@ -104,6 +117,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
           <DropdownMenuItem className="py-3 font-normal text-sm text-vsecondary" onClick={onEditClicked}>Edit</DropdownMenuItem>
           <DropdownMenuItem className="py-3 font-normal text-sm text-vsecondary" onClick={onViewQRClicked}>View QR Code</DropdownMenuItem>
           <DropdownMenuItem className="py-3 font-normal text-sm text-vsecondary" onClick={onCopyClicked}>Copy Short Url</DropdownMenuItem>
+          <DropdownMenuItem className="py-3 font-normal text-sm text-vsecondary" onClick={viewAnalytics}>View Analytics</DropdownMenuItem>
           <DropdownMenuSeparator className="bg-vborder"/>
           <DropdownMenuItem className="py-3 font-normal text-sm text-vsecondary" onClick={onDeleteClicked}>
             Delete

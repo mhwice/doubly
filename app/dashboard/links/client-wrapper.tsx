@@ -9,10 +9,17 @@ import { ClickEventSchemas } from "@/lib/zod/clicks";
 import useSWR from "swr";
 import { deserialize } from "superjson";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export function ClientWrapper() {
 
   const { date: now } = useCurrentDate();
+
+  // const router = useRouter();
+  // const { shortUrl } = router.query;
+  // const searchParams = useSearchParams()
+  // const shortUrl = searchParams.get('shortUrl')
+  // console.log({shortUrl})
 
   // this is what I want from the backend
   // const response = await LinkTable.getAllLinks({

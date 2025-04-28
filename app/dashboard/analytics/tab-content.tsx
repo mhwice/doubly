@@ -1,5 +1,6 @@
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { MousePointerClickIcon } from "lucide-react"
+import { cleanUrl } from "../links/components/columns";
 
 interface propppy {
   title: string,
@@ -28,7 +29,7 @@ export function TabStuff(params: propppy) {
               <div key={`${value},${count}`} className="space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-vprimary">{value}</span>
+                    <span className="text-sm text-vprimary">{cleanUrl(value)}</span>
                   </div>
                   <span className="text-sm text-vprimary">{count} <span className="text-xs font-mono font-thin text-vsecondary">({Math.round(percent)}%)</span></span>
                 </div>

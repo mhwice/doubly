@@ -1,6 +1,8 @@
 import { ClientWrapper } from "./client-wrapper";
 
-export default async function Filter() {
+export default async function Filter({ searchParams }: { searchParams: Promise<{ shortUrl?: string }>}) {
+  // const { shortUrl } = await searchParams;
+
   return (
     <>
       <div className="h-full mx-[15%] flex flex-col">

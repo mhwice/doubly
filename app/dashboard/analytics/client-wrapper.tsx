@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Combobox } from "./combobox";
-import { AnalyticsServerResponseSchema, ClickEventSchemas, ClickEventTypes, ComboboxType } from "@/lib/zod/clicks";
+import { AnalyticsServerResponseSchema, ClickEventTypes, ComboboxType } from "@/lib/zod/clicks";
 import { TimePicker } from "./time-picker";
 import { deserialize } from "superjson";
 import { TabGroup } from "./tab-group";
@@ -13,6 +13,8 @@ import useSWR from 'swr';
 import { useCurrentDate } from "../date-context";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatsHeader } from "../links/stats-header";
+import { Button } from "@/components/ui/button";
+import { useCurrentFilters } from "../filters-context";
 
 interface StatsHeaderProps {
   numLinks: number,
@@ -22,23 +24,16 @@ interface StatsHeaderProps {
 
 export function ClientWrapper() {
 
-  const { date: now } = useCurrentDate();
-  // console.log("ClientWrapper", currd);
+  const { filters, addFilter, hasFilter, deleteFilter, clearFilters } = useCurrentFilters();
 
-  // TODO: we can do better than string[][]
-  const [selectedValues, setSelectedValues] = useState<string[][]>([]);
+  const { date: now } = useCurrentDate();
 
   const [chartData, setChartData] = useState<ClickEventTypes.Chart[]>();
   const [filteredData, setFilteredData] = useState<ClickEventTypes.JSONAgg>();
   const [statsHeaderData, setStatsHeaderData] = useState<StatsHeaderProps>();
   const [comboboxData, setComboboxData] = useState<ComboboxType>();
 
-  // const [now, setNow] = useState<Date>(new Date());
   const [dateRange, setDateRange] = useState<[Date | undefined, Date]>([undefined, now]);
-
-  const removeTag = (tagToRemove: string[]) => {
-    setSelectedValues((prev) => prev.filter(([k, v]) => !(k === tagToRemove[0] && v === tagToRemove[1])));
-  };
 
   const fetcher = async (url: string) => {
     const response = await fetch(url);
@@ -51,7 +46,9 @@ export function ClientWrapper() {
   }
 
   const params = new URLSearchParams();
-  selectedValues.forEach((item) => params.append(item[0], item[1]));
+  for (const [field, values] of filters) {
+    for (const value of values) params.append(field, value);
+  }
   if (dateRange[0] !== undefined) params.append("dateStart", dateRange[0].toISOString());
   params.append("dateEnd", dateRange[1].toISOString());
   const url = `/api/new-filter?${params.toString()}`;
@@ -71,8 +68,6 @@ export function ClientWrapper() {
     setComboboxData(data?.combobox);
   }, [data]);
 
-  // let stats = undefined;
-  // if (data?.tabs) stats = getStatsData(data.tabs);
 
   if (isLoading && !data) return (
     <>
@@ -86,24 +81,17 @@ export function ClientWrapper() {
       <div className="pt-6">
         {statsHeaderData && <StatsHeader stats={statsHeaderData} />}
       </div>
-      <TagGroup selectedValues={selectedValues} onRemoveTag={removeTag} />
+      {filters.size > 0 && <div className="mt-3"><Button variant="flat" onClick={clearFilters}>Clear Filters</Button></div>}
+      <TagGroup />
       <div className="flex flex-row justify-start space-x-4">
-        {comboboxData && <Combobox
-          comboboxData={comboboxData}
-          selectedValues={selectedValues}
-          setSelectedValues={setSelectedValues}
-          dateRange={dateRange}
-        />}
-        <TimePicker
-          dateRange={dateRange}
-          setDateRange={setDateRange}
-          now={now}
-        />
+        {comboboxData && <Combobox comboboxData={comboboxData} dateRange={dateRange} />}
+        <TimePicker dateRange={dateRange} setDateRange={setDateRange} now={now} />
+        <Button variant="flat" className="text-vprimary font-normal">Refresh</Button>
       </div>
       <div className="my-4">
         {chartData && <Chart clickEvents={chartData} dateRange={dateRange} />}
       </div>
-      { filteredData &&
+      {filteredData &&
         <div className="flex flex-row justify-between space-x-4 pt-5">
           <TabGroup items={[
             { title: "Browser", value: "browser", children: <TabStuff title="Browser" data={filteredData.browser} /> },
@@ -125,16 +113,3 @@ export function ClientWrapper() {
     </div>
   );
 }
-
-function getStatsData(filteredData: ClickEventTypes.JSONAgg) {
-  const source = filteredData.source;
-  const link = source.filter((x) => x.value === "link")[0];
-  const qr = source.filter((x) => x.value === "qr")[0];
-
-  return {
-    numUrls: filteredData.shortUrl.length, // very wrong!
-    numLinkClicks: link?.count || 0,
-    numQRClicks: qr?.count || 0
-  };
-}
-

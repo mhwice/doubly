@@ -39,11 +39,12 @@ import { CircularCheckbox } from "./circular-checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cleanUrl } from "../links/components/columns";
 import useSWR from 'swr';
+import { useCurrentFilters } from "../filters-context"
 
 type ComboboxProps = {
   comboboxData: ComboboxType,
-  selectedValues: string[][],
-  setSelectedValues: Dispatch<SetStateAction<string[][]>>,
+  // selectedValues: string[][],
+  // setSelectedValues: Dispatch<SetStateAction<string[][]>>,
   dateRange: [Date | undefined, Date]
 };
 
@@ -71,11 +72,13 @@ const rootPage = [
   { value: "OS", label: "os", icon: <CodeXml strokeWidth={1.75} size={16} className="h-4 w-4 text-vsecondary" /> }
 ];
 
-export function Combobox({ comboboxData, selectedValues, setSelectedValues, dateRange }: ComboboxProps) {
+export function Combobox({ comboboxData, dateRange }: ComboboxProps) {
   // this is temporary. going to need to use useMemo to acutally prevent re-renders
   // const frozen = useRef(filteredData);
 
   // use to determine if we should be doing local queries or server-queries
+
+  const { filters, addFilter, hasFilter, deleteFilter, clearFilters } = useCurrentFilters();
 
   const [mounted, setMounted] = useState(false);
 
@@ -125,11 +128,14 @@ export function Combobox({ comboboxData, selectedValues, setSelectedValues, date
 
   // Do we want to also filter by date here????
   const params = new URLSearchParams();
-  selectedValues.forEach((item) => params.append(item[0], item[1]));
+  // selectedValues.forEach((item) => params.append(item[0], item[1]));
+  for (const [field, values] of filters) {
+    for (const value of values) params.append(field, value);
+  }
   if (dateRange[0] !== undefined) params.append("dateStart", dateRange[0].toISOString());
   params.append("dateEnd", dateRange[1].toISOString());
 
-  if (queryString !== "" && page !== "root") {
+  if (debouncedQueryString !== "" && page !== "root") {
     params.append("queryString", debouncedQueryString);
     params.append("queryField", page);
   }
@@ -138,7 +144,6 @@ export function Combobox({ comboboxData, selectedValues, setSelectedValues, date
 
   function allowedUrl() {
     if (debouncedQueryString === "") return null;
-    if (queryString === "") return null;
     if (page === "root") return null;
     // console.log({ debouncedQueryString, queryString, page });
     return url;
@@ -238,17 +243,24 @@ export function Combobox({ comboboxData, selectedValues, setSelectedValues, date
       // select this thing
       // console.log("selected", item.value);
       // setSelectedValues()
-      setSelectedValues((currentlSelected) => {
 
-        const without = currentlSelected.filter(([k, v]) => !(k === page && v === item.value));
-        if (without.length === currentlSelected.length) {
-          // its not currently selected -> select it
-          return [...currentlSelected, [page, item.value]];
-        } else {
-          // its currently selected -> remove it
-          return without;
-        }
-      });
+      if (hasFilter(page, item.value)) {
+        deleteFilter(page, item.value);
+      } else {
+        addFilter(page, item.value);
+      }
+
+      // setSelectedValues((currentlySelected) => {
+
+      //   const without = currentlySelected.filter(([k, v]) => !(k === page && v === item.value));
+      //   if (without.length === currentlySelected.length) {
+      //     // its not currently selected -> select it
+      //     return [...currentlySelected, [page, item.value]];
+      //   } else {
+      //     // its currently selected -> remove it
+      //     return without;
+      //   }
+      // });
     }
   }
 
@@ -257,7 +269,8 @@ export function Combobox({ comboboxData, selectedValues, setSelectedValues, date
   }
 
   function isSelected(field: string, value: string) {
-    return selectedValues.filter(([k, v]) => k === field && v === value).length > 0;
+    return hasFilter(field, value);
+    // return selectedValues.filter(([k, v]) => k === field && v === value).length > 0;
   }
 
   return (
