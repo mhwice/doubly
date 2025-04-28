@@ -15,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { StatsHeader } from "../links/stats-header";
 import { Button } from "@/components/ui/button";
 import { useCurrentFilters } from "../filters-context";
+import { useRouter } from "next/navigation";
 
 interface StatsHeaderProps {
   numLinks: number,
@@ -25,8 +26,13 @@ interface StatsHeaderProps {
 export function ClientWrapper() {
 
   const { filters, addFilter, hasFilter, deleteFilter, clearFilters } = useCurrentFilters();
+  const router = useRouter();
 
-  const { date: now } = useCurrentDate();
+  const { date: now, setDate } = useCurrentDate();
+
+  useEffect(() => {
+    console.log({now})
+  }, [now]);
 
   const [chartData, setChartData] = useState<ClickEventTypes.Chart[]>();
   const [filteredData, setFilteredData] = useState<ClickEventTypes.JSONAgg>();
@@ -76,6 +82,14 @@ export function ClientWrapper() {
     </>
   );
 
+  const handleOnRefreshClicked = () => {
+    const newNow = new Date();
+    setDate(newNow);
+    setDateRange((prevDateRange) => {
+      return [prevDateRange[0], newNow];
+    })
+  }
+
   return (
     <div className="flex flex-col">
       <div className="pt-6">
@@ -86,7 +100,7 @@ export function ClientWrapper() {
       <div className="flex flex-row justify-start space-x-4">
         {comboboxData && <Combobox comboboxData={comboboxData} dateRange={dateRange} />}
         <TimePicker dateRange={dateRange} setDateRange={setDateRange} now={now} />
-        <Button variant="flat" className="text-vprimary font-normal">Refresh</Button>
+        <Button onClick={handleOnRefreshClicked} variant="flat" className="text-vprimary font-normal">Refresh</Button>
       </div>
       <div className="my-4">
         {chartData && <Chart clickEvents={chartData} dateRange={dateRange} />}

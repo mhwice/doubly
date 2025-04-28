@@ -11,13 +11,14 @@ export default async function Layout({ children }: Readonly<{ children: React.Re
   if (!session) redirect("/");
   const { email, name, image } = session.user;
 
-  const filters = new Map();
-  const now = new Date();
+  // const filters = new Map();
+  // const now = new Date();
+  // console.log({ now });
   return (
     <div className="flex flex-col min-h-screen">
       <VercelNavbar email={email} name={name} image={image} />
       <main className="flex-1 bg-[var(--dashboard-bg)]">
-        <DateProvider date={now}>
+        <DateProvider>
           <FilterProvider>
             {children}
           </FilterProvider>

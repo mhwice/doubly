@@ -9,6 +9,7 @@ import { BarCharContainer } from "./bar-chart"
 import { LineChartContainer } from "./line-chart"
 import { differenceInCalendarDays } from "date-fns";
 import { ChartArea, ChartColumn, ChartLine } from "lucide-react"
+import { useLocalStorage } from 'usehooks-ts';
 
 interface ChartProps {
   clickEvents: ClickEventTypes.Chart[],
@@ -17,7 +18,7 @@ interface ChartProps {
 
 export function Chart({ clickEvents, dateRange }: ChartProps) {
 
-  const [chartType, setChartType] = useState<"area" | "bar" | "line">("area");
+  const [chartType, setChartType] = useLocalStorage<'area'|'bar'|'line'>('chartType', 'line');
 
   return (
     <Card className="rounded-[var(--bradius)] shadow-none border-vborder">

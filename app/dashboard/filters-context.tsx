@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext } from 'react';
-import { useLocalStorage } from 'usehooks-ts'
+import { useSessionStorage } from 'usehooks-ts'
 
 type FilterMap = Map<string, Set<string>>;
 
@@ -27,7 +27,7 @@ export function useCurrentFilters() {
 
 export function FilterProvider({ children }: { children: React.ReactNode }) {
 
-  const [filtersInStorage, setFiltersInStorage] = useLocalStorage<FilterMap>('dashboard-filters', new Map(), {
+  const [filtersInStorage, setFiltersInStorage] = useSessionStorage<FilterMap>('filters', new Map(), {
     serializer: (map: FilterMap):string => {
       return JSON.stringify(Array.from(map.entries()).map(([k, set]) => [k, Array.from(set)]))
     },
