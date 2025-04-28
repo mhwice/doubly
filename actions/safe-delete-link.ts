@@ -16,7 +16,6 @@ export const deleteLink = async (params: DeleteMultiple) => {
   const session = await getSession();
   if (!session) return ServerResponse.fail(ERROR_MESSAGES.UNAUTHORIZED);
 
-
   // 3 - Send request to DAL
   const response = await LinkTable.deleteLinkById({
     userId: session.user.id,

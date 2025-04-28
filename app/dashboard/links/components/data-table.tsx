@@ -34,7 +34,6 @@ import { LinkTypes } from "@/lib/zod/links"
 import { DeleteLinkModal } from "@/components/delete-link-modal"
 import { useCurrentFilters } from "../../filters-context"
 import { useRouter } from "next/navigation"
-// import { DataTableToolbar } from "./data-table-toolbar"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -56,7 +55,7 @@ export function DataTable<TData, TValue>({
   const [badIds, setBadIds] = React.useState<number[]>([]);
 
   const router = useRouter();
-  const { filters, addFilter, hasFilter, deleteFilter, clearFilters, setFilters } = useCurrentFilters();
+  const { setFilters } = useCurrentFilters();
 
   const table = useReactTable({
     data,
@@ -100,15 +99,13 @@ export function DataTable<TData, TValue>({
       shortUrls.push(['shortUrl', linkId]);
     }
 
-    // console.log(`view analytics for: ${JSON.stringify(shortUrls)}`);
     setFilters(shortUrls);
     router.push("/dashboard/analytics");
-    // useRouter here???
   }
 
   return (
     <div className="space-y-4">
-      <DeleteLinkModal isOpen={showDeleteModal} onOpenChange={setShowDeleteModal} linkIds={badIds}/>
+      <DeleteLinkModal isOpen={showDeleteModal} onOpenChange={setShowDeleteModal} ids={badIds}/>
       {/* <DataTableToolbar table={table} /> */}
       <div className="flex items-center w-full justify-between">
         <Input
