@@ -123,7 +123,7 @@ export function DataTable<TData, TValue>({
               <Button disabled={table.getFilteredSelectedRowModel().rows.length > 50} onClick={() => viewManyAnalytics(table.getFilteredSelectedRowModel().rows)} variant="flat">View Analytics for {table.getFilteredSelectedRowModel().rows.length} Links</Button>
             </>
           )}
-          <NewLinkButton />
+          {/* <NewLinkButton /> */}
         </div>
       </div>
       <div className="border overflow-hidden bg-white rounded-[var(--bradius)] shadow-none border-vborder">

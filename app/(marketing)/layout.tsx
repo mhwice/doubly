@@ -1,6 +1,6 @@
 import { Inter } from "next/font/google";
 import { Navbar } from "./navbar";
-import { Footer } from "./footer";
+import { Footer } from "./dashboard-footer";
 import { getSession } from "@/lib/get-session";
 
 const inter = Inter({

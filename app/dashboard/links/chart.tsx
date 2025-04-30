@@ -26,8 +26,8 @@ export function Chart({ clickEvents, dateRange }: ChartProps) {
         <div className="flex flex-col gap-1">
           <CardTitle className="text-vprimary">Click Events</CardTitle>
           <CardDescription className="text-vsecondary">
-            {dateRange[0] === undefined ? "Showing total visitors for all time" :
-            `Showing total visitors for the last ${differenceInCalendarDays(dateRange[1], dateRange[0])} days`}
+            {dateRange[0] === undefined ? "Showing total clicks for all time" :
+            `Showing total clicks for the last ${differenceInCalendarDays(dateRange[1], dateRange[0])} days`}
           </CardDescription>
         </div>
         <Select value={chartType} onValueChange={(value) => setChartType(value as "area" | "bar" | "line")}>

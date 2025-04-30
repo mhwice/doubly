@@ -79,6 +79,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@faker-js/faker": "^9.6.0",
+    "@types/iso-3166-2": "^1.0.3",
     "@types/node": "^20.17.28",
     "@types/react": "^19",
     "@types/react-dom": "^19",

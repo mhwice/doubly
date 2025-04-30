@@ -39,9 +39,9 @@ export function StatsHeader({ stats }: StatsHeaderProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold"><NumberFlow value={numLinks}/></div>
-          <p className="text-xs text-vsecondary">
+          {/* <p className="text-xs text-vsecondary">
             +20.1% from last month
-          </p>
+          </p> */}
         </CardContent>
       </Card>
       <Card className="rounded-[var(--bradius)] shadow-none border-vborder">
@@ -53,9 +53,9 @@ export function StatsHeader({ stats }: StatsHeaderProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-vprimary"><NumberFlow value={linkClicks} /></div>
-          <p className="text-xs text-vsecondary">
+          {/* <p className="text-xs text-vsecondary">
             +180.1% from last month
-          </p>
+          </p> */}
         </CardContent>
       </Card>
       <Card className="rounded-[var(--bradius)] shadow-none border-vborder">
@@ -65,9 +65,9 @@ export function StatsHeader({ stats }: StatsHeaderProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-vprimary"><NumberFlow value={qrClicks} /></div>
-          <p className="text-xs text-vsecondary">
+          {/* <p className="text-xs text-vsecondary">
             +19% from last month
-          </p>
+          </p> */}
         </CardContent>
       </Card>
     </div>

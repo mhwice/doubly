@@ -16,6 +16,7 @@ import { StatsHeader } from "../links/stats-header";
 import { Button } from "@/components/ui/button";
 import { useCurrentFilters } from "../filters-context";
 import { useRouter } from "next/navigation";
+import { RefreshCw } from "lucide-react";
 
 interface StatsHeaderProps {
   numLinks: number,
@@ -92,16 +93,19 @@ export function ClientWrapper() {
 
   return (
     <div className="flex flex-col">
+
       <div className="pt-6">
         {statsHeaderData && <StatsHeader stats={statsHeaderData} />}
       </div>
-      {filters.size > 0 && <div className="mt-3"><Button variant="flat" onClick={clearFilters}>Clear Filters</Button></div>}
+
       <TagGroup />
-      <div className="flex flex-row justify-start space-x-4">
+      <div className="flex flex-row justify-start space-x-3">
+        {/* {filters.size > 0 && <Button className="text-vprimary font-normal" variant="link" onClick={clearFilters}>Clear Filters</Button>} */}
         {comboboxData && <Combobox comboboxData={comboboxData} dateRange={dateRange} />}
         <TimePicker dateRange={dateRange} setDateRange={setDateRange} now={now} />
-        <Button onClick={handleOnRefreshClicked} variant="flat" className="text-vprimary font-normal">Refresh</Button>
+        <Button onClick={handleOnRefreshClicked} variant="flat" className="text-vprimary font-normal"><RefreshCw strokeWidth={1.75} className="text-vprimary"/>Refresh</Button>
       </div>
+
       <div className="my-4">
         {chartData && <Chart clickEvents={chartData} dateRange={dateRange} />}
       </div>

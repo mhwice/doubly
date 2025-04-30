@@ -6,6 +6,7 @@ import { StatsHeader } from "./stats-header";
 import { type LinkTypes } from "@/lib/zod/links";
 import { getSession } from "@/lib/get-session";
 import { ClientWrapper } from "./client-wrapper";
+import { NewLinkButton } from "./new-link-button";
 
 // TODO - it might be a better idea to query this from the db directly
 function makeStats(links: LinkTypes.Dashboard[]) {
@@ -42,9 +43,14 @@ export default async function LinksPage() {
 
   return (
     <>
-      <div className="h-full mx-[15%] flex flex-col">
-        <h1 className="font-semibold text-3xl mt-14 mb-2 text-vprimary">Link Management</h1>
-        <p className="text-sm text-vsecondary">Create new short links, copy urls and qr codes,<br/>perform bulk actions on multiple links at once.</p>
+      <div className="flex mx-[15%] justify-between h-full items-center">
+        <div className="h-full flex flex-col">
+          <h1 className="font-semibold text-3xl mt-14 mb-2 text-vprimary">Link Management</h1>
+          <p className="text-sm text-vsecondary">Create new short links, copy urls and qr codes,<br/>perform bulk actions on multiple links at once.</p>
+        </div>
+        <div className="mt-14">
+          <NewLinkButton />
+        </div>
       </div>
       <div className="border-b border-vborder mt-14"></div>
 

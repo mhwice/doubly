@@ -18,7 +18,7 @@ const buttonVariants = cva(
         secondary:
           "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
+        link: "text-primary underline-offset-4",
         flat: "border border-input bg-background hover:bg-accent hover:text-accent-foreground shadow-none border-vborder rounded-[var(--bradius)]",
         defaultFlat: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-none border-vborder rounded-[var(--bradius)]",
         destructiveFlat: "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-none border-vborder rounded-[var(--bradius)]",
