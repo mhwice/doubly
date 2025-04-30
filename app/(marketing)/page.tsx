@@ -11,6 +11,8 @@ import Image from "next/image";
 import HowItWorksSection from "./how-it-works";
 import { CallToAction } from "./cta";
 import { Footer } from "./dashboard-footer";
+import { WorldMap } from "./dotted-map";
+import { GlobeDemo } from "./globe-demo";
 
 export default async function Home() {
   const session = await getSession();
@@ -19,31 +21,60 @@ export default async function Home() {
     <main className="flex flex-col overflow-hidden items-center">
       <Hero isLoggedIn={!!session?.user} />
       <HowItWorksSection />
-      <div className="w-full">
-        <GlobalDatabase />
-      </div>
-      <CallToAction isLoggedIn={!!session?.user} />
-      {/* <Footer /> */}
 
-      {/* <div className="w-full"><GlobalDatabase /></div> */}
-
-      {/* <div className="h-150 shrink-0 overflow-hidden [mask-image:radial-gradient(white_30%,transparent_90%)] perspective-[4000px] perspective-origin-center">
-        <div className="-translate-y-10 -translate-z-10 rotate-x-10 rotate-y-20 -rotate-z-10 transform-3d">
-          <Image
-            className="rounded-(--radius) z-1 relative border dark:hidden"
-            src="/analytics.png"
-            alt="Tailark hero section"
-            width={2880}
-            height={2074}
-          />
-        </div>
+      <div className="w-full"><GlobalDatabase /></div>
+      {/* <div
+          className="h-[300px] w-[300px] animate-pulse rounded-full bg-gradient-to-br from-[var(--database)] via-[var(--database-secondary)] to-indigo-500 opacity-70 blur-3xl"
+          aria-hidden="true"
+        /> */}
+      {/* <div className="w-full"> */}
+      {/* <Image
+        src="/scaled_map.svg"
+        width={700}
+        height={300}
+        alt="map"
+        // className=""
+      /> */}
+      {/* </div> */}
+      {/* <div className="w-[500px] h-[500px]">
+        <WorldMap
+        dots={[
+          {
+            start: {
+              lat: 64.2008,
+              lng: -149.4937,
+            }, // Alaska (Fairbanks)
+            end: {
+              lat: 34.0522,
+              lng: -118.2437,
+            }, // Los Angeles
+          },
+          {
+            start: { lat: 64.2008, lng: -149.4937 }, // Alaska (Fairbanks)
+            end: { lat: -15.7975, lng: -47.8919 }, // Brazil (Brasília)
+          },
+          {
+            start: { lat: -15.7975, lng: -47.8919 }, // Brazil (Brasília)
+            end: { lat: 38.7223, lng: -9.1393 }, // Lisbon
+          },
+          {
+            start: { lat: 51.5074, lng: -0.1278 }, // London
+            end: { lat: 28.6139, lng: 77.209 }, // New Delhi
+          },
+          {
+            start: { lat: 28.6139, lng: 77.209 }, // New Delhi
+            end: { lat: 43.1332, lng: 131.9113 }, // Vladivostok
+          },
+          {
+            start: { lat: 28.6139, lng: 77.209 }, // New Delhi
+            end: { lat: -1.2921, lng: 36.8219 }, // Nairobi
+          },
+        ]}
+      />
       </div> */}
-      {/* <Skew />
-      <HeroSection /> */}
-      {/* <div className="my-14"></div>
-      <UrlShortenerDemo />
-      <Features />
-      <ABTestingExample /> */}
+      {/* <GlobeDemo /> */}
+      <CallToAction isLoggedIn={!!session?.user} />
+
     </main>
   )
 }
