@@ -8,7 +8,8 @@ import { AreaChartContainer } from "./area-chart"
 import { BarCharContainer } from "./bar-chart"
 import { LineChartContainer } from "./line-chart"
 import { differenceInCalendarDays } from "date-fns";
-import { FaChartArea, FaChartLine, FaChartBar } from "react-icons/fa";
+import { ChartArea, ChartColumn, ChartLine } from "lucide-react"
+import { useLocalStorage } from 'usehooks-ts';
 
 interface ChartProps {
   clickEvents: ClickEventTypes.Chart[],
@@ -17,39 +18,41 @@ interface ChartProps {
 
 export function Chart({ clickEvents, dateRange }: ChartProps) {
 
-  const [chartType, setChartType] = useState<"area" | "bar" | "line">("area");
+  const [chartType, setChartType] = useLocalStorage<'area'|'bar'|'line'>('chartType', 'area');
 
   return (
-    <Card className="@container/card rounded-[var(--bradius)] shadow-none">
-      <CardHeader className="flex items-center gap-2 space-y-2 py-8 sm:flex-row">
-        <div className="grid flex-1 gap-1 text-center sm:text-left">
-          <CardTitle>Click Events</CardTitle>
-          <CardDescription>
-            {dateRange[0] === undefined ? "Showing total visitors for all time" :
-            `Showing total visitors for the last ${differenceInCalendarDays(dateRange[1], dateRange[0])} days`}
-
+    <Card className="rounded-[var(--bradius)] shadow-none border-vborder">
+      <CardHeader className="flex flex-row justify-between items-start space-y-0">
+        <div className="flex flex-col gap-1">
+          <CardTitle className="text-vprimary">Click Events</CardTitle>
+          <CardDescription className="text-vsecondary">
+            {dateRange[0] === undefined ? "Showing total clicks for all time" :
+            `Showing total clicks for the last ${differenceInCalendarDays(dateRange[1], dateRange[0])} days`}
           </CardDescription>
         </div>
         <Select value={chartType} onValueChange={(value) => setChartType(value as "area" | "bar" | "line")}>
-            <SelectTrigger className="hover:bg-gray-100 border transition w-[160px] data-[placeholder]:text-primary shadow-none bg-white border-[var(--border-color)] rounded-[var(--bradius)]">
-            <SelectValue placeholder="Area" />
-          </SelectTrigger>
-          <SelectContent className="border-[var(--border-color)] rounded-[var(--bradius)]">
+          <SelectTrigger className="bg-white hover:bg-gray-100 border transition w-[160px] shadow-none border-vborder rounded-[var(--bradius)] text-vprimary">
+          <SelectValue placeholder="Area" />
+        </SelectTrigger>
+          <SelectContent className="border-vborder rounded-[var(--bradius)]">
             <SelectItem value="area" className="rounded-[var(--bradius)]">
-              <div className="flex flex-row gap-2 items-center">
-                <FaChartArea className="text-muted-foreground"/>
+              <div className="flex flex-row gap-2 items-center py-[2px] text-vprimary">
+                {/* <FaChartArea className="text-vsecondary"/> */}
+                <ChartArea strokeWidth={1.8} size={13} className="text-vsecondary"/>
                 Area
               </div>
             </SelectItem>
             <SelectItem value="bar" className="rounded-[var(--bradius)]">
-              <div className="flex flex-row gap-2 items-center">
-                <FaChartBar className="text-muted-foreground"/>
+              <div className="flex flex-row gap-2 items-center py-[2px] text-vprimary">
+                {/* <FaChartBar className="text-vsecondary"/> */}
+                <ChartColumn strokeWidth={1.8} size={13} className="text-vsecondary"/>
                 Bar
               </div>
             </SelectItem>
             <SelectItem value="line" className="rounded-[var(--bradius)]">
-              <div className="flex flex-row gap-2 items-center">
-                <FaChartLine className="text-muted-foreground"/>
+              <div className="flex flex-row gap-2 items-center py-[2px] text-vprimary">
+                {/* <FaChartLine className="text-vsecondary"/> */}
+                <ChartLine strokeWidth={1.8} size={13} className="text-vsecondary"/>
                 Line
               </div>
             </SelectItem>

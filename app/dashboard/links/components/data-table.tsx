@@ -32,7 +32,9 @@ import { Button } from "@/components/ui/button"
 import { NewLinkButton } from "../new-link-button"
 import { LinkTypes } from "@/lib/zod/links"
 import { DeleteLinkModal } from "@/components/delete-link-modal"
-// import { DataTableToolbar } from "./data-table-toolbar"
+import { useCurrentFilters } from "../../filters-context"
+import { useRouter } from "next/navigation"
+import { Search } from "lucide-react"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -52,6 +54,9 @@ export function DataTable<TData, TValue>({
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [showDeleteModal, setShowDeleteModal] = React.useState<boolean>(false);
   const [badIds, setBadIds] = React.useState<number[]>([]);
+
+  const router = useRouter();
+  const { setFilters } = useCurrentFilters();
 
   const table = useReactTable({
     data,
@@ -87,31 +92,71 @@ export function DataTable<TData, TValue>({
     setShowDeleteModal(true);
   }
 
+  const viewManyAnalytics = (rows: Row<TData>[]) => {
+    const shortUrls: [string, string][] = [];
+    for (const row of rows) {
+      const link = row.original as LinkTypes.Dashboard;
+      const linkId = link.shortUrl;
+      shortUrls.push(['shortUrl', linkId]);
+    }
+
+    setFilters(shortUrls);
+    router.push("/dashboard/analytics");
+  }
+
   return (
     <div className="space-y-4">
-      <DeleteLinkModal isOpen={showDeleteModal} onOpenChange={setShowDeleteModal} linkIds={badIds}/>
+      <DeleteLinkModal isOpen={showDeleteModal} onOpenChange={setShowDeleteModal} ids={badIds}/>
       {/* <DataTableToolbar table={table} /> */}
-      <div className="flex items-center w-full justify-between">
-        <Input
+      <div className="flex gap-2 flex-col-reverse md:flex-row md:items-center w-full justify-between">
+        {/* <Input
           placeholder="Filter original urls..."
           value={(table.getColumn("originalUrl")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("originalUrl")?.setFilterValue(event.target.value)
           }
-          className="max-w-sm bg-white rounded-[var(--bradius)] shadow-none border-[var(--border-color)]"
-        />
+          className="max-w-sm bg-white rounded-[var(--bradius)] shadow-none border-vborder text-vprimary placeholder:text-vsecondary"
+        /> */}
+        <div
+          className="
+            w-[400px]
+            flex items-center
+            rounded-[var(--bradius)] border border-vborder
+            bg-white overflow-hidden
+            transition duration-300 ease-in-out
+            [&:not(:focus-within):hover]:border-[#c9c9c9]
+            focus-within:border-[#8d8d8d]
+            focus-within:shadow-[0px_0px_0px_3px_rgba(0,0,0,0.08)]
+          "
+        >
+          <div className="flex-shrink-0 px-3 py-[10px] bg-white text-[#8f8f8f] text-sm font-normal border-vborder">
+            <Search className="w-5 h-5"/>
+          </div>
+          <input
+            type="text"
+            value={(table.getColumn("originalUrl")?.getFilterValue() as string) ?? ""}
+            onChange={(event) =>
+              table.getColumn("originalUrl")?.setFilterValue(event.target.value)
+            }
+            placeholder="enter a url..."
+            className="w-full py-2 text-vprimary text-sm outline-none placeholder:text-[#8f8f8f]"
+          />
+        </div>
         <div className="flex gap-2">
           {table.getFilteredSelectedRowModel().rows.length >= 2 && (
-            <Button onClick={() => handleOnMultipleDeleteClicked(table.getFilteredSelectedRowModel().rows)} variant="destructiveFlat">Delete {table.getFilteredSelectedRowModel().rows.length}</Button>
+            <>
+              <Button onClick={() => handleOnMultipleDeleteClicked(table.getFilteredSelectedRowModel().rows)} variant="destructiveFlat">Delete {table.getFilteredSelectedRowModel().rows.length}</Button>
+              <Button disabled={table.getFilteredSelectedRowModel().rows.length > 50} onClick={() => viewManyAnalytics(table.getFilteredSelectedRowModel().rows)} variant="flat">View Analytics for {table.getFilteredSelectedRowModel().rows.length} Links</Button>
+            </>
           )}
-          <NewLinkButton />
+          {/* <NewLinkButton /> */}
         </div>
       </div>
-      <div className="border overflow-hidden bg-white rounded-[var(--bradius)] shadow-none border-[var(--border-color)]">
+      <div className="border overflow-hidden bg-white rounded-[var(--bradius)] shadow-none border-vborder">
         <Table>
-          <TableHeader className="bg-white">
+          <TableHeader className="bg-[var(--dashboard-bg)]">
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
+              <TableRow key={headerGroup.id} className="border-vborder">
                 {headerGroup.headers.map((header) => {
                   return (
                     <TableHead key={header.id} colSpan={header.colSpan}>
@@ -133,10 +178,10 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  className="group"
+                  className="group border-vborder"
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} className="py-5">
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()

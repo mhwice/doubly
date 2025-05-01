@@ -81,7 +81,7 @@ export function AnimatedTabs() {
 
       {/* Active Indicator */}
       <div
-        className="absolute bottom-[-6px] h-[2px] bg-[#0e0f11] transition-all duration-300 ease-out"
+        className="absolute bottom-[-6px] h-[2px] bg-vprimary transition-all duration-300 ease-out"
         style={activeStyle}
       />
 
@@ -94,13 +94,13 @@ export function AnimatedTabs() {
               tabRefs.current[index] = el;
             }}
             className={`px-3 py-2 cursor-pointer transition-colors duration-300 h-[30px] ${
-              index === activeIndex ? "text-[#0e0e10]" : "text-[#0e0f1199] hover:text-[#0e0e10]"
+              index === activeIndex ? "text-vprimary" : "text-vsecondary hover:text-[#0e0e10]"
             }`}
             onMouseEnter={() => setHoveredIndex(index)}
             onMouseLeave={() => setHoveredIndex(null)}
             onClick={() => setActiveIndex(index)}
           >
-            <div className="text-sm leading-5 whitespace-nowrap flex items-center justify-center h-full">
+            <div className="text-sm font-medium leading-5 whitespace-nowrap flex items-center justify-center h-full">
               <Link href={tab.path} passHref>
                 {tab.name}
               </Link>

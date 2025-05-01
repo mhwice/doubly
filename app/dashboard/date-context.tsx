@@ -1,9 +1,10 @@
 "use client";
 
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useState } from 'react';
 
 interface DateContextType {
-  date: Date
+  date: Date,
+  setDate: (newDate: Date) => void
 }
 
 const DateContext = createContext<DateContextType | undefined>(undefined);
@@ -17,14 +18,12 @@ export function useCurrentDate() {
   return context;
 }
 
-interface DateProviderProps {
-  date: Date,
-  children: React.ReactNode
-}
+export function DateProvider({ children }: { children: React.ReactNode }) {
 
-export function DateProvider({ date, children }: DateProviderProps) {
+  const [date, setDate] = useState(new Date());
+
   return (
-    <DateContext.Provider value={{ date }}>
+    <DateContext.Provider value={{ date, setDate }}>
       {children}
     </DateContext.Provider>
   );

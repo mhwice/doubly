@@ -1,18 +1,21 @@
+/*
+
+  TODO
+
+  • StatsHeader numUrls is wrong. Think about how to handle when no filters, and when filters.
+  • Right now, things that don't match the current filters all have a count of 0, and therefore get sorted
+  alphabetically. I don't really like this. I still want them to have a count of 0, but think it makes more sense
+  to sort them by how many click events they had when no filters were applied.
+
+  So the first result with a 0, would actually be the country with the most clicks that doesn't match the filters.
+
+*/
+
 "use client"
 
-import { useState, useEffect, Dispatch, SetStateAction, useRef } from "react"
-import { CheckIcon, ChevronsUpDown, QrCodeIcon, LinkIcon, MousePointerClickIcon, Loader2 } from "lucide-react"
-import { IoOptionsSharp, IoFlag } from "react-icons/io5";
-import { MdLocationCity } from "react-icons/md";
-import { PiMapPinAreaFill } from "react-icons/pi";
-import { IoMdGlobe } from "react-icons/io";
-import { BiLinkExternal } from "react-icons/bi";
-import { GoBrowser } from "react-icons/go";
-import { HiOutlineDevicePhoneMobile } from "react-icons/hi2";
-import { IoCubeOutline } from "react-icons/io5";
-import { IoFilter } from "react-icons/io5";
+import { useState, useEffect, Dispatch, SetStateAction } from "react"
+import { LinkIcon, Loader2, Filter, Flag, Building2, SquareArrowOutUpRight, AppWindow, Smartphone, CodeXml, Globe, MapPinned, MousePointerClick } from "lucide-react"
 
-import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
   Command,
@@ -28,17 +31,22 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 
-import { ClickEventSchemas, ClickEventTypes } from "@/lib/zod/clicks"
+import { AnalyticsServerResponseSchema, ClickEventSchemas, ClickEventTypes, ComboboxType, ServerResponseComboboxSchema } from "@/lib/zod/clicks"
 import { useDebounce } from "./use-debounce"
 import { deserialize, stringify } from "superjson"
 import { type FilterEnumType } from "@/lib/zod/links"
 import { CircularCheckbox } from "./circular-checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cleanUrl } from "../links/components/columns";
+import useSWR from 'swr';
+import { useCurrentFilters } from "../filters-context"
+import { sleep } from "@/utils/helper"
 
 type ComboboxProps = {
-  filteredData: ClickEventTypes.JSONAgg,
-  selectedValues: string[][],
-  setSelectedValues: Dispatch<SetStateAction<string[][]>>
+  comboboxData: ComboboxType,
+  // selectedValues: string[][],
+  // setSelectedValues: Dispatch<SetStateAction<string[][]>>,
+  dateRange: [Date | undefined, Date]
 };
 
 type Page = FilterEnumType | "root";
@@ -52,43 +60,110 @@ type MenuItem = {
 
 type Menu = MenuItem[];
 
-export function Combobox({ filteredData, selectedValues, setSelectedValues }: ComboboxProps) {
+const rootPage = [
+  { value: "Source", label: "source", icon: <MousePointerClick strokeWidth={1.75} size={16} className="h-4 w-4 text-vsecondary"/> },
+  { value: "Country", label: "country", icon: <Flag strokeWidth={1.75} size={16} className="h-4 w-4 text-vsecondary" /> },
+  { value: "Region", label: "region", icon: <MapPinned strokeWidth={1.75} size={16} className="h-4 w-4 text-vsecondary" /> },
+  { value: "City", label: "city", icon: <Building2 strokeWidth={1.75} size={16} className="h-4 w-4 text-vsecondary" /> },
+  { value: "Continent", label: "continent", icon: <Globe strokeWidth={1.75} size={16} className="h-4 w-4 text-vsecondary" /> },
+  { value: "Short Url", label: "shortUrl", icon:  <LinkIcon strokeWidth={1.75} size={16} className="h-4 w-4 text-vsecondary" /> },
+  { value: "Original Url", label: "originalUrl", icon: <SquareArrowOutUpRight strokeWidth={1.75} size={16} className="h-4 w-4 text-vsecondary" /> },
+  { value: "Browser", label: "browser", icon: <AppWindow strokeWidth={1.75} size={16} className="h-4 w-4 text-vsecondary" /> },
+  { value: "Device", label: "device", icon: <Smartphone strokeWidth={1.75} size={16} className="h-4 w-4 text-vsecondary" /> },
+  { value: "OS", label: "os", icon: <CodeXml strokeWidth={1.75} size={16} className="h-4 w-4 text-vsecondary" /> }
+];
+
+export function Combobox({ comboboxData, dateRange }: ComboboxProps) {
   // this is temporary. going to need to use useMemo to acutally prevent re-renders
-  const frozen = useRef(filteredData);
+  // const frozen = useRef(filteredData);
 
   // use to determine if we should be doing local queries or server-queries
+
+  const { filters, addFilter, hasFilter, deleteFilter, clearFilters } = useCurrentFilters();
+
+  const [mounted, setMounted] = useState(false);
+
   const LIMIT = 50;
   const shouldUseServerFetch = {
     root: false,
-    source: frozen.current.source.length >= LIMIT,
-    country: frozen.current.country.length >= LIMIT,
-    region: frozen.current.region.length >= LIMIT,
-    city: frozen.current.city.length >= LIMIT,
-    continent: frozen.current.continent.length >= LIMIT,
-    shortUrl: frozen.current.shortUrl.length >= LIMIT,
-    originalUrl: frozen.current.originalUrl.length >= LIMIT,
-    browser: frozen.current.browser.length >= LIMIT,
-    device: frozen.current.device.length >= LIMIT,
-    os: frozen.current.os.length >= LIMIT,
+    source: comboboxData.source.length >= LIMIT,
+    country: comboboxData.country.length >= LIMIT,
+    region: comboboxData.region.length >= LIMIT,
+    city: comboboxData.city.length >= LIMIT,
+    continent: comboboxData.continent.length >= LIMIT,
+    shortUrl: comboboxData.shortUrl.length >= LIMIT,
+    originalUrl: comboboxData.originalUrl.length >= LIMIT,
+    browser: comboboxData.browser.length >= LIMIT,
+    device: comboboxData.device.length >= LIMIT,
+    os: comboboxData.os.length >= LIMIT,
   };
 
   // Combobox state
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loadingSpinner, setLoadingSpinner] = useState(false);
 
   // What to display is no query
-  const [fallbackMenu, setFallbackMenu] = useState(buildMenu(frozen.current));
+  // const [fallbackMenu, setFallbackMenu] = useState(buildMenu(frozen.current));
+  // const [wholeMenu, setWholeMenu] = useState(buildMenu(comboboxData));
 
   // What to display if there is a query
-  const [currentMenu, setCurrentMenu] = useState<Menu>(fallbackMenu.root);
+  const [currentPage, setCurrentPage] = useState<Menu>(rootPage);
 
   // The thing we are displaying
   const [page, setPage] = useState<Page>("root");
 
   // Search state
   const [queryString, setQueryString] = useState<string>("");
-  const debouncedQueryString = useDebounce(queryString, 2000);
+  const debouncedQueryString = useDebounce(queryString, 300);
+
+  const fetcher = async (url: string) => {
+    const response = await fetch(url);
+    const jsonResponse = await response.json();
+    const deserialized = deserialize(jsonResponse);
+    const validated = ServerResponseComboboxSchema.safeParse(deserialized);
+    if (!validated.success) throw new Error("failed to validate api response");
+    if (!validated.data.success) throw new Error(validated.data.error);
+    return validated.data.data;
+  }
+
+  // Do we want to also filter by date here????
+  const params = new URLSearchParams();
+  // selectedValues.forEach((item) => params.append(item[0], item[1]));
+  for (const [field, values] of filters) {
+    for (const value of values) params.append(field, value);
+  }
+  if (dateRange[0] !== undefined) params.append("dateStart", dateRange[0].toISOString());
+  params.append("dateEnd", dateRange[1].toISOString());
+
+  if (debouncedQueryString !== "" && page !== "root") {
+    params.append("queryString", debouncedQueryString);
+    params.append("queryField", page);
+  }
+
+  const url = `/api/new-query?${params.toString()}`;
+
+  function allowedUrl() {
+    if (debouncedQueryString === "") return null;
+    if (page === "root") return null;
+    // console.log({ debouncedQueryString, queryString, page });
+    return url;
+  }
+
+  const { data, error, isLoading, isValidating } = useSWR(allowedUrl(), fetcher, {
+    revalidateIfStale: false,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    keepPreviousData: true
+  });
+
+  useEffect(() => {
+    if (data) setCurrentPage(data);
+  }, [data]);
+
+  // useEffect(() => {
+  //   console.log({wholeMenu})
+  // }, [wholeMenu]);
 
   // Clear when closed
   useEffect(() => {
@@ -102,8 +177,8 @@ export function Combobox({ filteredData, selectedValues, setSelectedValues }: Co
       setValue("");
       setQueryString("");
       setPage("root");
-      setCurrentMenu(fallbackMenu.root);
-    }, 50);
+      setCurrentPage(rootPage);
+    }, 100);
 
     return () => clearTimeout(timer);
   }, [open]);
@@ -116,7 +191,12 @@ export function Combobox({ filteredData, selectedValues, setSelectedValues }: Co
 
     if (queryString === "") {
       // set menu to fallback
-      setCurrentMenu(fallbackMenu[page]);
+      if (page === "root") {
+        setCurrentPage(rootPage);
+      } else {
+        setCurrentPage(comboboxData[page]);
+        // setCurrentPage(wholeMenu[page]);
+      }
       return;
     }
 
@@ -125,59 +205,63 @@ export function Combobox({ filteredData, selectedValues, setSelectedValues }: Co
       return;
     }
 
-    console.log("fetching...");
+    setMounted(true);
+    // console.log("fetching...");
 
-    setLoading(true);
+    // setLoading(true);
 
-    fetch("/api/query", {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: stringify({ selectedValues: [], dateRange: [undefined, new Date()], queryString: debouncedQueryString, queryField: page }),
-    })
-      .then((res) => {
-        return res.json()
-      })
-      .then((res) => {
-        const deserialized = deserialize(res);
-        const validated = ClickEventSchemas.ServerResponsQuery.safeParse(deserialized);
-        if (!validated.success) throw new Error("failed to validate api response");
-        if (!validated.data.success) throw new Error(validated.data.error);
-        const x = validated.data.data;
-        // console.log(x);
+    // fetch("/api/query", {
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: stringify({ selectedValues: [], dateRange: [undefined, new Date()], queryString: debouncedQueryString, queryField: page }),
+    // })
+    //   .then((res) => {
+    //     return res.json()
+    //   })
+    //   .then((res) => {
+    //     const deserialized = deserialize(res);
+    //     const validated = ClickEventSchemas.ServerResponsQuery.safeParse(deserialized);
+    //     if (!validated.success) throw new Error("failed to validate api response");
+    //     if (!validated.data.success) throw new Error(validated.data.error);
+    //     const x = validated.data.data;
+    //     // console.log(x);
 
-        // console.log(currentMenu)
-        setLoading(false);
-        setCurrentMenu(x);
-        // console.log(currentMenu)
-      })
+    //     // console.log(currentMenu)
+    //     setLoading(false);
+    //     setCurrentPage(x);
+    //     // console.log(currentMenu)
+    //   })
 
   }, [debouncedQueryString]);
 
   const handleSelect = (value: string, item: MenuItem) => {
 
-    if (item.label in fallbackMenu) {
-      if (item.label === "root") {
-        // not possible...
-      } else {
-        setQueryString("");
-        setPage(item.label as FilterEnumType);
-        setCurrentMenu(fallbackMenu[item.label as FilterEnumType]);
-      }
+    if (item.label in comboboxData) {
+      setQueryString("");
+      setPage(item.label as FilterEnumType);
+      setCurrentPage(comboboxData[item.label as FilterEnumType]);
     } else {
       // select this thing
       // console.log("selected", item.value);
       // setSelectedValues()
-      setSelectedValues((currentlSelected) => {
 
-        const without = currentlSelected.filter(([k, v]) => !(k === page && v === item.value));
-        if (without.length === currentlSelected.length) {
-          // its not currently selected -> select it
-          return [...currentlSelected, [page, item.value]];
-        } else {
-          // its currently selected -> remove it
-          return without;
-        }
-      });
+      if (hasFilter(page, item.value)) {
+        deleteFilter(page, item.value);
+      } else {
+        addFilter(page, item.value);
+      }
+
+      // setSelectedValues((currentlySelected) => {
+
+      //   const without = currentlySelected.filter(([k, v]) => !(k === page && v === item.value));
+      //   if (without.length === currentlySelected.length) {
+      //     // its not currently selected -> select it
+      //     return [...currentlySelected, [page, item.value]];
+      //   } else {
+      //     // its currently selected -> remove it
+      //     return without;
+      //   }
+      // });
     }
   }
 
@@ -186,20 +270,22 @@ export function Combobox({ filteredData, selectedValues, setSelectedValues }: Co
   }
 
   function isSelected(field: string, value: string) {
-    return selectedValues.filter(([k, v]) => k === field && v === value).length > 0;
+    return hasFilter(field, value);
+    // return selectedValues.filter(([k, v]) => k === field && v === value).length > 0;
   }
 
   return (
     <div className="flex flex-col">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button variant="flat" role="combobox" aria-expanded={open} className="w-[120px] justify-center" >
-            <IoFilter />
+          <Button variant="flat" role="combobox" aria-expanded={open} className="w-[120px] justify-center font-normal text-vprimary" >
+            {/* <IoFilter className="w-4 h-4 text-vprimary"/> */}
+            <Filter strokeWidth={1.75} className="text-vprimary"/>
             Add Filter
           </Button>
         </PopoverTrigger>
         <PopoverContent
-          className="w-[300px] p-0"
+          className="w-[300px] p-0 border-vborder"
           onCloseAutoFocus={(e) => {
             e.preventDefault() ; // THIS IS THE KEY TO FIXING THE FOCUS BUG!
           }}
@@ -219,44 +305,47 @@ export function Combobox({ filteredData, selectedValues, setSelectedValues }: Co
         >
           {/* https://github.com/pacocoursey/cmdk/issues/267 */}
           <Command shouldFilter={!shouldUseServerFetch[page]}>
-            <div className="relative border-b w-full">
-              <CommandInput placeholder="search..." className="h-9" value={queryString} onValueChange={(e) => handleOnValueChange(e)}/>
-              {loading && (
+            <div className="relative w-full">
+              <CommandInput placeholder="search..." className="h-11 text-vprimary placeholder:text-vsecondary" value={queryString} onValueChange={(e) => handleOnValueChange(e)}/>
+              {isLoading && (
                 <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center">
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin text-vsecondary" />
                 </div>
               )}
             </div>
             {/* <CommandInput placeholder="search..." className="h-9" value={queryString} onValueChange={(e) => handleOnValueChange(e)}/> */}
             <CommandList>
-              {loading ? <LoadingSkeleton /> :
+              {isLoading ? <LoadingSkeleton /> :
                 <>
                   <CommandEmpty>Not found.</CommandEmpty>
                   <CommandGroup heading={value || ""} >
-                    {currentMenu.map((item) => {
+                    {currentPage.map((item) => {
                       if (page === "root") {
                         return (
                           <CommandItem key={item.label} onSelect={(value) => handleSelect(value, item)}>
                             {item.icon}
-                            <div className="max-w-[200px] truncate">{item.value}</div>
+                            <div className="max-w-[200px] truncate text-vprimary py-[2px]">{item.value}</div>
                           </CommandItem>
                         );
                       } else {
                         const selected = isSelected(page, item.value);
                         return (
                           <CommandItem key={item.label} onSelect={(value) => handleSelect(value, item)}>
-                            <CircularCheckbox checked={selected} />
-                            <div className="max-w-[200px] truncate">{item.value}</div>
-                            <span className="ml-auto font-mono text-muted-foreground">{item.count}</span>
+                            {/* <CircularCheckbox className="bg-vborder" checked={selected} /> */}
+                            <CircularCheckbox className="bg-vborder" checked={selected} />
+                            <div className="max-w-[200px] py-[2px] truncate text-vprimary">
+                              {(page === "originalUrl" || page === "shortUrl") ? cleanUrl(item.value) : item.value}
+                            </div>
+                            <span className="ml-auto font-mono text-sm text-vsecondary">{item.count}</span>
                           </CommandItem>
                         );
                       }
                     })}
                   </CommandGroup>
-                  {shouldUseServerFetch[page] && currentMenu.length === LIMIT &&
+                  {shouldUseServerFetch[page] && currentPage.length === LIMIT &&
                     <CommandGroup>
                       <CommandItem disabled>
-                        <span className="mx-auto font-mono text-muted-foreground">search to view more items</span>
+                        <span className="mx-auto font-mono text-vtertiary">search to view more items</span>
                       </CommandItem>
                     </CommandGroup>
                   }
@@ -270,59 +359,14 @@ export function Combobox({ filteredData, selectedValues, setSelectedValues }: Co
   )
 }
 
-function buildMenu(filteredData: ClickEventTypes.JSONAgg) {
-  const menu: {
-    root: Menu
-    source: Menu;
-    country: Menu;
-    region: Menu;
-    city: Menu;
-    continent: Menu;
-    shortUrl: Menu;
-    originalUrl: Menu;
-    browser: Menu;
-    device: Menu;
-    os: Menu;
-  } = {
-    root: [
-      { value: "Source", label: "source", icon: <IoOptionsSharp className="h-4 w-4 text-muted-foreground"/> },
-      { value: "Country", label: "country", icon: <IoFlag className="h-4 w-4 text-muted-foreground" /> },
-      { value: "Region", label: "region", icon: <PiMapPinAreaFill className="h-4 w-4 text-muted-foreground" /> },
-      { value: "City", label: "city", icon: <MdLocationCity className="h-4 w-4 text-muted-foreground" /> },
-      { value: "Continent", label: "continent", icon: <IoMdGlobe className="h-4 w-4 text-muted-foreground" /> },
-      { value: "Short Url", label: "shortUrl", icon:  <LinkIcon className="h-4 w-4 text-muted-foreground" /> },
-      { value: "Original Url", label: "originalUrl", icon: <BiLinkExternal className="h-4 w-4 text-muted-foreground" /> },
-      { value: "Browser", label: "browser", icon: <GoBrowser className="h-4 w-4 text-muted-foreground" /> },
-      { value: "Device", label: "device", icon: <HiOutlineDevicePhoneMobile className="h-4 w-4 text-muted-foreground" /> },
-      { value: "OS", label: "os", icon: <IoCubeOutline className="h-4 w-4 text-muted-foreground" /> },
-    ],
-    source: [],
-    country: [],
-    region: [],
-    city: [],
-    continent: [],
-    shortUrl: [],
-    originalUrl: [],
-    browser: [],
-    device: [],
-    os: [],
-  }
-
-  for (const { label } of menu.root) {
-    menu[label as FilterEnumType] = filteredData[label as FilterEnumType];
-  }
-
-  return menu;
-}
-
 const LoadingSkeleton = () => {
   return (
     <CommandGroup>
       {[1, 2, 3, 4, 5].map((i) => (
         <CommandItem key={i}>
-          <div className="flex items-center w-full justify-start content-between gap-[7px] py-[2px]">
-            <Skeleton className="h-[16px] w-[16px] rounded" />
-            <Skeleton className="h-[16px] w-24 rounded" />
+          <div className="flex items-center w-full justify-start content-between gap-[7px] py-[3px]">
+            <Skeleton className="h-[20px] w-[20px]" />
+            <Skeleton className="h-[20px] w-full rounded" />
           </div>
         </CommandItem>
       ))}

@@ -1,7 +1,8 @@
 import { ClickEvents } from "@/data-access/clicks";
 import { LinkTable } from "@/data-access/links";
-import { permanentRedirect, redirect } from "next/navigation";
+import { notFound, permanentRedirect, redirect } from "next/navigation";
 import { NextRequest, NextResponse, userAgent } from 'next/server'
+import iso3166 from "iso-3166-2";
 
 export const config = {
   runtime: 'edge', // Mark this as an Edge Function
@@ -15,84 +16,99 @@ function parseRequest(request: NextRequest) {
   return code;
 }
 
-// export async function GET(request: NextRequest, { params }: { params: Promise<{ link: string[] }> }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ link: string[] }> }) {
 
-//   console.log(request)
+  // console.log(request)
 
-//   // const ip = request.headers.get("x-forwarded-for")?.split(",")[0] || undefined;
-//   const country = request.headers.get("x-vercel-ip-country") || undefined;
-//   const region = request.headers.get("x-vercel-ip-country-region") || undefined;
-//   const city = request.headers.get("x-vercel-ip-city") || undefined;
-//   const continent = request.headers.get("x-vercel-ip-continent") || undefined;
-//   const latitude = request.headers.get("x-vercel-ip-latitude") || undefined;
-//   const parsedLatitude = latitude === undefined ? undefined : parseFloat(latitude);
+  let country = request.headers.get("x-vercel-ip-country") || undefined;
+  let region = request.headers.get("x-vercel-ip-country-region") || undefined;
+  const city = request.headers.get("x-vercel-ip-city") || undefined;
+  let continent = request.headers.get("x-vercel-ip-continent") || undefined;
+  if (country && region) {
+    // converts 'BC' to 'British Columbia'
+    region = iso3166.subdivision(country, region)?.name;
+  }
 
-//   const longitude = request.headers.get("x-vercel-ip-longitude") || undefined;
-//   const parsedLongitude = longitude === undefined ? undefined : parseFloat(longitude);
-//   // console.log({ ip, country, region, city });
+  if (country) {
+    // converts 'CA' to 'Canada'
+    country = iso3166.country(country)?.name;
+  }
 
-//   const source = request.nextUrl.searchParams.get("source");
+  if (continent) {
+    switch (continent) {
+      case 'NA':
+        continent = 'North America';
+        break;
+      case 'EU':
+        continent = 'Europe';
+        break;
+      case 'AF':
+        continent = 'Africa';
+        break;
+      case 'AS':
+        continent = 'Asia';
+        break;
+      case 'SA':
+        continent = 'South America';
+        break;
+      case 'OC':
+        continent = 'Oceania';
+        break;
+      case 'AN':
+        continent = 'Antarctica';
+        break;
 
+      default:
+        break;
+    }
+  }
 
+  const latitude = request.headers.get("x-vercel-ip-latitude") || undefined;
+  const parsedLatitude = latitude === undefined ? undefined : parseFloat(latitude);
 
-//   // console.log("api", {request});
+  const longitude = request.headers.get("x-vercel-ip-longitude") || undefined;
+  const parsedLongitude = longitude === undefined ? undefined : parseFloat(longitude);
 
+  const source = request.nextUrl.searchParams.get("source");
 
-//   // console.log({ source });
+  const code = parseRequest(request);
 
-//   // We can use this way to manage many / easily
-//   // const urlSegments = (await params).link;
-//   // console.log({ urlSegments })
-//   // const code = urlSegments[0];
+  let { ua, browser, engine, os, device, cpu, isBot } = userAgent(request);
+  const browserName = browser.name || undefined;
+  const osName = os.name || undefined;
+  const deviceType = device.type || undefined;
 
-//   // or we can use this way, and someone figure out how to handle the extra values - maybe throw an error.
-//   const code = parseRequest(request);
-//   // console.log({ code });
+  console.log({
+    code,
+    source: source === "qr" ? "qr" : "link",
+    city,
+    continent,
+    country,
+    latitude: parsedLatitude,
+    longitude: parsedLongitude,
+    region,
+    browser: browserName,
+    os: osName,
+    device: deviceType
+  })
 
+  const clickResponse = await ClickEvents.recordClickIfExists({
+    code,
+    source: source === "qr" ? "qr" : "link",
+    city,
+    continent,
+    country,
+    latitude: parsedLatitude,
+    longitude: parsedLongitude,
+    region,
+    browser: browserName,
+    os: osName,
+    device: deviceType
+  });
 
-//   /*
+  console.log({success: clickResponse.success})
+  if (clickResponse.success) console.log({success: clickResponse.data});
 
-//     Need to do some thinking on how I want to handle the urls.
-//     For example:
-
-//     localhost:3000/bj43knj
-//     localhost:3000/bj43knj/324n
-//     localhost:3000/bj43knj/dsf/fds/sdf/sdf
-//     localhost:3000/a///////cd
-//     localhost:3000/auth/login
-
-//   */
-
-//   const { ua, browser, engine, os, device, cpu, isBot } = userAgent(request);
-//   console.log({ ua, browser, engine, os, device, cpu, isBot });
-
-
-//   const response = await LinkTable.getLinkByCode({ code, source: source === "qr" ? "qr" : "link" });
-//   if (!response.data) permanentRedirect("/");
-
-//   const link = response.data;
-
-//   console.log({
-//     linkId: link.id,
-//     source: source === "qr" ? "qr" : "link",
-//     city,
-//     continent,
-//     country,
-//     latitude: parsedLatitude,
-//     longitude: parsedLongitude,
-//     region
-//   });
-
-//   const clickResponse = await ClickEvents.recordClick({
-//     linkId: link.id,
-//     source: source === "qr" ? "qr" : "link",
-//     city,
-//     continent,
-//     country,
-//     latitude: parsedLatitude,
-//     longitude: parsedLongitude,
-//     region
-//   });
-
-//   permanentRedirect(response.data.originalUrl);
-// }
+  if (clickResponse.success) permanentRedirect(clickResponse.data.originalUrl);
+  redirect("/");
+}

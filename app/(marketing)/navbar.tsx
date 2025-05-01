@@ -8,6 +8,7 @@ import { useState, useEffect } from "react"
 import { DatabaseLogo } from "./DatabaseLogo"
 import { Button } from "./Button"
 import { useRouter } from 'next/navigation';
+import Image from "next/image"
 
 interface NavbarProps {
   isLoggedIn: boolean
@@ -53,7 +54,14 @@ export function Navbar({ isLoggedIn }: NavbarProps) {
         <div className="relative flex items-center justify-between">
           <Link href="/" aria-label="Home">
             <span className="sr-only">Company logo</span>
-            <DatabaseLogo className="w-28 md:w-32" />
+            {/* <DatabaseLogo className="w-28 md:w-32" /> */}
+            <Image
+              src="/logo-with-text.svg"
+              alt="logo"
+              width="100"
+              height="100"
+              priority />
+
           </Link>
           <nav className="hidden md:absolute md:left-1/2 md:top-1/2 md:block md:-translate-x-1/2 md:-translate-y-1/2 md:transform">
             <div className="flex items-center gap-10 font-medium">

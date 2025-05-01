@@ -33,17 +33,9 @@ export function TabGroup({ items }: TabGroupParams) {
   return (
     <>
       {items.length > 0 && (
-        <Tabs defaultValue={items[0].value} className="w-[500px]">
-        <TabsList>
-          {items.map(({ title, value }) => <TabsTrigger key={value} value={value}>{title}</TabsTrigger>)}
-          {/* <TabsTrigger value="continent">Continent</TabsTrigger>
-          <TabsTrigger value="country">Country</TabsTrigger>
-          <TabsTrigger value="city">City</TabsTrigger> */}
-        </TabsList>
+        <Tabs defaultValue={items[0].value} className="w-full lg:w-[500px]">
+        <TabsList>{items.map(({ title, value }) => <TabsTrigger key={value} value={value}>{title}</TabsTrigger>)}</TabsList>
         {items.map(({ value, children }) => <TabsContent key={value} value={value}>{children}</TabsContent>)}
-        {/* <TabsContent value="continent"><TabStuff title="Top Continents" data={params.continents}/></TabsContent>
-        <TabsContent value="country"><TabStuff title="Top Countries" data={params.countries}/></TabsContent>
-        <TabsContent value="city"><TabStuff title="Top Cities" data={params.cities}/></TabsContent> */}
       </Tabs>
       )}
     </>

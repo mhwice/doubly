@@ -17,12 +17,15 @@ exports.up = (pgm) => {
       link_id INTEGER NOT NULL REFERENCES links(id) ON DELETE CASCADE,
       source source_type NOT NULL,
       created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
-      country VARCHAR(2),
+      country VARCHAR(63),
       city VARCHAR(63),
-      region VARCHAR(3),
-      continent VARCHAR(2),
+      region VARCHAR(63),
+      continent VARCHAR(63),
       latitude REAL CHECK(latitude IS NULL OR (latitude >= -90 AND latitude <= 90)),
-      longitude REAL CHECK (longitude IS NULL OR (longitude >= -180 AND longitude <= 180))
+      longitude REAL CHECK (longitude IS NULL OR (longitude >= -180 AND longitude <= 180)),
+      browser VARCHAR(63),
+      os VARCHAR(63),
+      device VARCHAR(63)
     );
   `);
 };

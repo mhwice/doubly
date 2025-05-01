@@ -1,0 +1,98 @@
+"use client";
+
+import { useState, useTransition } from "react";
+
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/components/ui/form";
+import { FormError } from "@/components/form-error";
+import { createLink } from "@/actions/safe-create-link";
+import { UrlInput } from "./url-input";
+import { BaseModal } from "./base-modal";
+
+interface CustomDialogProps {
+  isOpen: boolean;
+  onOpenChange: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+// Todo validate that the string looks like a url
+const LinkSchema = z
+  .object({
+    link: z.string().trim().min(1, { message: "link is required" }),
+  })
+  .transform(({ link }) => {
+    if (link.startsWith("https://")) return { link };
+    return { link: "https://" + link };
+  });
+
+export function CreateLinkModal({ isOpen, onOpenChange }: CustomDialogProps) {
+  const [error, setError] = useState<string | undefined>();
+  const [isPending, startTransition] = useTransition();
+
+  const form = useForm<z.infer<typeof LinkSchema>>({
+    resolver: zodResolver(LinkSchema),
+    defaultValues: {
+      link: "",
+    },
+  });
+
+  const handleSubmit = () => {
+    form.handleSubmit((values) => {
+      const validatedFields = LinkSchema.safeParse(values);
+      if (!validatedFields.success) {
+        setError("Invalid fields");
+        return;
+      }
+
+      const { link } = validatedFields.data;
+      setError("");
+
+      startTransition(async () => {
+        const response = await createLink({ originalUrl: link });
+        if (!response.success) setError(response.error);
+        else onOpenChange(false);
+      });
+    })();
+  };
+
+
+  return (
+
+    <BaseModal
+      isOpen={isOpen}
+      onOpenChange={onOpenChange}
+      title="Create Link"
+      description="This is the URL you want your users to visit. All traffic to this URL will be tracked."
+      onSubmit={handleSubmit}
+      isPending={isPending}
+      submitLabel="Create"
+      disableSubmit={!form.formState.isDirty}
+    >
+      <Form {...form}>
+        <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+          <FormField
+            control={form.control}
+            name="link"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <UrlInput {...field} placeholder="www.google.com" disabled={isPending} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormError message={error} />
+        </form>
+      </Form>
+    </BaseModal>
+  );
+}

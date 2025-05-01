@@ -17,13 +17,13 @@ interface HeaderProps {
 export const Header = ({label}: HeaderProps) => {
   return (
     <div className="w-full flex flex-col gap-y-10 items-center justify-center">
-      {/* <Image
+      <Image
           src="/logo.svg"
           alt="logo"
           width="80"
           height="80"
-          priority /> */}
-        <DatabaseLogo className="w-32"/>
+          priority />
+        {/* <DatabaseLogo className="w-32"/> */}
       <h1 className={cn("text-3xl font-semibold", font.className)}>{label}</h1>
       {/* <p className="text-muted-foreground text-sm">{label}</p> */}
     </div>

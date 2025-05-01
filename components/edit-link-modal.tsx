@@ -1,121 +1,113 @@
-import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
-import { Calendar } from "@/components/ui/calendar"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import { cn } from "@/lib/utils"
-import { format } from "date-fns"
-import { CalendarIcon } from "lucide-react"
+"use client";
 
-import { type LinkTypes } from "@/lib/zod/links";
-import { useState } from "react"
+import { useEffect, useState, useTransition } from "react";
 
-interface ModalProps {
-  title: string;
-  description: string;
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/components/ui/form";
+import { FormError } from "@/components/form-error";
+import { UrlInput } from "./url-input";
+import { BaseModal } from "./base-modal";
+import { editLink } from "@/actions/safe-edit-link";
+
+interface CustomDialogProps {
   isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
-  linkData: LinkTypes.DTO | undefined
+  onOpenChange: React.Dispatch<React.SetStateAction<boolean>>;
+  link: string;
+  id: number | undefined;
 }
 
-export function EditLinkModal({ title, description, isOpen, onOpenChange, linkData }: ModalProps) {
+// Todo validate that the string looks like a url
+const LinkSchema = z
+  .object({
+    link: z.string().trim().min(1, { message: "link is required" }),
+  })
+  .transform(({ link }) => {
+    if (link.startsWith("https://")) return { link };
+    return { link: "https://" + link };
+  });
 
-  const [isPasswordToggleOn, setIsPasswordToggledOn] = useState(false);
-  const [isExpirationToggleOn, setIsExpirationToggledOn] = useState(false);
-  const [date, setDate] = useState<Date>()
+export function EditLinkModal({ isOpen, onOpenChange, link, id }: CustomDialogProps) {
+  const [error, setError] = useState<string | undefined>();
+  const [isPending, startTransition] = useTransition();
 
-  const handlePasswordToggleChange = (checked: boolean) => {
-    setIsPasswordToggledOn(checked);
-  }
+  const form = useForm<z.infer<typeof LinkSchema>>({
+    resolver: zodResolver(LinkSchema),
+    defaultValues: {
+      link: link,
+    },
+  });
 
-  const handleExpirationToggleChange = (checked: boolean) => {
-    setIsExpirationToggledOn(checked);
-  }
+  useEffect(() => {
+    if (link) {
+      form.reset({ link });
+    }
+  }, [link, form]);
 
-  const handleButtonClick = () => {
-    console.log("save or edit link")
-  }
+  useEffect(() => {
+    if (!isOpen) {
+      form.reset({ link });
+    }
+  }, [isOpen])
+
+  const handleSubmit = () => {
+    form.handleSubmit((values) => {
+      const validatedFields = LinkSchema.safeParse(values);
+      if (!validatedFields.success) {
+        setError("Invalid fields");
+        return;
+      }
+
+      const { link } = validatedFields.data;
+      setError("");
+
+      startTransition(async () => {
+        console.log("updating link with id", id, "to", link)
+        // const response = await editLink({ id: id, updates: { originalUrl: link } });
+        // if (!response.success) setError(response.error);
+        // else onOpenChange(false);
+      });
+    })();
+  };
+
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>
-            {description}
-          </DialogDescription>
-        </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <Label htmlFor="name" className="text-left">Original Link</Label>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Input id="name" defaultValue={linkData?.originalUrl || ""} className="col-span-4" />
-          </div>
-          <div className="flex items-center justify-between">
-            <Label htmlFor="enable-feature" className="cursor-pointer">
-              Passowrd Protected
-            </Label>
-            <Switch id="enable-feature" checked={isPasswordToggleOn} onCheckedChange={handlePasswordToggleChange} />
-          </div>
-          { isPasswordToggleOn && (
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Input id="username" defaultValue="" className="col-span-4" />
-            </div>
-          )}
 
-          <div className="flex items-center justify-between">
-            <Label htmlFor="enable-feature" className="cursor-pointer">
-              Link Expiration Date
-            </Label>
-            <Switch id="enable-feature" checked={isExpirationToggleOn} onCheckedChange={handleExpirationToggleChange} />
-          </div>
-          { isExpirationToggleOn && (
-            <Popover modal={true}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={"outline"}
-                  className={cn(
-                    "w-[240px] justify-start text-left font-normal",
-                    !date && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon />
-                  {date ? format(date, "PPP") : <span>Pick a date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={setDate}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-          )}
-        </div>
-        <DialogFooter className="sm:justify-start">
-          <DialogClose asChild>
-            <Button type="button" variant="default" onClick={handleButtonClick}>
-              Save
-            </Button>
-          </DialogClose>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
+    <BaseModal
+      isOpen={isOpen}
+      onOpenChange={onOpenChange}
+      title="Edit Link"
+      description="Change the Url your users will be redirected to"
+      onSubmit={handleSubmit}
+      isPending={isPending}
+      submitLabel="Save"
+      disableSubmit={!form.formState.isDirty}
+    >
+      <Form {...form}>
+        <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+          <FormField
+            control={form.control}
+            name="link"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <UrlInput {...field} placeholder="www.google.com" disabled={isPending} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormError message={error} />
+        </form>
+      </Form>
+    </BaseModal>
+  );
 }

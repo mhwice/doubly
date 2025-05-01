@@ -2,24 +2,45 @@
 
 import { LinkTypes, ServerResponseLinksGetAllSchema } from "@/lib/zod/links";
 import { DataTable } from "./components/data-table";
-import { StatsHeader } from "./stats-header";
-import { columns } from "./components/columns";
+import { cleanUrl } from "./components/columns";
 import { useCurrentDate } from "../date-context";
-import { ClickEventSchemas } from "@/lib/zod/clicks";
 import useSWR from "swr";
 import { deserialize } from "superjson";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useMemo, useState } from "react";
+import { ColumnDef } from "@tanstack/react-table";
+import { DataTableRowActions } from "./components/data-table-row-actions";
+import { DataTableColumnHeader } from "./static-components/data-table-column-header";
+import { SquareArrowOutUpRight } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { EditLinkModal } from "@/components/edit-link-modal";
+import { QRCodeModal } from "@/components/new-qr-modal";
+import { DeleteLinkModal } from "@/components/delete-link-modal";
 
 export function ClientWrapper() {
 
   const { date: now } = useCurrentDate();
 
-  // this is what I want from the backend
-  // const response = await LinkTable.getAllLinks({
-  //   userId: userId,
-  //   options: new Map(),
-  //   dateRange: [undefined, currentDate]
-  // });
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showQRModal, setShowQRModal] = useState(false);
+  const [activeLink, setActiveLink] = useState<LinkTypes.Dashboard>();
+
+  const handleEditClick = (clickedLink: LinkTypes.Dashboard) => {
+    setActiveLink(clickedLink);
+    setShowEditModal(true);
+  }
+
+  const handleDeleteClick = (clickedLink: LinkTypes.Dashboard) => {
+    setActiveLink(clickedLink);
+    setShowDeleteModal(true);
+  }
+
+  const handleQRClick = (clickedLink: LinkTypes.Dashboard) => {
+    setActiveLink(clickedLink);
+    setShowQRModal(true);
+  }
 
   const fetcher = async (url: string) => {
     const response = await fetch(url);
@@ -41,37 +62,95 @@ export function ClientWrapper() {
     revalidateOnReconnect: false
   });
 
+  const columns = useMemo<ColumnDef<LinkTypes.Dashboard>[]>(
+    () => [
+      {
+        id: "select",
+        header: ({ table }) => (
+          <div>
+          <Checkbox checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
+              onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+              aria-label="Select all"
+          />
+          </div>
+        ),
+        cell: ({ row }) => (
+          <div>
+          <Checkbox
+              checked={row.getIsSelected()}
+              onCheckedChange={(value) => row.toggleSelected(!!value)}
+              aria-label="Select row"
+            />
+          </div>
+        ),
+        enableSorting: false,
+        enableHiding: false,
+      },
+      {
+        accessorKey: "originalUrl",
+        header: ({ column }) => <DataTableColumnHeader column={column} title="Original Url" className="text-vsecondary text-sm" />,
+        cell: ({ row }) => (
+          <div className="group max-w-[400px] overflow-hidden relative whitespace-nowrap">
+            <a href={row.getValue("originalUrl")} target="_blank" rel="noopener noreferrer" className="url-overflow text-[#0168d6] inline-flex items-center gap-1 font-mono align-bottom">
+              <SquareArrowOutUpRight strokeWidth={1.5} className="h-4 w-4 flex-shrink-0"/>
+              {cleanUrl(row.getValue("originalUrl"))}
+            </a>
+          </div>
+        ),
+        enableSorting: false,
+        enableHiding: false,
+      },
+      {
+        accessorKey: "shortUrl",
+        header: ({ column }) => <DataTableColumnHeader column={column} title="Shortened Url" className="text-vsecondary text-sm px-4" />,
+        cell: ({ row }) => (
+          <div className="flex space-x-1 items-center">
+            <Button className="font-mono font-normal text-sm text-vsecondary" variant="ghost">{cleanUrl(row.getValue("shortUrl"))}</Button>
+          </div>
+        ),
+        enableSorting: false,
+        enableHiding: false,
+      },
+      {
+        accessorKey: "linkClicks",
+        header: ({ column }) => <DataTableColumnHeader column={column} title="Link Clicks" className="text-vsecondary text-sm"/>,
+        cell: ({ row }) => <div className="w-[80px] font-mono text-vsecondary">{row.getValue("linkClicks")}</div>,
+      },
+      {
+        accessorKey: "qrClicks",
+        header: ({ column }) => <DataTableColumnHeader column={column} title="QR Clicks" className="text-vsecondary text-sm"/>,
+        cell: ({ row }) => <div className="w-[80px] font-mono text-vsecondary">{row.getValue("qrClicks")}</div>,
+      },
+      {
+        accessorKey: "updatedAt",
+        header: ({ column }) => <DataTableColumnHeader column={column} title="Last Interacted" className="text-vsecondary text-sm"/>,
+        cell: ({ row }) => <div className="max-w-[200px] min-w-[150px] font-mono text-vsecondary">
+          {(row.getValue("updatedAt") as Date).toDateString()}
+        </div>,
+      },
+      {
+        id: "actions",
+        cell: ({ row }) => <DataTableRowActions row={row} onEditClick={handleEditClick} onDeleteClick={handleDeleteClick} onViewQRClick={handleQRClick}/>
+      }
+    ],
+    [handleEditClick]
+  );
+
   if (isLoading) return (
     <div className="h-full mx-[15%]">
       <Skeleton className="pt-[200px] h-[50%] w-[100%]" />
     </div>
   );
 
-  if (error) throw new Error(); // todo - bad
-  let stats = undefined;
-  if (data) stats = makeStats(data);
-
   return (
     <div className="flex flex-col pb-14">
-      {/* <div className="py-8">
-        {stats && <StatsHeader stats={stats} />}
-      </div> */}
       <div className="pt-14"></div>
+      {activeLink && <>
+        <QRCodeModal isOpen={showQRModal} onOpenChange={setShowQRModal} shortUrl={activeLink?.shortUrl} />
+        <DeleteLinkModal isOpen={showDeleteModal} onOpenChange={setShowDeleteModal} ids={[activeLink?.id]}/>
+        <EditLinkModal isOpen={showEditModal} onOpenChange={setShowEditModal} id={activeLink?.id} link={activeLink?.originalUrl} />
+      </>}
       {data && <DataTable data={data} columns={columns} />}
     </div>
   );
-}
-
-// TODO - it might be a better idea to query this from the db directly
-function makeStats(links: LinkTypes.Dashboard[]) {
-  let numUrls = 0;
-  let numLinkClicks = 0;
-  let numQRClicks = 0;
-  for (const { linkClicks, qrClicks } of links) {
-    numUrls += 1;
-    numLinkClicks += linkClicks;
-    numQRClicks += qrClicks;
-  }
-
-  return { numUrls, numLinkClicks, numQRClicks };
 }

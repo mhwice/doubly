@@ -51,7 +51,7 @@ export function UserNav({ image, name, email }: DropdownProps) {
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-1">
+          <div className="flex flex-col space-y-2 py-2">
             <p className="text-sm font-medium leading-none">{name}</p>
             <p className="text-xs leading-none text-muted-foreground">
               {email}
@@ -64,13 +64,13 @@ export function UserNav({ image, name, email }: DropdownProps) {
             Homepage
             <House className="mr-1" />
           </DropdownMenuItem>
-          <DropdownMenuItem
+          {/* <DropdownMenuItem
             className="flex justify-between py-3 font-normal text-sm text-[#666666]"
             onClick={() => router.push("/learn-more")}
           >
             Learn More
             <BookOpen className="mr-1" />
-          </DropdownMenuItem>
+          </DropdownMenuItem> */}
           <DropdownMenuItem
             className="flex justify-between py-3 font-normal text-sm text-[#666666]"
             onClick={() => router.push("/dashboard/settings")}

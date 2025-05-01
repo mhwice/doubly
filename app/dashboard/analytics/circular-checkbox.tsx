@@ -13,13 +13,14 @@ const CircularCheckbox = React.forwardRef<
   <CheckboxPrimitive.Root
     ref={ref}
     className={cn(
-      "peer h-4 w-4 shrink-0 rounded-full border-none bg-gray-200 ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-green-500",
+      "peer h-4 w-4 shrink-0 rounded-full border-none bg-gray-200 ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-[#45a557]",
+      "transition-all duration-300 ease-in-out",
       className,
     )}
     {...props}
   >
     <CheckboxPrimitive.Indicator className={cn("flex items-center justify-center text-white")}>
-      <Check className="h-1 w-1" />
+      <Check className="w-3 h-3 text-white stroke-[3] p-[2px]" />
     </CheckboxPrimitive.Indicator>
   </CheckboxPrimitive.Root>
 ))

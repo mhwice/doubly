@@ -1,4 +1,3 @@
-import { columns } from "./components/columns";
 import { DataTable } from "./components/data-table";
 import { LinkTable } from "@/data-access/links"
 import { redirect } from "next/navigation";
@@ -6,6 +5,7 @@ import { StatsHeader } from "./stats-header";
 import { type LinkTypes } from "@/lib/zod/links";
 import { getSession } from "@/lib/get-session";
 import { ClientWrapper } from "./client-wrapper";
+import { NewLinkButton } from "./new-link-button";
 
 // TODO - it might be a better idea to query this from the db directly
 function makeStats(links: LinkTypes.Dashboard[]) {
@@ -41,26 +41,23 @@ export default async function LinksPage() {
   // const stats = makeStats(links);
 
   return (
-    <div className="bg-[var(--dashboard-bg)]">
-      <div className="h-full mx-[15%] flex flex-col">
-        <h1 className="font-medium text-3xl mt-14 mb-2">Link Management</h1>
-        <p className="text-xs font-light text-muted-foreground">Create new short links, copy urls and qr codes,<br/>perform bulk actions on multiple links at once.</p>
+    <>
+      {/* <div className="flex mx-[15%] justify-between h-full items-center"> */}
+      <div className="flex flex-col md:flex-row justify-between h-full md:items-center max-w-7xl mx-auto px-3 md:px-5 xl:px-10">
+        <div className="h-full flex flex-col">
+          <h1 className="font-semibold text-3xl mt-14 mb-2 text-vprimary">Link Management</h1>
+          <p className="text-sm text-vsecondary w-[400px] lg:w-[700px] xl:w-[400px]">Create new short links, copy urls and qr codes, perform bulk actions on multiple links at once.</p>
+        </div>
+        <div className="mt-5 md:mt-14">
+          <NewLinkButton />
+        </div>
       </div>
-      <div className="border-b border-[var(--border-color)] mt-14"></div>
+      <div className="border-b border-vborder mt-14"></div>
 
-      <div className="h-full mx-[15%] flex flex-col">
+      {/* <div className="h-full mx-2 lg:mx-[2%] xl:mx-[5%] 2xl:mx-[15%] flex flex-col bg-blue-100"> */}
+      <div className="h-full flex flex-col max-w-7xl mx-auto px-3 md:px-5 xl:px-10">
         <ClientWrapper />
       </div>
-    </div>
-    // <div className="bg-[var(--dashboard-bg)]">
-    //   <ClientWrapper />
-    // </div>
-    // <div className="h-full mx-[15%]">
-    //   <div className="mb-8 mt-8">
-    //     <StatsHeader stats={stats} />
-    //   </div>
-    //   <div className="mb-8"></div>
-    //   <DataTable data={links} columns={columns} />
-    // </div>
+    </>
   )
 }
