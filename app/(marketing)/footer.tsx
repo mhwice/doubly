@@ -2,6 +2,7 @@ import { RiArrowRightUpLine } from "@remixicon/react"
 import Link from "next/link"
 import { DatabaseLogo } from "./DatabaseLogo"
 import { ThemeSwitch } from "./theme-switch"
+import Image from "next/image"
 
 const navigation = {
   product: [
@@ -36,7 +37,13 @@ export function Footer() {
       <div className="mx-auto max-w-6xl px-3 pb-8 pt-16 sm:pt-24 lg:pt-32">
         <div className="xl:grid xl:grid-cols-3 xl:gap-20">
           <div className="space-y-8">
-            <DatabaseLogo className="w-32 sm:w-40" />
+            {/* <DatabaseLogo className="w-32 sm:w-40" /> */}
+            <Image
+              src="/logo-with-text.svg"
+              alt="logo"
+              width="80"
+              height="80"
+              priority />
             <p className="text-sm leading-6 text-gray-600 dark:text-gray-400">
               Redefining the way databases are built and managed. Built in
               Switzerland, made for the world.

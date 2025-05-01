@@ -29,7 +29,7 @@ interface StatsHeaderProps {
 export function StatsHeader({ stats }: StatsHeaderProps) {
   const { numLinks, linkClicks, qrClicks } = stats;
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid sm:gap-4 gap-2 grid-cols-3">
       <Card className="rounded-[var(--bradius)] shadow-none border-vborder">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-vprimary">
@@ -47,7 +47,7 @@ export function StatsHeader({ stats }: StatsHeaderProps) {
       <Card className="rounded-[var(--bradius)] shadow-none border-vborder">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-vprimary">
-            Total Link Clicks
+            Link Clicks
           </CardTitle>
           <MousePointerClickIcon className="h-4 w-4 text-vsecondary" />
         </CardHeader>
@@ -60,7 +60,7 @@ export function StatsHeader({ stats }: StatsHeaderProps) {
       </Card>
       <Card className="rounded-[var(--bradius)] shadow-none border-vborder">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-vprimary">Total QR Clicks</CardTitle>
+          <CardTitle className="text-sm font-medium text-vprimary">QR Scans</CardTitle>
           <QrCodeIcon className="h-4 w-4 text-vsecondary"/>
         </CardHeader>
         <CardContent>

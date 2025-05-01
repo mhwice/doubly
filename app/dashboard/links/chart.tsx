@@ -18,7 +18,7 @@ interface ChartProps {
 
 export function Chart({ clickEvents, dateRange }: ChartProps) {
 
-  const [chartType, setChartType] = useLocalStorage<'area'|'bar'|'line'>('chartType', 'line');
+  const [chartType, setChartType] = useLocalStorage<'area'|'bar'|'line'>('chartType', 'area');
 
   return (
     <Card className="rounded-[var(--bradius)] shadow-none border-vborder">

@@ -4,15 +4,15 @@ import UrlShortenerDemo from "./url-shorener";
 import { Features } from "./features";
 import ABTestingExample from "./ab-test";
 import { VerticalTimeline } from "./vertical-timeline";
-import Skew from "./skew";
-import HeroSection from "./skew-full";
+// import Skew from "./skew";
+// import HeroSection from "./skew-full";
 import { GlobalDatabase } from "../landing/components/ui/GlobalDatabase";
 import Image from "next/image";
 import HowItWorksSection from "./how-it-works";
 import { CallToAction } from "./cta";
 import { Footer } from "./dashboard-footer";
 import { WorldMap } from "./dotted-map";
-import { GlobeDemo } from "./globe-demo";
+// import { GlobeDemo } from "./globe-demo";
 
 export default async function Home() {
   const session = await getSession();

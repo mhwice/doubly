@@ -11,7 +11,8 @@ export function Hero({ isLoggedIn }: HeroProps) {
   return (
     <section
       aria-labelledby="hero-title"
-      className="mt-32 flex flex-col items-center justify-center text-center sm:mt-40"
+      className="mt-32 flex flex-col items-center justify-center text-center sm:mt-40 container mx-auto px-4 sm:px-6 lg:px-8"
+      // className="mt-32 px-20 sm:px-6 lg:px-8 flex flex-col items-center justify-center text-center sm:mt-40"
     >
       <Link href="https://github.com/mhwice/"><Badge variant="outline" className="shadow-none mb-5">Proudly Open Source</Badge></Link>
       <h1
@@ -59,11 +60,16 @@ export function Hero({ isLoggedIn }: HeroProps) {
           </Link>
         </Button>
       </div>
-      <div
+      {/* <div
         className="relative mx-auto ml-3 mt-20 h-fit w-[40rem] max-w-6xl animate-slide-up-fade sm:ml-auto sm:w-full sm:px-2"
+
         style={{ animationDuration: "1400ms" }}
-      >
-        {/* <HowItWorksSection /> */}
+      > */}
+        <div
+          className="relative mx-auto mt-20 h-fit w-full max-w-6xl sm:px-2 animate-slide-up-fade"
+          style={{ animationDuration: "1400ms" }}
+        >
+        {/* <HowItWorksSection />
         {/* <GlobalDatabase /> */}
         {/* <div className="my-40"></div> */}
         <HeroImage />

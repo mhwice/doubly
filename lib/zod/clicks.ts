@@ -9,12 +9,15 @@ const ClickEventSchema = z.object({
   linkId: z.number().nonnegative().lt(2_147_483_648),
   source: z.enum(["qr", "link"]),
   createdAt: z.date(),
-  country: z.string().trim().length(2).optional(),
-  continent: z.string().trim().length(2).optional(),
-  region: z.string().trim().min(1).max(3).optional(),
-  city: z.string().trim().min(1).optional(),
+  country: z.string().trim().min(1).max(63).optional(),
+  continent: z.string().trim().min(1).max(63).optional(),
+  region: z.string().trim().min(1).max(63).optional(),
+  city: z.string().trim().min(1).max(63).optional(),
   latitude: z.number().gte(-90).lte(90).optional(),
   longitude: z.number().gte(-180).lte(180).optional(),
+  device: z.string().trim().min(1).optional(),
+  browser: z.string().trim().min(1).optional(),
+  os: z.string().trim().min(1).optional(),
 });
 
 // const ClickEventCreateSchema = ClickEventSchema.omit({
@@ -242,6 +245,23 @@ const ComboboxSchema = z.object({
 export type ComboboxType = z.infer<typeof ComboboxSchema>;
 
 export const AnalyticsServerResponseSchema = serverResponseSchema(AnalayticsOutputSchema);
+
+export const RecordClickIfExistsSchema = ClickEventSchema.omit({
+  id: true,
+  linkId: true,
+  createdAt: true,
+}).extend({
+  code: z.string().trim().length(12)
+}).transform(data => {
+    // now `data` has type: { code: string; source: 'qr'|'link'; city?: string; ... }
+    return Object.fromEntries(
+      Object.entries(data)
+        .filter(([, v]) => v !== undefined)
+        .map(([k,v]) => [snakeCase(k), v])
+    );
+  });
+
+export type RecordClickIfExistsSchemaType = z.infer<typeof RecordClickIfExistsSchema>;
 
 export namespace ClickEventSchemas {
   export const Click = ClickEventSchema; // used

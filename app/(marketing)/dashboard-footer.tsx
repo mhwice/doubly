@@ -1,13 +1,20 @@
 import Link from "next/link"
 import { DatabaseLogo } from "../(marketing)/DatabaseLogo"
+import Image from "next/image"
 
 export function Footer() {
   return (
     <footer id="footer" className="border-t border-vborder">
-      <div className="mx-[15%] p-5">
+      <div className="sm:mx-[15%] p-5 md:mx-[10%]">
         <div className="flex flex-col gap-4">
           <div className="flex gap-4 items-center">
-            <DatabaseLogo className="w-28" />
+            {/* <DatabaseLogo className="w-28" /> */}
+            <Image
+              src="/logo-with-text.svg"
+              alt="logo"
+              width="80"
+              height="80"
+              priority />
             <Link href="/" className="text-sm text-vsecondary hover:text-foreground">Home</Link>
             <Link href="/learn-more" className="text-sm text-vsecondary hover:text-vprimary">Learn More</Link>
             <Link href="/sign-in" className="text-sm text-vsecondary hover:text-vprimary">Sign-in</Link>
@@ -18,7 +25,7 @@ export function Footer() {
           </div>
           <div className="flex flex-row items-center justify-between">
             <p className="text-xs leading-5 text-vtertiary">
-              &copy; {new Date().getFullYear()} Database, Inc. All rights
+              &copy; {new Date().getFullYear()} Doubly, Inc. All rights
               reserved.
             </p>
             <div className="rounded-full border border-vborder py-1 pl-1 pr-2">

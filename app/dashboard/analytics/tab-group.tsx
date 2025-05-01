@@ -33,7 +33,7 @@ export function TabGroup({ items }: TabGroupParams) {
   return (
     <>
       {items.length > 0 && (
-        <Tabs defaultValue={items[0].value} className="w-[500px]">
+        <Tabs defaultValue={items[0].value} className="w-full lg:w-[500px]">
         <TabsList>{items.map(({ title, value }) => <TabsTrigger key={value} value={value}>{title}</TabsTrigger>)}</TabsList>
         {items.map(({ value, children }) => <TabsContent key={value} value={value}>{children}</TabsContent>)}
       </Tabs>

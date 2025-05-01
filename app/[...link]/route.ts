@@ -1,6 +1,6 @@
 import { ClickEvents } from "@/data-access/clicks";
 import { LinkTable } from "@/data-access/links";
-import { permanentRedirect, redirect } from "next/navigation";
+import { notFound, permanentRedirect, redirect } from "next/navigation";
 import { NextRequest, NextResponse, userAgent } from 'next/server'
 import iso3166 from "iso-3166-2";
 
@@ -18,7 +18,7 @@ function parseRequest(request: NextRequest) {
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ link: string[] }> }) {
 
-  console.log(request)
+  // console.log(request)
 
   let country = request.headers.get("x-vercel-ip-country") || undefined;
   let region = request.headers.get("x-vercel-ip-country-region") || undefined;
@@ -73,34 +73,42 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
   const code = parseRequest(request);
 
-  const { ua, browser, engine, os, device, cpu, isBot } = userAgent(request);
+  let { ua, browser, engine, os, device, cpu, isBot } = userAgent(request);
+  const browserName = browser.name || undefined;
+  const osName = os.name || undefined;
+  const deviceType = device.type || undefined;
 
-  // const response = await LinkTable.getLinkByCode({ code, source: source === "qr" ? "qr" : "link" });
-  // if (!response.data) permanentRedirect("/");
+  console.log({
+    code,
+    source: source === "qr" ? "qr" : "link",
+    city,
+    continent,
+    country,
+    latitude: parsedLatitude,
+    longitude: parsedLongitude,
+    region,
+    browser: browserName,
+    os: osName,
+    device: deviceType
+  })
 
-  // const link = response.data;
+  const clickResponse = await ClickEvents.recordClickIfExists({
+    code,
+    source: source === "qr" ? "qr" : "link",
+    city,
+    continent,
+    country,
+    latitude: parsedLatitude,
+    longitude: parsedLongitude,
+    region,
+    browser: browserName,
+    os: osName,
+    device: deviceType
+  });
 
-  // console.log({
-  //   linkId: link.id,
-  //   source: source === "qr" ? "qr" : "link",
-  //   city,
-  //   continent,
-  //   country,
-  //   latitude: parsedLatitude,
-  //   longitude: parsedLongitude,
-  //   region
-  // });
+  console.log({success: clickResponse.success})
+  if (clickResponse.success) console.log({success: clickResponse.data});
 
-  // const clickResponse = await ClickEvents.recordClick({
-  //   linkId: link.id,
-  //   source: source === "qr" ? "qr" : "link",
-  //   city,
-  //   continent,
-  //   country,
-  //   latitude: parsedLatitude,
-  //   longitude: parsedLongitude,
-  //   region
-  // });
-
-  // permanentRedirect(response.data.originalUrl);
+  if (clickResponse.success) permanentRedirect(clickResponse.data.originalUrl);
+  redirect("/");
 }

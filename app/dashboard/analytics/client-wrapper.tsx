@@ -110,7 +110,7 @@ export function ClientWrapper() {
         {chartData && <Chart clickEvents={chartData} dateRange={dateRange} />}
       </div>
       {filteredData &&
-        <div className="flex flex-row justify-between space-x-4 pt-5">
+        <div className="flex flex-col justify-between lg:space-x-4 pt-5 lg:flex-row">
           <TabGroup items={[
             { title: "Browser", value: "browser", children: <TabStuff title="Browser" data={filteredData.browser} /> },
             { title: "OS", value: "os", children: <TabStuff title="OS" data={filteredData.os} /> },

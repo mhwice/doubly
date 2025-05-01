@@ -4,8 +4,8 @@ import { env } from "@/data-access/env";
 import { neon } from '@neondatabase/serverless';
 import { ZodError } from 'zod';
 import { parseJSONQueryResponse, parseQueryResponse, type QueryResponse } from "@/utils/helper";
-import { ClickEventSchemas, ComboboxJSONEntitySchema, ComboboxQuery, type ClickEventTypes } from "@/lib/zod/clicks";
-import { LinkSchemas, LinkTypes, QueryGetAllSchema } from "@/lib/zod/links";
+import { ClickEventSchemas, ComboboxJSONEntitySchema, ComboboxQuery, RecordClickIfExistsSchema, RecordClickIfExistsSchemaType, type ClickEventTypes } from "@/lib/zod/clicks";
+import { LinkSchemas, LinkTypes, OriginalUrlSchema, OriginalUrlSchemaType, QueryGetAllSchema } from "@/lib/zod/links";
 import { snakeCase } from "change-case";
 import { ERROR_MESSAGES } from "@/lib/error-messages";
 import { ServerResponse, ServerResponseType } from "@/lib/server-repsonse";
@@ -17,6 +17,57 @@ const sql = env.ENV === "dev" ? localSQL : neon(env.DATABASE_URL);
  * Data-Access-Layer (DAL) for all ClickEvents
  */
 export class ClickEvents {
+
+  static async recordClickIfExists(params: Partial<RecordClickIfExistsSchemaType>): Promise<ServerResponseType<OriginalUrlSchemaType>> {
+    try {
+      const tableData = RecordClickIfExistsSchema.parse(params);
+
+      let code = "";
+      let pairs = new Map<string, string | number>();
+      for (const [k, v] of Object.entries(tableData)) {
+        if (k === "code") {
+          if (typeof v === "string") code = v;
+          else return ServerResponse.fail(ERROR_MESSAGES.NOT_FOUND);
+        } else {
+          pairs.set(k, v);
+        }
+      }
+
+      const columns = Array.from(pairs.keys());
+      const placeholders = columns.map((_, i) => `$${i+2}`).join(", ");
+      const values = Array.from(pairs.values());
+
+      const query = `
+        WITH matching_link AS (
+          SELECT id, original_url
+          FROM links
+          WHERE code = $1
+        ),
+        click_cte AS (
+          INSERT INTO click_events(link_id, ${columns})
+          SELECT id, ${placeholders}
+          FROM matching_link
+        )
+
+        SELECT original_url
+        FROM matching_link;
+      `;
+
+      console.log({query})
+      const response: QueryResponse = await sql(query, [code, ...values]);
+      console.log({response})
+      const result = parseQueryResponse(response, OriginalUrlSchema);
+      console.log({result});
+
+      if (result.length === 0) return ServerResponse.fail(ERROR_MESSAGES.NOT_FOUND);
+
+      return ServerResponse.success(result[0]);
+
+    } catch (error: unknown) {
+      if (error instanceof ZodError) return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS);
+      return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
+    }
+  }
 
   static async recordClick(params: ClickEventTypes.Create): Promise<ServerResponseType<ClickEventTypes.Click>> {
     try {

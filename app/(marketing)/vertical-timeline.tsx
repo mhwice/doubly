@@ -12,27 +12,27 @@ export function VerticalTimeline() {
       <div className="flex flex-col">
         <TimelineItem
           number={1}
-          title="Create a Doubly Link"
-          description="You give us any website URL and our system will give you a unique short link."
+          title="Create a Doubly link"
+          description="Paste any URL and get a unique short link—instantly."
           isLeft={true}
         />
         <TimelineItem
           number={2}
-          title="Share your Link with your audience"
-          description="Share your Doubly link as you normally would - via Tweets, emails, blogs, or any maketing campaigns."
+          title="Share everywhere"
+          description="Post your Doubly link via tweets, emails, blogs, or any campaign—no extra setup required."
           isLeft={false}
         />
         <TimelineItem
           number={3}
-          title="View detailed Analytics"
-          description="Doubly will time, geographic, and device information on anyone who clicks on your Doubly links"
+          title="View detailed analytics"
+          description="Track every click with time stamps, geographic breakdowns, and device data for deep insights."
           isLeft={true}
         />
         <TimelineItem
           number={4}
           isLast
-          title="Make better business decisions"
-          description="See which links outperform, learn your audience, understand what people care about."
+          title="Optimize performance"
+          description="Identify top-performing links and audience preferences to sharpen your strategy."
           isLeft={false}
         />
       </div>

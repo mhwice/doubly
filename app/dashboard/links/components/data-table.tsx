@@ -34,6 +34,7 @@ import { LinkTypes } from "@/lib/zod/links"
 import { DeleteLinkModal } from "@/components/delete-link-modal"
 import { useCurrentFilters } from "../../filters-context"
 import { useRouter } from "next/navigation"
+import { Search } from "lucide-react"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -107,15 +108,40 @@ export function DataTable<TData, TValue>({
     <div className="space-y-4">
       <DeleteLinkModal isOpen={showDeleteModal} onOpenChange={setShowDeleteModal} ids={badIds}/>
       {/* <DataTableToolbar table={table} /> */}
-      <div className="flex items-center w-full justify-between">
-        <Input
+      <div className="flex gap-2 flex-col-reverse md:flex-row md:items-center w-full justify-between">
+        {/* <Input
           placeholder="Filter original urls..."
           value={(table.getColumn("originalUrl")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("originalUrl")?.setFilterValue(event.target.value)
           }
           className="max-w-sm bg-white rounded-[var(--bradius)] shadow-none border-vborder text-vprimary placeholder:text-vsecondary"
-        />
+        /> */}
+        <div
+          className="
+            w-[400px]
+            flex items-center
+            rounded-[var(--bradius)] border border-vborder
+            bg-white overflow-hidden
+            transition duration-300 ease-in-out
+            [&:not(:focus-within):hover]:border-[#c9c9c9]
+            focus-within:border-[#8d8d8d]
+            focus-within:shadow-[0px_0px_0px_3px_rgba(0,0,0,0.08)]
+          "
+        >
+          <div className="flex-shrink-0 px-3 py-[10px] bg-white text-[#8f8f8f] text-sm font-normal border-vborder">
+            <Search className="w-5 h-5"/>
+          </div>
+          <input
+            type="text"
+            value={(table.getColumn("originalUrl")?.getFilterValue() as string) ?? ""}
+            onChange={(event) =>
+              table.getColumn("originalUrl")?.setFilterValue(event.target.value)
+            }
+            placeholder="enter a url..."
+            className="w-full py-2 text-vprimary text-sm outline-none placeholder:text-[#8f8f8f]"
+          />
+        </div>
         <div className="flex gap-2">
           {table.getFilteredSelectedRowModel().rows.length >= 2 && (
             <>

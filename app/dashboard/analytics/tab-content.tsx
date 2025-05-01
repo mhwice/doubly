@@ -13,7 +13,7 @@ interface propppy {
 
 export function TabStuff(params: propppy) {
   return (
-    <div className="bg-white border rounded-[var(--bradius)] border-vborder mb-14 py-4">
+    <div className="bg-white border rounded-[var(--bradius)] border-vborder mb-8 lg:mb-14 py-4">
       <div className="flex items-center justify-between mb-3 px-4">
         <h2 className="text-2xl font-semibold tracking-tight text-vprimary">{params.title}</h2>
         <MousePointerClickIcon className="h-4 w-4 text-vsecondary" />

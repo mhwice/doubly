@@ -6,16 +6,16 @@ export const GlobalDatabase = () => {
   const features = [
     {
       name: "Advanced Filters",
-      description: "Isolate the exact metrics you care about, ignore the fluff.",
+      description: "Drill down by date, geography, device, or referrer to focus on the metrics that matter most.",
     },
     {
       name: "QR Code Generator",
-      description: "Create a unique QR for every Doubly link.",
+      description: "Auto-generate QR codes for any Doubly link and track every scan.",
     },
     {
-      name: "API (coming soon)",
+      name: "API Access (soon)",
       description:
-        "Create new links programmatically and embed them into your apps.",
+        "Programmatically create and track links from your own apps and workflows.",
     },
   ]
 
@@ -35,7 +35,8 @@ export const GlobalDatabase = () => {
           id="global-database-title"
           className="z-10 mt-6 pb-2 inline-block bg-gradient-to-b from-white to-indigo-100 bg-clip-text px-2 text-center text-5xl font-bold tracking-tighter text-transparent md:text-8xl"
         >
-          Meet your <br /> target audience
+          Find your <br /> target audience
+          {/* Understand who’s <br />clicking, and how. */}
         </h2>
         <Image
           src="/scaled_map.svg"

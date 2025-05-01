@@ -29,7 +29,7 @@ export default function DeleteAccountCard() {
         <CardContent>
           <p className="text-vsecondary text-sm">
             Permanently remove your account and all of its contents from
-            the Database platform. This action is not reversible, so please continue
+            the Doubly platform. This action is not reversible, so please continue
             with caution.
           </p>
         </CardContent>

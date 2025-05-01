@@ -3,6 +3,7 @@ import { ERROR_MESSAGES } from "@/lib/error-messages";
 import { getSession } from "@/lib/get-session";
 import { ServerResponse } from "@/lib/server-repsonse";
 import { QuerySchema } from "@/lib/zod/links";
+import { sleep } from "@/utils/helper";
 import { NextRequest, NextResponse } from "next/server";
 import { serialize } from "superjson";
 
@@ -12,6 +13,7 @@ export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const params = Array.from(searchParams.entries());
 
+  // await sleep(300)
   console.log(params)
 
   // 2 - Validate the params

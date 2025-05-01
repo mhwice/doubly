@@ -14,6 +14,9 @@ const LinkTableSchema = z.object({
   password: z.string().trim().min(1).max(63).optional(),
 });
 
+export const OriginalUrlSchema = LinkTableSchema.pick({ originalUrl: true });
+export type OriginalUrlSchemaType = z.infer<typeof OriginalUrlSchema>;
+
 const LinkDashboardSchema = LinkTableSchema.pick({
   id: true,
   originalUrl: true,
