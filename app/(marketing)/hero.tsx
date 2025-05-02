@@ -37,8 +37,8 @@ export function Hero({ isLoggedIn }: HeroProps) {
         className="mt-8 flex w-full animate-slide-up-fade flex-col justify-center gap-3 px-3 sm:flex-row"
         style={{ animationDuration: "1100ms" }}
       >
-        <Button className="h-10 font-semibold hover:cursor-pointer">
-          <Link href={isLoggedIn ? "/dashboard/links" : "/auth/login"}>{isLoggedIn ? "Go to Dashboard" : "Get Started"}</Link>
+        <Button className="h-10 font-semibold hover:cursor-pointer bg-[var(--database)]">
+          <Link href={isLoggedIn ? "/dashboard/links" : "/auth/register"}>{isLoggedIn ? "Go to Dashboard" : "Get Started"}</Link>
         </Button>
         <Button
           asChild

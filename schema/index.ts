@@ -10,6 +10,10 @@ export const LoginSchema = z.object({
   code: z.optional(z.string()),
 });
 
+export const SocialSchema = z.object({
+  provider: z.enum(["google", "github"])
+});
+
 export const RegisterSchema = z.object({
   email: z.string().email({ message: "Email is required" }),
   password: z.string().min(6, { message: "Minimum 6 characters required" }),

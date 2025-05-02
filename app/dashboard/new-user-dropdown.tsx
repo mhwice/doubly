@@ -13,9 +13,11 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { authClient } from "@/utils/auth-client";
+import { sleep } from "@/utils/helper";
 import { BookOpen, House, LogOut, Settings2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { startTransition } from "react";
+import { startTransition, useState } from "react";
 
 interface DropdownProps {
   image: string | undefined | null;
@@ -25,14 +27,19 @@ interface DropdownProps {
 
 export function UserNav({ image, name, email }: DropdownProps) {
   const router = useRouter();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  function handleOnLogoutClick() {
-    startTransition(async () => {
-      await logout().then((data) => {
-        console.log("something went wrong", data.error);
-      });
-    });
-  }
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await authClient.signOut();
+      router.push('/');
+    } catch (err) {
+      console.error('Logout failed', err);
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
 
   return (
     <DropdownMenu>
@@ -80,8 +87,11 @@ export function UserNav({ image, name, email }: DropdownProps) {
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleOnLogoutClick} className="flex justify-between py-3 font-normal text-sm text-[#666666]">
-          Log out
+        <DropdownMenuItem onClick={(e) => {
+          // e.preventDefault();
+          handleLogout();
+        }} className="flex justify-between py-3 font-normal text-sm text-[#666666]">
+          Logout
           <LogOut className="mr-1" />
         </DropdownMenuItem>
       </DropdownMenuContent>

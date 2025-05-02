@@ -17,7 +17,7 @@ export function Footer() {
               priority />
             <Link href="/" className="text-sm text-vsecondary hover:text-foreground">Home</Link>
             <Link href="/learn-more" className="text-sm text-vsecondary hover:text-vprimary">Learn More</Link>
-            <Link href="/sign-in" className="text-sm text-vsecondary hover:text-vprimary">Sign-in</Link>
+            <Link href="/auth/login" className="text-sm text-vsecondary hover:text-vprimary">Sign-in</Link>
             <Link href="https://github.com/mhwice/" className="text-sm text-vsecondary hover:text-vprimary">Github</Link>
             {/* <Link href="/" className="text-sm text-muted-foreground hover:text-foreground">Guides</Link>
             <Link href="/" className="text-sm text-muted-foreground hover:text-foreground">FAQs</Link>

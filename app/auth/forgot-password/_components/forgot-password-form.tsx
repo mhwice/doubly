@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -15,13 +15,14 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { FormError } from "@/components/form-error";
 import { FormSuccess } from "@/components/form-success";
 import { LoadingButton } from "@/components/auth/loading-button";
+import { TextInput } from "@/components/text-input";
+import { authClient } from "@/utils/auth-client";
 
 export const ForgotPasswordForm = () => {
 
   const [error, setError] = useState<string | undefined>();
   const [success, setSuccess] = useState<string | undefined>();
-
-  const [isPending, startTransition] = useTransition();
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<z.infer<typeof ResetSchema>>({
     resolver: zodResolver(ResetSchema),
@@ -30,16 +31,28 @@ export const ForgotPasswordForm = () => {
     }
   });
 
-  const onSubmit = (values: z.infer<typeof ResetSchema>) => {
+  const onSubmit = async (values: z.infer<typeof ResetSchema>) => {
+    setIsLoading(true);
     setError("");
     setSuccess("");
 
-    startTransition(async () => {
-      await reset(values).then((data) => {
-        if (data?.error) setError(data?.error);
-        if (data?.success) setSuccess(data?.success);
+    // await reset(values).then((data) => {
+    //   if (data?.error) setError(data?.error);
+    //   if (data?.success) setSuccess(data?.success);
+    // });
+
+    try {
+      const { data, error } = await authClient.forgetPassword({
+        email: values.email
       });
-    });
+
+      if (error) setError(error.message);
+      if (data) setSuccess("Password reset email sent!");
+    } catch (error) {
+      console.error("Failed to send password reset email", error);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -49,13 +62,14 @@ export const ForgotPasswordForm = () => {
       backButtonHref="/auth/login"
     >
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <div className="space-y-4">
             <FormField control={form.control} name="email" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>Enter your email</FormLabel>
                   <FormControl>
-                    <Input {...field} disabled={isPending} placeholder="john.doe@example.com" type="email" className="shadow-none border-vborder"/>
+                    {/* <Input {...field} disabled={isLoading} placeholder="john.doe@example.com" type="email" className="shadow-none border-vborder"/> */}
+                    <TextInput disabled={isLoading} placeholder="john.doe@example.com" type="email" {...field}/>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -64,7 +78,7 @@ export const ForgotPasswordForm = () => {
           </div>
           <FormError message={error} />
           <FormSuccess message={success} />
-          <LoadingButton loading={isPending}>Send reset email</LoadingButton>
+          <LoadingButton loading={isLoading}>Reset Password</LoadingButton>
         </form>
       </Form>
     </CardWrapper>
