@@ -18,6 +18,7 @@ function parseRequest(request: NextRequest) {
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ link: string[] }> }) {
 
+  // console.log("HERERERERER")
   // console.log(request)
 
   let country = request.headers.get("x-vercel-ip-country") || undefined;
@@ -95,15 +96,15 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const clickResponse = await ClickEvents.recordClickIfExists({
     code,
     source: source === "qr" ? "qr" : "link",
-    city,
-    continent,
-    country,
+    city: city || "unknown",
+    continent: continent || "unknown",
+    country: country || "unknown",
     latitude: parsedLatitude,
     longitude: parsedLongitude,
-    region,
-    browser: browserName,
-    os: osName,
-    device: deviceType
+    region: region || "unknown",
+    browser: browserName || "unknown",
+    os: osName || "unknown",
+    device: deviceType || "unknown"
   });
 
   console.log({success: clickResponse.success})

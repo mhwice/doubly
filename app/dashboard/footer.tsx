@@ -7,7 +7,7 @@ export function Footer() {
     <footer id="footer" className="border-t border-vborder">
       {/* <div className="mx-[15%] p-5"> */}
       <div className="max-w-7xl mx-auto px-3 md:px-5 xl:px-10 py-5">
-        <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 items-center sm:items-stretch">
           <div className="flex gap-4 items-center">
             {/* <DatabaseLogo className="w-28" /> */}
             <Image
@@ -22,7 +22,7 @@ export function Footer() {
             <Link href="/" className="text-sm text-muted-foreground hover:text-foreground">FAQs</Link>
             <Link href="/" className="text-sm text-muted-foreground hover:text-foreground">Help</Link> */}
           </div>
-          <div className="flex flex-row items-center justify-between">
+          <div className="flex flex-col items-center justify-between sm:flex-row gap-3">
             <p className="text-xs leading-5 text-vtertiary">
               &copy; {new Date().getFullYear()} Database, Inc. All rights
               reserved.

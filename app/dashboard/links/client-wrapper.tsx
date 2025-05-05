@@ -11,7 +11,7 @@ import { useMemo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableRowActions } from "./components/data-table-row-actions";
 import { DataTableColumnHeader } from "./static-components/data-table-column-header";
-import { SquareArrowOutUpRight } from "lucide-react";
+import { RefreshCw, SquareArrowOutUpRight } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { EditLinkModal } from "@/components/edit-link-modal";
@@ -20,7 +20,7 @@ import { DeleteLinkModal } from "@/components/delete-link-modal";
 
 export function ClientWrapper() {
 
-  const { date: now } = useCurrentDate();
+  const { date: now, setDate } = useCurrentDate();
 
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -56,7 +56,7 @@ export function ClientWrapper() {
   params.append("dateEnd", now.toISOString());
   const url = `/api/links?${params.toString()}`;
 
-  const { data, error, isLoading } = useSWR(url, fetcher, {
+  const { data, error, isLoading, isValidating } = useSWR(url, fetcher, {
     revalidateIfStale: false,
     revalidateOnFocus: false,
     revalidateOnReconnect: false
@@ -105,7 +105,7 @@ export function ClientWrapper() {
         header: ({ column }) => <DataTableColumnHeader column={column} title="Shortened Url" className="text-vsecondary text-sm px-4" />,
         cell: ({ row }) => (
           <div className="flex space-x-1 items-center">
-            <Button className="font-mono font-normal text-sm text-vsecondary" variant="ghost">{cleanUrl(row.getValue("shortUrl"))}</Button>
+            <Button onClick={() => navigator.clipboard.writeText(row.getValue("shortUrl"))} className="font-mono font-normal text-sm text-vsecondary" variant="ghost">{cleanUrl(row.getValue("shortUrl"))}</Button>
           </div>
         ),
         enableSorting: false,
@@ -136,6 +136,17 @@ export function ClientWrapper() {
     [handleEditClick]
   );
 
+  // const handleOnRefreshClicked = () => {
+  //   const newNow = new Date();
+  //   setDate(newNow);
+  // }
+
+  const [rowSelection, setRowSelection] = useState({});
+
+  const onLinkDelete = () => {
+    setRowSelection({});
+  }
+
   if (isLoading) return (
     <div className="h-full mx-[15%]">
       <Skeleton className="pt-[200px] h-[50%] w-[100%]" />
@@ -145,12 +156,15 @@ export function ClientWrapper() {
   return (
     <div className="flex flex-col pb-14">
       <div className="pt-14"></div>
+      {/* <div>
+        <Button onClick={handleOnRefreshClicked} variant="flat" className="text-vprimary font-normal"><RefreshCw strokeWidth={1.75} className="text-vprimary"/>Refresh</Button>
+      </div> */}
       {activeLink && <>
-        <QRCodeModal isOpen={showQRModal} onOpenChange={setShowQRModal} shortUrl={activeLink?.shortUrl} />
-        <DeleteLinkModal isOpen={showDeleteModal} onOpenChange={setShowDeleteModal} ids={[activeLink?.id]}/>
-        <EditLinkModal isOpen={showEditModal} onOpenChange={setShowEditModal} id={activeLink?.id} link={activeLink?.originalUrl} />
+        <QRCodeModal isOpen={showQRModal} onOpenChange={setShowQRModal} shortUrl={activeLink.shortUrl} />
+        <DeleteLinkModal onLinkDelete={onLinkDelete} isOpen={showDeleteModal} onOpenChange={setShowDeleteModal} ids={[activeLink.id]}/>
+        <EditLinkModal isOpen={showEditModal} onOpenChange={setShowEditModal} id={activeLink.id} link={activeLink.originalUrl} />
       </>}
-      {data && <DataTable data={data} columns={columns} />}
+      {data && <DataTable isLoading={isValidating} rowSelection={rowSelection} setRowSelection={setRowSelection} data={data} columns={columns} />}
     </div>
   );
 }

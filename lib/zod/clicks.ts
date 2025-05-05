@@ -9,15 +9,15 @@ const ClickEventSchema = z.object({
   linkId: z.number().nonnegative().lt(2_147_483_648),
   source: z.enum(["qr", "link"]),
   createdAt: z.date(),
-  country: z.string().trim().min(1).max(63).optional(),
-  continent: z.string().trim().min(1).max(63).optional(),
-  region: z.string().trim().min(1).max(63).optional(),
-  city: z.string().trim().min(1).max(63).optional(),
+  country: z.string().trim().min(1).max(63),
+  continent: z.string().trim().min(1).max(63),
+  region: z.string().trim().min(1).max(63),
+  city: z.string().trim().min(1).max(63),
   latitude: z.number().gte(-90).lte(90).optional(),
   longitude: z.number().gte(-180).lte(180).optional(),
-  device: z.string().trim().min(1).optional(),
-  browser: z.string().trim().min(1).optional(),
-  os: z.string().trim().min(1).optional(),
+  device: z.string().trim().min(1),
+  browser: z.string().trim().min(1),
+  os: z.string().trim().min(1),
 });
 
 // const ClickEventCreateSchema = ClickEventSchema.omit({
@@ -40,7 +40,7 @@ const ClickEventCreateSchema = ClickEventSchema.omit({
 
 const ClickFilterSchema = z.object({
   field: z.string(), //z.enum(["source", "continent", "country", "city", "originalUrl", "shortUrl"]),
-  value: z.string().optional(),//.trim().min(1).max(255).optional(),
+  value: z.string(),//.trim().min(1).max(255).optional(),
   count: z.number()//z.preprocess(Number, z.number())
 })
 
@@ -56,6 +56,13 @@ const ClickChartSchema = z.object({
 // });
 
 const JSONEntitySchema = z.object({
+  value: z.string(),
+  count: z.number(),
+  percent: z.number(),
+  label: z.string()
+});
+
+const CleanJSONEntitySchema = z.object({
   value: z.string(),
   count: z.number(),
   percent: z.number(),
@@ -108,15 +115,22 @@ export const ComboboxJSONEntitySchema = z.object({
   label: z.string()
 });
 
+export const CleanComboboxJSONEntitySchema = z.object({
+  value: z.string(),
+  count: z.number(),
+  label: z.string()
+});
+
 export type ComboboxQuery = z.infer<typeof ComboboxJSONEntitySchema>;
 
-export const ServerResponseComboboxSchema = serverResponseSchema(ComboboxJSONEntitySchema.array());
+export const ServerResponseComboboxSchema = serverResponseSchema(CleanComboboxJSONEntitySchema.array());
 
 // I expect an array with 1 element who is a object with a single key called "data".
 // data has an object with 4 keys which are tabs, stats, combobox, and chart.
 
 const AnalyticsJSONSchema = z.object({
   data: z.object({
+    empty: z.boolean(),
     tabs: z.object({
       source: JSONEntitySchema.array(),
       country: JSONEntitySchema.array(),
@@ -155,7 +169,7 @@ const AnalyticsJSONSchema = z.object({
 }).array().length(1).transform((arr) => {
 
   // Destructure current data
-  const { tabs, combobox, chart, stats } = arr[0].data;
+  const { empty, tabs, combobox, chart, stats } = arr[0].data;
 
     // chart
     const renamedChart = chart.map(({ date, qr_count, link_count }) => ({ date: new Date(date), qrCount: qr_count, linkCount: link_count }));
@@ -185,6 +199,7 @@ const AnalyticsJSONSchema = z.object({
     };
 
     return {
+      empty: empty,
       stats: renamedStats,
       chart: renamedChart,
       tabs: renamedTabs,
@@ -193,17 +208,18 @@ const AnalyticsJSONSchema = z.object({
   });
 
 const AnalayticsOutputSchema = z.object({
+  empty: z.boolean(),
   tabs: z.object({
-    source: JSONEntitySchema.array(),
-    country: JSONEntitySchema.array(),
-    region: JSONEntitySchema.array(),
-    continent: JSONEntitySchema.array(),
-    city: JSONEntitySchema.array(),
-    shortUrl: JSONEntitySchema.array(),
-    originalUrl: JSONEntitySchema.array(),
-    browser: JSONEntitySchema.array(),
-    device: JSONEntitySchema.array(),
-    os: JSONEntitySchema.array()
+    source: CleanJSONEntitySchema.array(),
+    country: CleanJSONEntitySchema.array(),
+    region: CleanJSONEntitySchema.array(),
+    continent: CleanJSONEntitySchema.array(),
+    city: CleanJSONEntitySchema.array(),
+    shortUrl: CleanJSONEntitySchema.array(),
+    originalUrl: CleanJSONEntitySchema.array(),
+    browser: CleanJSONEntitySchema.array(),
+    device: CleanJSONEntitySchema.array(),
+    os: CleanJSONEntitySchema.array()
   }),
   stats: z.object({
     numLinks: z.number(),
@@ -211,16 +227,16 @@ const AnalayticsOutputSchema = z.object({
     qrClicks: z.number()
   }),
   combobox: z.object({
-    source: ComboboxJSONEntitySchema.array(),
-    country: ComboboxJSONEntitySchema.array(),
-    region: ComboboxJSONEntitySchema.array(),
-    continent: ComboboxJSONEntitySchema.array(),
-    city: ComboboxJSONEntitySchema.array(),
-    shortUrl: ComboboxJSONEntitySchema.array(),
-    originalUrl: ComboboxJSONEntitySchema.array(),
-    browser: ComboboxJSONEntitySchema.array(),
-    device: ComboboxJSONEntitySchema.array(),
-    os: ComboboxJSONEntitySchema.array()
+    source: CleanComboboxJSONEntitySchema.array(),
+    country: CleanComboboxJSONEntitySchema.array(),
+    region: CleanComboboxJSONEntitySchema.array(),
+    continent: CleanComboboxJSONEntitySchema.array(),
+    city: CleanComboboxJSONEntitySchema.array(),
+    shortUrl: CleanComboboxJSONEntitySchema.array(),
+    originalUrl: CleanComboboxJSONEntitySchema.array(),
+    browser: CleanComboboxJSONEntitySchema.array(),
+    device: CleanComboboxJSONEntitySchema.array(),
+    os: CleanComboboxJSONEntitySchema.array()
   }),
   chart: z.object({
     date: z.date(),
@@ -230,16 +246,16 @@ const AnalayticsOutputSchema = z.object({
 });
 
 const ComboboxSchema = z.object({
-  source: ComboboxJSONEntitySchema.array(),
-  country: ComboboxJSONEntitySchema.array(),
-  region: ComboboxJSONEntitySchema.array(),
-  continent: ComboboxJSONEntitySchema.array(),
-  city: ComboboxJSONEntitySchema.array(),
-  shortUrl: ComboboxJSONEntitySchema.array(),
-  originalUrl: ComboboxJSONEntitySchema.array(),
-  browser: ComboboxJSONEntitySchema.array(),
-  device: ComboboxJSONEntitySchema.array(),
-  os: ComboboxJSONEntitySchema.array()
+  source: CleanComboboxJSONEntitySchema.array(),
+  country: CleanComboboxJSONEntitySchema.array(),
+  region: CleanComboboxJSONEntitySchema.array(),
+  continent: CleanComboboxJSONEntitySchema.array(),
+  city: CleanComboboxJSONEntitySchema.array(),
+  shortUrl: CleanComboboxJSONEntitySchema.array(),
+  originalUrl: CleanComboboxJSONEntitySchema.array(),
+  browser: CleanComboboxJSONEntitySchema.array(),
+  device: CleanComboboxJSONEntitySchema.array(),
+  os: CleanComboboxJSONEntitySchema.array()
 })
 
 export type ComboboxType = z.infer<typeof ComboboxSchema>;

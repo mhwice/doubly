@@ -29,6 +29,18 @@ const LinkDashboardSchema = LinkTableSchema.pick({
 
 const LinkCreateLinkSchema = z.object({
   originalUrl: z.string(),
+})
+.transform(({ originalUrl }) => {
+  if (originalUrl.startsWith("https://")) return { originalUrl };
+  return { originalUrl: "https://" + originalUrl };
+})
+.refine(({ originalUrl }) => {
+  try {
+    const url = new URL(originalUrl);
+    return url.protocol === "https:";
+  } catch {
+    return false;
+  }
 });
 
 const LinkCreateSchema = LinkTableSchema.pick({

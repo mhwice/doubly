@@ -58,6 +58,7 @@ export const NewPasswordForm = () => {
       if (data) setSuccess("Password successfully reset!");
     } catch (error) {
       console.error("Failed to reset password", error);
+      setError("Something went wrong, please try again in a few minutes");
     } finally {
       setIsLoading(false);
     }

@@ -48,6 +48,7 @@ export const LoginForm = () => {
       if (error) setError(error.message);
     } catch (error) {
       console.error("Failed to sign in", error);
+      setError("Something went wrong, please try again in a few minutes");
     } finally {
       setIsLoading(false);
     }

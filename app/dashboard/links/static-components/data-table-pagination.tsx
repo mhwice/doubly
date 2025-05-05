@@ -97,7 +97,7 @@ export function DataTablePagination<TData>({
         {table.getFilteredRowModel().rows.length} row(s) selected.
       </div>
 
-      <div className="flex items-center gap-y-4 gap-x-10 sm:gap-x-6 lg:gap-x-8 justify-center">
+      <div className="flex max-[400px]:flex-col items-center gap-y-4 gap-x-4 sm:gap-x-6 lg:gap-x-8 justify-center">
         <div className="flex items-center space-x-2">
           <p className="text-sm font-medium text-vprimary whitespace-nowrap">Rows per page</p>
           <Select

@@ -50,6 +50,7 @@ export const ForgotPasswordForm = () => {
       if (data) setSuccess("Password reset email sent!");
     } catch (error) {
       console.error("Failed to send password reset email", error);
+      setError("Something went wrong, please try again in a few minutes");
     } finally {
       setIsLoading(false);
     }

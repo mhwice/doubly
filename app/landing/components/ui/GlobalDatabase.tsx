@@ -50,7 +50,7 @@ export const GlobalDatabase = () => {
           className="pointer-events-none absolute inset-0 -z-5 bg-[radial-gradient(ellipse_at_50%_20%,rgba(14,23,34,1)_10%,rgba(14,23,34,0)_70%)]"
         />
 
-        <div className="z-20 -mt-32 h-[32rem] w-full overflow-hidden md:-mt-36">
+        <div className="z-20 -mt-14 sm:-mt-32 h-[32rem] w-full overflow-hidden md:-mt-36">
           <div className="absolute bottom-0 h-3/5 w-full bg-gradient-to-b from-transparent via-gray-950/95 to-gray-950" />
           <div className="absolute inset-x-6 bottom-12 m-auto max-w-4xl md:top-2/3">
             <div className="grid grid-cols-1 gap-x-10 gap-y-6 rounded-lg border border-white/[3%] bg-white/[1%] px-6 py-6 shadow-xl backdrop-blur md:grid-cols-3 md:p-8">

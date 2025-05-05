@@ -1,7 +1,23 @@
 import { env } from "@/data-access/env";
 import { Resend } from "resend";
+import { VerifyEmail, ResetPasswordEmail } from "./email";
 
 const resend = new Resend(env.RESEND_API_KEY);
+
+export const testEmail = async (email: string, name: string) => {
+  const { data, error } = await resend.emails.send({
+    from: "onboarding@resend.dev",
+    to: email,
+    subject: 'hello world',
+    react: <VerifyEmail name={name} callbackURL="https://leetcode.com/problems/count-numbers-with-unique-digits/" />,
+  });
+
+  if (error) {
+    return { error: "Email could not send" };
+  }
+
+  return { success: "Test email sent" };
+}
 
 export const sendVerificationEmail = async (email: string, token: string) => {
   const confirmLink = `${env.APP_URL}/auth/new-verification?token=${token}`;
@@ -19,12 +35,12 @@ export const sendVerificationEmail = async (email: string, token: string) => {
   return { success: "Confirmation email sent" };
 }
 
-export const sendBetterVerificationEmail = async (email: string, callbackURL: string) => {
+export const sendBetterVerificationEmail = async (email: string, callbackURL: string, name: string) => {
   const { error } = await resend.emails.send({
     from: "onboarding@resend.dev",
     to: email,
     subject: "Confirm your email",
-    html: `<p>Click <a href="${callbackURL}">here</a> to confirm email.</p>`
+    react: <VerifyEmail name={name} callbackURL={callbackURL} />,
   });
 
   if (error) return { error: "Failed to send verification email" };
@@ -47,12 +63,12 @@ export const sendPasswordResetEmail = async (email: string, token: string) => {
   return { success: "Password reset email sent" };
 }
 
-export const sendBetterPasswordResetEmail = async (email: string, callbackURL: string) => {
+export const sendBetterPasswordResetEmail = async (email: string, callbackURL: string, name: string) => {
   const { error } = await resend.emails.send({
     from: "onboarding@resend.dev",
     to: email,
     subject: "Reset your password",
-    html: `<p>Click <a href="${callbackURL}">here</a> to reset your password.</p>`
+    react: <ResetPasswordEmail name={name} callbackURL={callbackURL} />,
   });
 
   if (error) return { error: "Failed to send password reset email" };

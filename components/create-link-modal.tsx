@@ -1,5 +1,7 @@
 "use client";
 
+import { useSWRConfig } from 'swr'
+
 import { useState, useTransition } from "react";
 
 import { useForm } from "react-hook-form";
@@ -17,25 +19,35 @@ import { FormError } from "@/components/form-error";
 import { createLink } from "@/actions/safe-create-link";
 import { UrlInput } from "./url-input";
 import { BaseModal } from "./base-modal";
+import { useCurrentDate } from '@/app/dashboard/date-context';
 
 interface CustomDialogProps {
   isOpen: boolean;
   onOpenChange: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-// Todo validate that the string looks like a url
 const LinkSchema = z
   .object({
     link: z.string().trim().min(1, { message: "link is required" }),
-  })
-  .transform(({ link }) => {
+  }).transform(({ link }) => {
     if (link.startsWith("https://")) return { link };
     return { link: "https://" + link };
-  });
+  })
+  .refine(({ link }) => {
+    try {
+      const url = new URL(link);
+      return url.protocol === "https:";
+    } catch {
+      return false;
+    }
+  }, { message: "must be a valid url" })
 
 export function CreateLinkModal({ isOpen, onOpenChange }: CustomDialogProps) {
   const [error, setError] = useState<string | undefined>();
   const [isPending, startTransition] = useTransition();
+
+  const { date: now, setDate } = useCurrentDate();
+  const { mutate } = useSWRConfig();
 
   const form = useForm<z.infer<typeof LinkSchema>>({
     resolver: zodResolver(LinkSchema),
@@ -45,7 +57,8 @@ export function CreateLinkModal({ isOpen, onOpenChange }: CustomDialogProps) {
   });
 
   const handleSubmit = () => {
-    form.handleSubmit((values) => {
+
+    form.handleSubmit(async (values) => {
       const validatedFields = LinkSchema.safeParse(values);
       if (!validatedFields.success) {
         setError("Invalid fields");
@@ -55,11 +68,25 @@ export function CreateLinkModal({ isOpen, onOpenChange }: CustomDialogProps) {
       const { link } = validatedFields.data;
       setError("");
 
-      startTransition(async () => {
+      try {
         const response = await createLink({ originalUrl: link });
         if (!response.success) setError(response.error);
-        else onOpenChange(false);
-      });
+        else {
+          const params = new URLSearchParams();
+          const newNow = new Date();
+          setDate(newNow);
+          // params.append("dateEnd", newNow.toISOString());
+          // const url = `/api/links?${params.toString()}`;
+          // mutate(url);
+          onOpenChange(false);
+        }
+      } catch (error) {
+        console.error(error);
+        setError("Something went wrong, please try again in a few minutes");
+      }
+    }, (errors) => {
+      // console.error("Validation errors:", errors);
+      setError("Invalid url");
     })();
   };
 

@@ -20,7 +20,7 @@ export const auth = betterAuth({
     minPasswordLength: 6,
     requireEmailVerification: true,
     sendResetPassword: async ({ user, url, token }, request) => {
-      await sendBetterPasswordResetEmail(user.email, url);
+      await sendBetterPasswordResetEmail(user.email, url, user.name);
     },
     ...(env.ENV === "dev" ? {
         password: {
@@ -34,7 +34,7 @@ export const auth = betterAuth({
     sendOnSignUp: true,
     autoSignInAfterVerification: true,
     sendVerificationEmail: async ({ user, url, token }, request) => {
-      await sendBetterVerificationEmail(user.email, url);
+      await sendBetterVerificationEmail(user.email, url, user.name);
     }
   },
   socialProviders: {

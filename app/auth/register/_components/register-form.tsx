@@ -43,13 +43,15 @@ export const RegisterForm = () => {
       const { data, error } = await authClient.signUp.email({
         name: values.name,
         email: values.email,
-        password: values.password
+        password: values.password,
+        callbackURL: "/dashboard/links"
       });
 
       if (error) setError(error.message);
       if (data) setSuccess("Success! Please check your email to verify your account.");
     } catch (error) {
       console.error("Failed to register user", error);
+      setError("Something went wrong, please try again in a few minutes");
     } finally {
       setIsLoading(false);
     }

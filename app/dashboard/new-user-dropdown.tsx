@@ -60,8 +60,9 @@ export function UserNav({ image, name, email }: DropdownProps) {
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-2 py-2">
             <p className="text-sm font-medium leading-none">{name}</p>
-            <p className="text-xs leading-none text-muted-foreground">
+            <p className="text-xs leading-none text-muted-foreground truncate">
               {email}
+              {/* really.long.email.address@someemailprovider.net */}
             </p>
           </div>
         </DropdownMenuLabel>

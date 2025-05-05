@@ -34,18 +34,26 @@ import { LinkTypes } from "@/lib/zod/links"
 import { DeleteLinkModal } from "@/components/delete-link-modal"
 import { useCurrentFilters } from "../../filters-context"
 import { useRouter } from "next/navigation"
-import { Search } from "lucide-react"
+import { RefreshCw, Search } from "lucide-react"
+import { useCurrentDate } from "../../date-context"
+import { RefreshButton } from "@/components/refresh-button"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
-  data: TData[]
+  data: TData[],
+  rowSelection: {},
+  setRowSelection: React.Dispatch<React.SetStateAction<{}>>,
+  isLoading: boolean
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  rowSelection,
+  setRowSelection,
+  isLoading
 }: DataTableProps<TData, TValue>) {
-  const [rowSelection, setRowSelection] = React.useState({})
+  // const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({})
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -104,9 +112,20 @@ export function DataTable<TData, TValue>({
     router.push("/dashboard/analytics");
   }
 
+  const { date: now, setDate } = useCurrentDate();
+
+  // const handleOnRefreshClicked = () => {
+  //   const newNow = new Date();
+  //   setDate(newNow);
+  // }
+
+  const onLinkDelete = () => {
+    setRowSelection({});
+  }
+
   return (
     <div className="space-y-4">
-      <DeleteLinkModal isOpen={showDeleteModal} onOpenChange={setShowDeleteModal} ids={badIds}/>
+      <DeleteLinkModal onLinkDelete={onLinkDelete} isOpen={showDeleteModal} onOpenChange={setShowDeleteModal} ids={badIds}/>
       {/* <DataTableToolbar table={table} /> */}
       <div className="flex gap-2 flex-col-reverse md:flex-row md:items-center w-full justify-between">
         {/* <Input
@@ -119,7 +138,8 @@ export function DataTable<TData, TValue>({
         /> */}
         <div
           className="
-            w-[400px]
+            max-[420px]:w-[100%]
+            sm:w-[400px]
             flex items-center
             rounded-[var(--bradius)] border border-vborder
             bg-white overflow-hidden
@@ -143,13 +163,15 @@ export function DataTable<TData, TValue>({
           />
         </div>
         <div className="flex gap-2">
-          {table.getFilteredSelectedRowModel().rows.length >= 2 && (
+          {table.getFilteredSelectedRowModel().rows.length >= 1 ? (
             <>
               <Button onClick={() => handleOnMultipleDeleteClicked(table.getFilteredSelectedRowModel().rows)} variant="destructiveFlat">Delete {table.getFilteredSelectedRowModel().rows.length}</Button>
               <Button disabled={table.getFilteredSelectedRowModel().rows.length > 50} onClick={() => viewManyAnalytics(table.getFilteredSelectedRowModel().rows)} variant="flat">View Analytics for {table.getFilteredSelectedRowModel().rows.length} Links</Button>
             </>
-          )}
-          {/* <NewLinkButton /> */}
+          ) :
+          // <Button onClick={handleOnRefreshClicked} variant="flat" className="text-vprimary font-normal"><RefreshCw strokeWidth={1.75} className="text-vprimary"/>Refresh</Button>
+          <RefreshButton isLoading={isLoading} />
+          }
         </div>
       </div>
       <div className="border overflow-hidden bg-white rounded-[var(--bradius)] shadow-none border-vborder">
@@ -196,7 +218,8 @@ export function DataTable<TData, TValue>({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No results.
+                  <p className="text-vprimary text-base font-medium py-2">No data found.</p>
+                  <p className="text-vsecondary text-sm font-normal pb-2">Click the 'Create Link' button above to get started.</p>
                 </TableCell>
               </TableRow>
             )}
