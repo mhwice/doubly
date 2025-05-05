@@ -70,7 +70,7 @@ export function Navbar({ isLoggedIn }: NavbarProps) {
               <Link className="px-2 py-1 text-gray-900 dark:text-gray-50" href="">Changelog</Link>
             </div>
           </nav>
-          <Button onClick={handleOnSignInClicked} className="hidden h-10 font-semibold md:flex">{isLoggedIn ? "Dashboard" : "Sign In"}</Button>
+          <Button onClick={handleOnSignInClicked} className="hidden h-10 font-semibold md:flex bg-[var(--database)]">{isLoggedIn ? "Dashboard" : "Sign In"}</Button>
           <div className="flex gap-x-2 md:hidden">
             <Button onClick={handleOnSignInClicked}>{isLoggedIn ? "Dashboard" : "Sign In"}</Button>
             <Button onClick={() => setOpen(!open)} variant="light" className="aspect-square p-2">

@@ -16,12 +16,14 @@ import { FormError } from "@/components/form-error";
 import { FormSuccess } from "@/components/form-success";
 import { LoadingButton } from "@/components/auth/loading-button";
 import { PasswordInput } from "@/components/password-input";
+import { authClient } from "@/utils/auth-client";
+import { TextInput } from "@/components/text-input";
 
 export const RegisterForm = () => {
 
   const [error, setError] = useState<string | undefined>();
   const [success, setSuccess] = useState<string | undefined>();
-  const [isPending, startTransition] = useTransition();
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<z.infer<typeof RegisterSchema>>({
     resolver: zodResolver(RegisterSchema),
@@ -32,16 +34,27 @@ export const RegisterForm = () => {
     }
   });
 
-  const onSubmit = (values: z.infer<typeof RegisterSchema>) => {
+  const onSubmit = async (values: z.infer<typeof RegisterSchema>) => {
+    setIsLoading(true);
     setError("");
     setSuccess("");
 
-    startTransition(async () => {
-      await register(values).then((data) => {
-        setError(data?.error);
-        setSuccess(data?.success);
+    try {
+      const { data, error } = await authClient.signUp.email({
+        name: values.name,
+        email: values.email,
+        password: values.password,
+        callbackURL: "/dashboard/links"
       });
-    });
+
+      if (error) setError(error.message);
+      if (data) setSuccess("Success! Please check your email to verify your account.");
+    } catch (error) {
+      console.error("Failed to register user", error);
+      setError("Something went wrong, please try again in a few minutes");
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -51,9 +64,10 @@ export const RegisterForm = () => {
           <div className="space-y-4">
             <FormField control={form.control} name="name" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel className="font-medium text-vprimary">Name</FormLabel>
                   <FormControl>
-                    <Input {...field} disabled={isPending} placeholder="John Doe" className="shadow-none border-vborder" />
+                    {/* <Input {...field} disabled={isLoading} placeholder="John Doe" className="shadow-none border-vborder" /> */}
+                    <TextInput disabled={isLoading} placeholder="John Doe" {...field}/>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -61,9 +75,10 @@ export const RegisterForm = () => {
             />
             <FormField control={form.control} name="email" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel className="font-medium text-vprimary">Email</FormLabel>
                   <FormControl>
-                    <Input {...field} disabled={isPending} placeholder="john.doe@example.com" type="email" className="shadow-none border-vborder"/>
+                    {/* <Input {...field} disabled={isLoading} placeholder="john.doe@example.com" type="email" className="shadow-none border-vborder"/> */}
+                    <TextInput disabled={isLoading} placeholder="john.doe@example.com" type="email" {...field}/>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -71,10 +86,10 @@ export const RegisterForm = () => {
             />
             <FormField control={form.control} name="password" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel className="font-medium text-vprimary">Password</FormLabel>
                   <FormControl>
-                    {/* <Input {...field} disabled={isPending} placeholder="******" type="password" /> */}
-                    <PasswordInput {...field} disabled={isPending} placeholder="******" />
+                    {/* <Input {...field} disabled={isLoading} placeholder="******" type="password" /> */}
+                    <PasswordInput {...field} disabled={isLoading} placeholder="••••••••" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -83,7 +98,7 @@ export const RegisterForm = () => {
           </div>
           <FormError message={error} />
           <FormSuccess message={success} />
-          <LoadingButton loading={isPending}>Create an account</LoadingButton>
+          <LoadingButton loading={isLoading}>Create Account</LoadingButton>
         </form>
       </Form>
     </CardWrapper>

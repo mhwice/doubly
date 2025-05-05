@@ -95,13 +95,15 @@ export class LinkTable {
     try {
       const { ids, userId } = LinkDeletesSchema.parse(params);
 
+      const placeholders = ids.map((_, idx) => `$${idx+2}`).join(", ");
+
       const query = `
         DELETE FROM links
-        WHERE id IN $1 AND user_id = $2
+        WHERE user_id = $1 AND id in (${placeholders})
         RETURNING *;
       `;
 
-      const response: QueryResponse = await sql(query, [ids, userId]);
+      const response: QueryResponse = await sql(query, [userId, ...ids]);
       const result = parseQueryResponse(response, LinkSchemas.Table);
 
       // if (result.length !== 1) return ServerResponse.fail(ERROR_MESSAGES.NOT_FOUND);
@@ -196,10 +198,12 @@ export class LinkTable {
           FROM links
           WHERE user_id = $1 AND links.created_at <= $2
         ) AS fl ON fl.id = ce.link_id
-        GROUP BY (fl.id, fl.original_url, fl.short_url, fl.updated_at);
+        GROUP BY (fl.id, fl.original_url, fl.short_url, fl.updated_at)
+        ORDER BY fl.updated_at DESC;
       `;
 
       const response: QueryResponse = await sql(query, [userId, dateEnd]);
+      console.log(response)
       const result = parseQueryResponse(response, LinkSchemas.Dashboard);
 
       // this should only return the dto, not full list of links

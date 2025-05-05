@@ -35,7 +35,7 @@ export function StatsHeader({ stats }: StatsHeaderProps) {
           <CardTitle className="text-sm font-medium text-vprimary">
             Urls
           </CardTitle>
-          <LinkIcon className="h-4 w-4 text-vsecondary" />
+          <LinkIcon className="h-3 w-3 sm:h-4 sm:w-4 text-vsecondary" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold"><NumberFlow value={numLinks}/></div>
@@ -47,9 +47,10 @@ export function StatsHeader({ stats }: StatsHeaderProps) {
       <Card className="rounded-[var(--bradius)] shadow-none border-vborder">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-vprimary">
-            Link Clicks
+            <span className="hidden sm:block">Link Clicks</span>
+            <span className="block sm:hidden">Clicks</span>
           </CardTitle>
-          <MousePointerClickIcon className="h-4 w-4 text-vsecondary" />
+          <MousePointerClickIcon className="h-3 w-3 sm:h-4 sm:w-4 text-vsecondary" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-vprimary"><NumberFlow value={linkClicks} /></div>
@@ -60,8 +61,11 @@ export function StatsHeader({ stats }: StatsHeaderProps) {
       </Card>
       <Card className="rounded-[var(--bradius)] shadow-none border-vborder">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-vprimary">QR Scans</CardTitle>
-          <QrCodeIcon className="h-4 w-4 text-vsecondary"/>
+          <CardTitle className="text-sm font-medium text-vprimary">
+          <span className="hidden sm:block">QR Scans</span>
+          <span className="block sm:hidden">Scans</span>
+          </CardTitle>
+          <QrCodeIcon className="h-3 w-3 sm:h-4 sm:w-4 text-vsecondary"/>
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-vprimary"><NumberFlow value={qrClicks} /></div>

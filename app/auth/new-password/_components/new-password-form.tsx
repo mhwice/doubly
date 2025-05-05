@@ -16,6 +16,9 @@ import { Input } from "@/components/ui/input";
 import { FormError } from "@/components/form-error";
 import { FormSuccess } from "@/components/form-success";
 import { LoadingButton } from "@/components/auth/loading-button";
+import { authClient } from "@/utils/auth-client";
+import { TextInput } from "@/components/text-input";
+import { PasswordInput } from "@/components/password-input";
 
 export const NewPasswordForm = () => {
   const searchParams = useSearchParams();
@@ -25,8 +28,7 @@ export const NewPasswordForm = () => {
 
   const [error, setError] = useState<string | undefined>(queryError || "");
   const [success, setSuccess] = useState<string | undefined>();
-
-  const [isPending, startTransition] = useTransition();
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<z.infer<typeof NewPasswordSchema>>({
     resolver: zodResolver(NewPasswordSchema),
@@ -35,30 +37,44 @@ export const NewPasswordForm = () => {
     }
   });
 
-  const onSubmit = (values: z.infer<typeof NewPasswordSchema>) => {
-    setError("");
+  const onSubmit = async (values: z.infer<typeof NewPasswordSchema>) => {
     setSuccess("");
 
-    if (!token) return;
+    if (!token) {
+      setError("Invalid token");
+      return;
+    };
 
-    startTransition(async () => {
-      await newPassword(values, token).then((data) => {
-        if (data?.error) setError(data?.error);
-        if (data?.success) setSuccess(data?.success);
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const { data, error } = await authClient.resetPassword({
+        newPassword: values.password,
+        token: token
       });
-    });
+
+      if (error) setError(error.message);
+      if (data) setSuccess("Password successfully reset!");
+    } catch (error) {
+      console.error("Failed to reset password", error);
+      setError("Something went wrong, please try again in a few minutes");
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
     <CardWrapper headerLabel="Enter a new password" backButtonLabel="Back to login" backButtonHref="/auth/login">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <div className="space-y-4">
             <FormField control={form.control} name="password" render={({ field }) => (
                 <FormItem>
                   <FormLabel>New password</FormLabel>
                   <FormControl>
-                    <Input {...field} disabled={isPending || !!error} placeholder="******" type="password"  className="shadow-none border-vborder"/>
+                    {/* <Input {...field} disabled={isLoading || !!error} placeholder="******" type="password"  className="shadow-none border-vborder"/> */}
+                    <PasswordInput {...field} disabled={isLoading || !!error} placeholder="••••••••" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -67,7 +83,7 @@ export const NewPasswordForm = () => {
           </div>
           <FormError message={error} />
           <FormSuccess message={success} />
-          <LoadingButton loading={isPending}>Reset password</LoadingButton>
+          <LoadingButton loading={isLoading}>Reset Password</LoadingButton>
         </form>
       </Form>
     </CardWrapper>

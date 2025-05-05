@@ -37,8 +37,8 @@ export function Hero({ isLoggedIn }: HeroProps) {
         className="mt-8 flex w-full animate-slide-up-fade flex-col justify-center gap-3 px-3 sm:flex-row"
         style={{ animationDuration: "1100ms" }}
       >
-        <Button className="h-10 font-semibold hover:cursor-pointer">
-          <Link href={isLoggedIn ? "/dashboard/links" : "/auth/login"}>{isLoggedIn ? "Go to Dashboard" : "Get Started"}</Link>
+        <Button className="h-10 font-semibold hover:cursor-pointer bg-[var(--database)]">
+          <Link href={isLoggedIn ? "/dashboard/links" : "/auth/register"}>{isLoggedIn ? "Go to Dashboard" : "Get Started"}</Link>
         </Button>
         <Button
           asChild
@@ -69,17 +69,13 @@ export function Hero({ isLoggedIn }: HeroProps) {
           className="relative mx-auto mt-20 h-fit w-full max-w-6xl sm:px-2 animate-slide-up-fade"
           style={{ animationDuration: "1400ms" }}
         >
-        {/* <HowItWorksSection />
-        {/* <GlobalDatabase /> */}
-        {/* <div className="my-40"></div> */}
         <HeroImage />
-        {/* <VerticalTimeline /> */}
-        {/* <div className="my-72"></div> */}
         <div
-          className="absolute inset-x-0 -bottom-20 -mx-10 h-2/4 bg-gradient-to-t from-white via-white to-transparent lg:h-1/4 dark:from-gray-950 dark:via-gray-950"
+          className="absolute inset-x-0 -bottom-20 -mx-10 max-[400px]:h-4/5 max-[550px]:h-3/4 h-2/4 bg-gradient-to-t from-white via-white to-transparent"
           aria-hidden="true"
         />
       </div>
+
     </section>
   )
 }

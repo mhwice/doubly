@@ -1,5 +1,7 @@
 "use client";
 
+import { useSWRConfig } from 'swr'
+
 import { useEffect, useState, useTransition } from "react";
 
 import { useForm } from "react-hook-form";
@@ -17,12 +19,13 @@ import { FormError } from "@/components/form-error";
 import { UrlInput } from "./url-input";
 import { BaseModal } from "./base-modal";
 import { editLink } from "@/actions/safe-edit-link";
+import { useCurrentDate } from '@/app/dashboard/date-context';
 
 interface CustomDialogProps {
   isOpen: boolean;
   onOpenChange: React.Dispatch<React.SetStateAction<boolean>>;
   link: string;
-  id: number | undefined;
+  id: number;
 }
 
 // Todo validate that the string looks like a url
@@ -33,11 +36,23 @@ const LinkSchema = z
   .transform(({ link }) => {
     if (link.startsWith("https://")) return { link };
     return { link: "https://" + link };
-  });
+  })
+  .refine(({ link }) => {
+    try {
+      const url = new URL(link);
+      return url.protocol === "https:";
+    } catch {
+      return false;
+    }
+  }, { message: "must be a valid url" })
 
 export function EditLinkModal({ isOpen, onOpenChange, link, id }: CustomDialogProps) {
   const [error, setError] = useState<string | undefined>();
-  const [isPending, startTransition] = useTransition();
+  // const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
+
+  const { date: now, setDate } = useCurrentDate();
+  const { mutate } = useSWRConfig();
 
   const form = useForm<z.infer<typeof LinkSchema>>({
     resolver: zodResolver(LinkSchema),
@@ -59,7 +74,8 @@ export function EditLinkModal({ isOpen, onOpenChange, link, id }: CustomDialogPr
   }, [isOpen])
 
   const handleSubmit = () => {
-    form.handleSubmit((values) => {
+    setIsPending(true);
+    form.handleSubmit(async (values) => {
       const validatedFields = LinkSchema.safeParse(values);
       if (!validatedFields.success) {
         setError("Invalid fields");
@@ -69,12 +85,20 @@ export function EditLinkModal({ isOpen, onOpenChange, link, id }: CustomDialogPr
       const { link } = validatedFields.data;
       setError("");
 
-      startTransition(async () => {
-        console.log("updating link with id", id, "to", link)
-        // const response = await editLink({ id: id, updates: { originalUrl: link } });
-        // if (!response.success) setError(response.error);
-        // else onOpenChange(false);
-      });
+      try {
+        const data = await editLink({ id: id, updates: { originalUrl: link } });
+        const params = new URLSearchParams();
+        const newNow = new Date();
+        setDate(newNow);
+        // params.append("dateEnd", newNow.toISOString());
+        // const url = `/api/links?${params.toString()}`;
+        // mutate(url);
+        onOpenChange(false);
+      } catch (error) {
+        setError("Unable to update link");
+      } finally {
+        setIsPending(false);
+      }
     })();
   };
 

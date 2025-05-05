@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Combobox } from "./combobox";
 import { AnalyticsServerResponseSchema, ClickEventTypes, ComboboxType } from "@/lib/zod/clicks";
 import { TimePicker } from "./time-picker";
@@ -17,6 +17,8 @@ import { Button } from "@/components/ui/button";
 import { useCurrentFilters } from "../filters-context";
 import { useRouter } from "next/navigation";
 import { RefreshCw } from "lucide-react";
+import Link from "next/link";
+import { RefreshButton } from "@/components/refresh-button";
 
 interface StatsHeaderProps {
   numLinks: number,
@@ -29,10 +31,16 @@ export function ClientWrapper() {
   const { filters, addFilter, hasFilter, deleteFilter, clearFilters } = useCurrentFilters();
   const router = useRouter();
 
+  const hasInitialized = useRef(false);
+  const [hasData, setHasData] = useState<boolean>();
+
   const { date: now, setDate } = useCurrentDate();
 
   useEffect(() => {
     console.log({now})
+    setDateRange((prevDateRange) => {
+      return [prevDateRange[0], now];
+    })
   }, [now]);
 
   const [chartData, setChartData] = useState<ClickEventTypes.Chart[]>();
@@ -68,13 +76,21 @@ export function ClientWrapper() {
   });
 
   useEffect(() => {
-    console.log(data)
+    if (!hasInitialized.current && data) {
+      console.log(data.empty)
+      setHasData(data.empty);
+      hasInitialized.current = true;
+    }
+
     setChartData(data?.chart);
     setFilteredData(data?.tabs);
     setStatsHeaderData(data?.stats);
     setComboboxData(data?.combobox);
   }, [data]);
 
+  useEffect(() => {
+    console.log({isValidating})
+  }, [isValidating])
 
   if (isLoading && !data) return (
     <>
@@ -83,51 +99,63 @@ export function ClientWrapper() {
     </>
   );
 
-  const handleOnRefreshClicked = () => {
-    const newNow = new Date();
-    setDate(newNow);
-    setDateRange((prevDateRange) => {
-      return [prevDateRange[0], newNow];
-    })
-  }
+
+
+  // const handleOnRefreshClicked = () => {
+  //   const newNow = new Date();
+  //   setDate(newNow);
+  //   setDateRange((prevDateRange) => {
+  //     return [prevDateRange[0], newNow];
+  //   })
+  // }
 
   return (
-    <div className="flex flex-col">
+    <>
+      {(hasData) ?
+        <div className="flex flex-col">
 
-      <div className="pt-6">
-        {statsHeaderData && <StatsHeader stats={statsHeaderData} />}
-      </div>
+          <div className="pt-6">
+            {statsHeaderData && <StatsHeader stats={statsHeaderData} />}
+          </div>
 
-      <TagGroup />
-      <div className="flex flex-row justify-start space-x-3">
-        {/* {filters.size > 0 && <Button className="text-vprimary font-normal" variant="link" onClick={clearFilters}>Clear Filters</Button>} */}
-        {comboboxData && <Combobox comboboxData={comboboxData} dateRange={dateRange} />}
-        <TimePicker dateRange={dateRange} setDateRange={setDateRange} now={now} />
-        <Button onClick={handleOnRefreshClicked} variant="flat" className="text-vprimary font-normal"><RefreshCw strokeWidth={1.75} className="text-vprimary"/>Refresh</Button>
-      </div>
+          <TagGroup />
+          <div className="flex flex-row justify-start space-x-[6px] sm:space-x-3">
+            {/* {filters.size > 0 && <Button className="text-vprimary font-normal" variant="link" onClick={clearFilters}>Clear Filters</Button>} */}
+            {comboboxData && <Combobox comboboxData={comboboxData} dateRange={dateRange} />}
+            <TimePicker dateRange={dateRange} setDateRange={setDateRange} now={now} />
+            {/* <Button onClick={handleOnRefreshClicked} variant="flat" className="text-vprimary font-normal"><RefreshCw strokeWidth={1.75} className="text-vprimary"/>Refresh</Button> */}
+            <RefreshButton isLoading={isValidating}/>
+          </div>
 
-      <div className="my-4">
-        {chartData && <Chart clickEvents={chartData} dateRange={dateRange} />}
-      </div>
-      {filteredData &&
-        <div className="flex flex-col justify-between lg:space-x-4 pt-5 lg:flex-row">
-          <TabGroup items={[
-            { title: "Browser", value: "browser", children: <TabStuff title="Browser" data={filteredData.browser} /> },
-            { title: "OS", value: "os", children: <TabStuff title="OS" data={filteredData.os} /> },
-            { title: "Device", value: "device", children: <TabStuff title="Device" data={filteredData.device} /> },
-          ]} />
-          <TabGroup items={[
-            { title: "Original Url", value: "originalUrl", children: <TabStuff title="Original Url" data={filteredData.originalUrl} /> },
-            { title: "Short Url", value: "shortUrl", children: <TabStuff title="Short Url" data={filteredData.shortUrl} /> },
-          ]} />
-          <TabGroup items={[
-            { title: "Continent", value: "continent", children: <TabStuff title="Continent" data={filteredData.continent} /> },
-            { title: "Country", value: "country", children: <TabStuff title="Country" data={filteredData.country} /> },
-            { title: "Region", value: "region", children: <TabStuff title="Region" data={filteredData.region} /> },
-            { title: "City", value: "city", children: <TabStuff title="City" data={filteredData.city} /> },
-          ]} />
+          <div className="my-4">
+            {chartData && <Chart clickEvents={chartData} dateRange={dateRange} />}
+          </div>
+          {filteredData &&
+            <div className="flex flex-col justify-between lg:space-x-4 pt-5 lg:flex-row">
+              <TabGroup items={[
+                { title: "Browser", value: "browser", children: <TabStuff title="Browser" data={filteredData.browser} /> },
+                { title: "OS", value: "os", children: <TabStuff title="OS" data={filteredData.os} /> },
+                { title: "Device", value: "device", children: <TabStuff title="Device" data={filteredData.device} /> },
+              ]} />
+              <TabGroup items={[
+                { title: "Original Url", value: "originalUrl", children: <TabStuff title="Original Url" data={filteredData.originalUrl} /> },
+                { title: "Short Url", value: "shortUrl", children: <TabStuff title="Short Url" data={filteredData.shortUrl} /> },
+              ]} />
+              <TabGroup items={[
+                { title: "Continent", value: "continent", children: <TabStuff title="Continent" data={filteredData.continent} /> },
+                { title: "Country", value: "country", children: <TabStuff title="Country" data={filteredData.country} /> },
+                { title: "Region", value: "region", children: <TabStuff title="Region" data={filteredData.region} /> },
+                { title: "City", value: "city", children: <TabStuff title="City" data={filteredData.city} /> },
+              ]} />
+            </div>
+          }
+        </div>
+        :
+        <div className="flex flex-col text-center justify-center h-24 mt-20">
+          <div className="text-vprimary font-medium text-base">No data found.</div>
+          <div className="text-vsecondary font-normal text-sm">None of your links have received any clicks yet.<br/>You can create a new link <Link className="text-[var(--database)]" href="/dashboard/links">here</Link>.</div>
         </div>
       }
-    </div>
+    </>
   );
 }

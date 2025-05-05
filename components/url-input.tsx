@@ -1,5 +1,6 @@
 "use client";
 
+import { cleanUrl } from "@/app/dashboard/links/components/columns";
 import { ControllerRenderProps } from "react-hook-form";
 
 interface UrlInputProps extends ControllerRenderProps {
@@ -32,6 +33,7 @@ export function UrlInput({
         placeholder={placeholder}
         className="w-full px-4 py-2 text-vprimary text-sm outline-none placeholder:text-[#c3c3c3]"
         {...field}
+        value={cleanUrl(field.value)}
       />
     </div>
   );

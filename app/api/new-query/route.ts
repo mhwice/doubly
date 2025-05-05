@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
   const params = Array.from(searchParams.entries());
 
   // await sleep(300)
-  console.log(params)
+  // console.log(params)
 
   // 2 - Validate the params
   const validated = QuerySchema.safeParse(params);

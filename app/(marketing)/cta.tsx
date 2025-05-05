@@ -43,10 +43,10 @@ export function CallToAction({ isLoggedIn }: CTAProps) {
             Create your account and start shortening links in seconds.
             <br />
             Prefer a preview?{" "}
-            <Link
-              href="/"
-              className="font-medium text-[var(--database)] hover:none"
-            >
+          <Link
+            href="/"
+            className="font-medium text-[var(--database)] hover:none"
+          >
               See it in action
             </Link>
             .
@@ -54,7 +54,7 @@ export function CallToAction({ isLoggedIn }: CTAProps) {
 
           <div className="mt-12 flex flex-wrap justify-center gap-4">
             <Button className="h-10 px-6 font-semibold hover:cursor-pointer">
-              <Link href={isLoggedIn ? "/dashboard/links" : "/auth/login"}>
+              <Link href={isLoggedIn ? "/dashboard/links" : "/auth/register"}>
                 {isLoggedIn ? "Go to Dashboard" : "Get Started Free"}
               </Link>
             </Button>

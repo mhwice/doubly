@@ -41,7 +41,7 @@ export function QRCodeModal({ isOpen, onOpenChange, shortUrl }: QRCodeModalProps
     if (!qrCodeDataUrl) return;
     const link = document.createElement("a");
     link.href = qrCodeDataUrl;
-    const code = shortUrl.split("/")[1];
+    const code = shortUrl.split("/").at(-1);
     link.download = `shortlink-${code}.png`;
     document.body.appendChild(link);
     link.click();

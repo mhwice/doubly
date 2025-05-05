@@ -53,11 +53,11 @@ export class ClickEvents {
         FROM matching_link;
       `;
 
-      console.log({query})
+      // console.log({query})
       const response: QueryResponse = await sql(query, [code, ...values]);
-      console.log({response})
+      // console.log({response})
       const result = parseQueryResponse(response, OriginalUrlSchema);
-      console.log({result});
+      // console.log({result});
 
       if (result.length === 0) return ServerResponse.fail(ERROR_MESSAGES.NOT_FOUND);
 
@@ -378,6 +378,7 @@ export class ClickEvents {
         const placeholders = values.map(() => `$${placeholderIndex++}`).join(", ");
         placeholderMap.set(formattedKey, `${formattedKey} IN (${placeholders})`);
 
+        // const cleanValues = values.map((val) => val === 'unknown' ?)
         queryParams.push(...values);
       }
 
@@ -1025,6 +1026,7 @@ export class ClickEvents {
         )
 
         SELECT json_build_object(
+          'empty', (SELECT COUNT(*) > 0 FROM unfiltered_clicks),
           'tabs', json_build_object(
               ${tabsQuery.join(",")}
           ),
@@ -1100,11 +1102,21 @@ export class ClickEvents {
       // console.log(queryParams)
 
       const response: QueryResponse = await sql(newQuery, [...queryParams]);
-      // console.log(response[0]?.data?.combobox?.country);
-      // console.log(response[0]?.data?.combobox?.continent);
-      // console.log(response[0]?.data?.combobox?.browser);
+      // console.log("empty")
+      // console.log(response[0]?.data?.empty);
+      // console.log(response[0]?.data?.combobox);
       const validatedResponse = ClickEventSchemas.AnalyticsJSON.parse(response);
       return ServerResponse.success(validatedResponse);
+
+      /*
+
+      {
+        source: [ { value: 'link', label: 'source:link', count: 2, percent: 100 } ],
+        continent: [ { value: null, label: null, count: 2, percent: 100 } ],
+        country: [ { value: null, label: null, count: 2, percent: 100 } ],
+        ...
+      }
+      */
 
       /**
        *

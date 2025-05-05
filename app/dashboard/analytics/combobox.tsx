@@ -97,6 +97,7 @@ export function Combobox({ comboboxData, dateRange }: ComboboxProps) {
     device: comboboxData.device.length >= LIMIT,
     os: comboboxData.os.length >= LIMIT,
   };
+  // console.log({shouldUseServerFetch})
 
   // Combobox state
   const [open, setOpen] = useState(false);
@@ -146,7 +147,7 @@ export function Combobox({ comboboxData, dateRange }: ComboboxProps) {
   function allowedUrl() {
     if (debouncedQueryString === "") return null;
     if (page === "root") return null;
-    // console.log({ debouncedQueryString, queryString, page });
+    if (!shouldUseServerFetch[page]) return null;
     return url;
   }
 
@@ -200,7 +201,9 @@ export function Combobox({ comboboxData, dateRange }: ComboboxProps) {
       return;
     }
 
+    // console.log(`${!shouldUseServerFetch[page]? 'client' : 'server'}`)
     if (!shouldUseServerFetch[page]) {
+      // console.log("yep client")
       // should be client side. dont fetch;
       return;
     }
