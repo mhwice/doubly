@@ -3,7 +3,7 @@ import { z } from "zod";
 import { serverResponseSchema } from "./clicks";
 
 const DeleteUserSchema = z.object({
-  id: z.string().trim().min(1)
+  delete_user_cascade: z.string().trim().min(1).nullable()
 })
 
 export namespace UserSchemas {

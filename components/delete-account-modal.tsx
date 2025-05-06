@@ -1,8 +1,11 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState } from "react";
 import { BaseModal } from "./base-modal";
-import { deleteLink } from "@/actions/safe-delete-link";
+import { deleteAccount } from "@/actions/safe-delete-account";
+import { useRouter } from "next/navigation";
+import { authClient } from "@/utils/auth-client";
+
 
 interface CustomDialogProps {
   isOpen: boolean;
@@ -10,12 +13,31 @@ interface CustomDialogProps {
 }
 
 export function DeleteAccountModal({ isOpen, onOpenChange }: CustomDialogProps) {
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
+  const router = useRouter();
 
   const handleOnDelete = async () => {
-    startTransition(async () => {
-      // delete account server action here
-    });
+    setIsPending(true);
+    try {
+      // console.log("deleting")
+      const response = await deleteAccount();
+      // console.log(response)
+      // await authClient.deleteUser({callbackURL: "/"});
+      if (response.success && response.data) {
+        localStorage.clear();
+        sessionStorage.clear();
+        /*
+        TODO
+        i am not deleting the better auth cookies
+        handle this eventually...
+        */
+        router.push("/");
+      }
+    } catch (error) {
+
+    } finally {
+      setIsPending(false);
+    }
   }
 
   return (

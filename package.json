@@ -9,6 +9,7 @@
     "lint": "next lint",
     "analyze": "ANALYZE=true npm run build",
     "migrate": "node-pg-migrate",
+    "fix-migrate": "node-pg-migrate -m './migrations'",
     "countries": "node ./utils/country-code-script.js",
     "seed-all": "node ./db-utils/makeLocationFile.js && node ./db-utils/resetDB.js && node ./db-utils/seed.js"
   },

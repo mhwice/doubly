@@ -23,11 +23,8 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "Doubly",
+  title: "Doubly: Links with superpowers",
   description: "Doubly is a modern link shortening and tracking service, built for scale and ease-of-use.",
-  icons: {
-    icon: '/logo.svg',
-  },
 };
 
 export default async function RootLayout({
@@ -37,6 +34,11 @@ export default async function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <link rel="icon" href="/favicon.ico" sizes="any" />
+      <link rel="icon" href="/icon.ico" sizes="any" />
+      <link rel="icon" href="/favicon-96x96.png" sizes="32x32" />
+      <link rel="mask-icon" href="/favicon.svg" color="#000000" />
+      <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       <body className={`${geist.className} antialiased`}>
         <Toaster />
         {children}
