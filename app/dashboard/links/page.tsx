@@ -41,8 +41,7 @@ export default async function LinksPage() {
   // const stats = makeStats(links);
 
   return (
-    <>
-      {/* <div className="flex mx-[15%] justify-between h-full items-center"> */}
+    <div className="min-h-screen">
       <div className="flex flex-col md:flex-row justify-between h-full md:items-center max-w-7xl mx-auto px-3 md:px-5 xl:px-10">
         <div className="h-full flex flex-col">
           <h1 className="font-semibold text-3xl mt-14 mb-2 text-vprimary">Link Management</h1>
@@ -54,10 +53,9 @@ export default async function LinksPage() {
       </div>
       <div className="border-b border-vborder mt-14"></div>
 
-      {/* <div className="h-full mx-2 lg:mx-[2%] xl:mx-[5%] 2xl:mx-[15%] flex flex-col bg-blue-100"> */}
       <div className="h-full flex flex-col max-w-7xl mx-auto px-3 md:px-5 xl:px-10">
         <ClientWrapper />
       </div>
-    </>
+    </div>
   )
 }

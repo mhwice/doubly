@@ -15,7 +15,9 @@ export function AnimatedTabs() {
   const [activeIndex, setActiveIndex] = useState(tabs.findIndex((tab) => pathname === tab.path));
   const [hoverStyle, setHoverStyle] = useState({});
   const [activeStyle, setActiveStyle] = useState({ left: "0px", width: "0px" });
-  const tabRefs = useRef<(HTMLDivElement | null)[]>([]);
+  // const tabRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const tabRefs = useRef<(HTMLAnchorElement | null)[]>([]);
+
 
   useEffect(() => {
     const idx = tabs.findIndex((tab) => pathname === tab.path);
@@ -75,37 +77,55 @@ export function AnimatedTabs() {
     <div className="relative">
       {/* Hover Highlight */}
       <div
-        className="absolute h-[30px] transition-all duration-300 ease-out bg-[#0e0f1114] rounded-[6px] flex items-center"
+        className="absolute h-[30px] transition-all duration-300 ease-out bg-[#0e0f1114] rounded-[6px] flex items-center pointer-events-none"
         style={{ ...hoverStyle, opacity: hoveredIndex !== null ? 1 : 0 }}
       />
 
       {/* Active Indicator */}
       <div
-        className="absolute bottom-[-6px] h-[2px] bg-vprimary transition-all duration-300 ease-out"
+        className="absolute bottom-[-6px] h-[2px] bg-vprimary transition-all duration-300 ease-out pointer-events-none"
         style={activeStyle}
       />
 
       {/* Tabs */}
       <div className="relative flex space-x-[6px] items-center">
         {tabs.map((tab, index) => (
-          <div
-            key={index}
-            ref={(el) => {
-              tabRefs.current[index] = el;
-            }}
-            className={`px-3 py-2 cursor-pointer transition-colors duration-300 h-[30px] ${
-              index === activeIndex ? "text-vprimary" : "text-vsecondary hover:text-[#0e0e10]"
-            }`}
-            onMouseEnter={() => setHoveredIndex(index)}
-            onMouseLeave={() => setHoveredIndex(null)}
-            onClick={() => setActiveIndex(index)}
-          >
-            <div className="text-sm font-medium leading-5 whitespace-nowrap flex items-center justify-center h-full">
-              <Link href={tab.path} passHref>
-                {tab.name}
-              </Link>
-            </div>
+          <Link
+          key={index}
+          href={tab.path}
+          className={`px-3 py-2 cursor-pointer transition-colors duration-300 h-[30px] ${
+            index === activeIndex
+              ? "text-vprimary"
+              : "text-vsecondary hover:text-[#0e0e10]"
+          }`}
+          onMouseEnter={() => setHoveredIndex(index)}
+          onMouseLeave={() => setHoveredIndex(null)}
+          ref={(el) => {
+            tabRefs.current[index] = el;
+          }}
+        >
+          <div className="text-sm font-medium leading-5 whitespace-nowrap flex items-center justify-center h-full">
+            {tab.name}
           </div>
+        </Link>
+          // <div
+          //   key={index}
+          //   ref={(el) => {
+          //     tabRefs.current[index] = el;
+          //   }}
+          //   className={`px-3 py-2 cursor-pointer transition-colors duration-300 h-[30px] ${
+          //     index === activeIndex ? "text-vprimary" : "text-vsecondary hover:text-[#0e0e10]"
+          //   }`}
+          //   onMouseEnter={() => setHoveredIndex(index)}
+          //   onMouseLeave={() => setHoveredIndex(null)}
+          //   onClick={() => setActiveIndex(index)}
+          // >
+          //   <div className="text-sm font-medium leading-5 whitespace-nowrap flex items-center justify-center h-full">
+          //     <Link href={tab.path} passHref>
+          //       {tab.name}
+          //     </Link>
+          //   </div>
+          // </div>
         ))}
       </div>
     </div>
