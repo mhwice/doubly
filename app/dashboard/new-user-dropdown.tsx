@@ -42,7 +42,7 @@ export function UserNav({ image, name, email }: DropdownProps) {
   };
 
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"

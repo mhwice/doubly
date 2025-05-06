@@ -49,8 +49,6 @@ export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const params = Array.from(searchParams.entries());
 
-  console.log(params)
-
   // 2 - Validate the incoming data
   const validated = QueryArraySchema.safeParse(params);
   if (!validated.success) console.log(validated.error)

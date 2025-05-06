@@ -10,7 +10,6 @@ export const deleteLink = async (params: DeleteMultiple) => {
 
   // 1 - Validate the incoming data
   const validated = LinkDeleteLinksSchema.safeParse(params);
-  console.log(validated)
   if (!validated.success) return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS);
 
   // 2 - Get session data

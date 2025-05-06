@@ -16,21 +16,27 @@ export class UserTable {
   static async deleteAccount({ userId }: { userId: string }): Promise<ServerResponseType<boolean>> {
     try {
 
-      const validatedId = z.number().parse(userId);
+      const validatedId = z.string().parse(userId);
 
       const query = `
-        DELETE FROM "user" WHERE id = $1
-        RETURNING *;
+        SELECT delete_user_cascade($1)
       `;
 
       const response: QueryResponse = await sql(query, [validatedId]);
-      const result = parseQueryResponse(response, UserSchemas.Delete);
+      // [ { delete_user_cascade: '4XZoY55Dmzxh19I02o8DWgSGJmi5hWjD' } ]
+      const validatedResult = z.object({ delete_user_cascade: z.string().trim().min(1).nullable() }).array().length(1).safeParse(response);
+      // console.log(validatedResult)
+      if (!validatedResult.success) return ServerResponse.fail("failed to delete user");
+      if (!validatedResult.data[0].delete_user_cascade) return ServerResponse.fail("failed to delete user");
+      // const result = parseQueryResponse(response, UserSchemas.Delete);
 
-      if (result.length !== 1) return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
+      // if (result.length !== 1) return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
+      // if (!result[0].delete_user_cascade) return ServerResponse.fail("failed to delete user");
 
       return ServerResponse.success(true);
 
     } catch (error: unknown) {
+      console.log(error)
       if (error instanceof ZodError) return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS);
       return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
     }

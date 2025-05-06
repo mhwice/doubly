@@ -4,7 +4,7 @@ export default async function Filter({ searchParams }: { searchParams: Promise<{
   // const { shortUrl } = await searchParams;
 
   return (
-    <>
+    <div className="min-h-screen">
       {/* <div className="h-full mx-[15%] flex flex-col"> */}
       <div className="h-full max-w-7xl mx-auto px-3 md:px-5 xl:px-10 flex flex-col">
         <h1 className="font-semibold text-3xl mt-14 mb-2 text-vprimary">Click Analytics</h1>
@@ -16,6 +16,6 @@ export default async function Filter({ searchParams }: { searchParams: Promise<{
       <div className="h-full max-w-7xl mx-auto px-3 md:px-5 xl:px-10 flex flex-col">
         <ClientWrapper />
       </div>
-    </>
+    </div>
   );
 }

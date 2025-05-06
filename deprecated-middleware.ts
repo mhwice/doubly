@@ -1,5 +1,4 @@
 // import authConfig from "./deprecated-auth.config";
-// import NextAuth from "next-auth";
 // import { DEFAULT_LOGIN_REDIRECT, apiAuthPrefix, authRoutes, publicRoutes} from "@/routes";
 
 // const { auth } = NextAuth(authConfig);

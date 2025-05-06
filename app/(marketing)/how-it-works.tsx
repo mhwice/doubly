@@ -34,7 +34,8 @@ export default function HowItWorksSection() {
         </h2>
         <p className="mt-6 max-w-2xl text-lg leading-7 text-gray-600 dark:text-gray-400 text-center text-md">
           {/* Doubly&rsquo; links are designed to be a seamless stand-in for links <br/>you currently use, so switching takes seconds. */}
-          Switch over in seconds — Doubly links slot right into your existing tweets, emails, or campaigns with zero downtime.
+          {/* Switch over in seconds — Doubly links slot right into your existing tweets, emails, or campaigns with zero downtime. */}
+          Doubly&rsquo; links act a as a proxy for the url you provide. Think of us as your digital customs agent—every link passes through us first.
         </p>
       </div>
       <VerticalTimeline />

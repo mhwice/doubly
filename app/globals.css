@@ -211,3 +211,11 @@ a {
   background-image: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, #f4f4f5 80%, #f4f4f5 100%);
 }
 
+html {
+  overflow-y: scroll;
+}
+
+html body[data-scroll-locked] {
+  overflow: visible !important;
+  margin-right: 0 !important;
+}

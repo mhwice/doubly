@@ -17,8 +17,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(serialize(ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS)));
   }
 
-  console.log({contents})
-
   // 2 - Validate the incoming data
   const validated = APIContents.safeParse(contents);
   if (!validated.success) console.log(validated.error)

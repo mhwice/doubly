@@ -46,7 +46,7 @@ export function TimePicker({ dateRange, setDateRange, now }: TimePickerProps) {
 
   return (
     <Select onValueChange={(e) => handleClick(e)}>
-      <SelectTrigger  className="hover:bg-gray-100 border transition w-[180px] data-[placeholder]:text-vprimary shadow-none bg-white border-vborder rounded-[var(--bradius)]">
+      <SelectTrigger className="hover:bg-gray-100 border transition w-[180px] data-[placeholder]:text-vprimary shadow-none bg-white border-vborder rounded-[var(--bradius)]">
         <SelectValue placeholder="All Time" />
       </SelectTrigger>
       <SelectContent onCloseAutoFocus={(e) => e.preventDefault()} className="border-vborder">

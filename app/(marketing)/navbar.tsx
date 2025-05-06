@@ -34,7 +34,6 @@ export function Navbar({ isLoggedIn }: NavbarProps) {
   }, [])
 
   const handleOnSignInClicked = () => {
-    // console.log("sign in");
     if (isLoggedIn) {
       router.push("/dashboard/links");
     } else {

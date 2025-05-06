@@ -945,6 +945,8 @@ export class ClickEvents {
         );
       }
 
+      // console.log({dateRange});
+
       const newQuery = `
         WITH user_links AS (
           SELECT *
@@ -1101,6 +1103,7 @@ export class ClickEvents {
       // console.log(newQuery)
       // console.log(queryParams)
 
+      // console.log(newQuery)
       const response: QueryResponse = await sql(newQuery, [...queryParams]);
       // console.log("empty")
       // console.log(response[0]?.data?.empty);

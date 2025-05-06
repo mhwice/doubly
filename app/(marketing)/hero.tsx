@@ -37,7 +37,7 @@ export function Hero({ isLoggedIn }: HeroProps) {
         className="mt-8 flex w-full animate-slide-up-fade flex-col justify-center gap-3 px-3 sm:flex-row"
         style={{ animationDuration: "1100ms" }}
       >
-        <Button className="h-10 font-semibold hover:cursor-pointer bg-[var(--database)]">
+        <Button asChild className="h-10 font-semibold hover:cursor-pointer bg-[var(--database)]">
           <Link href={isLoggedIn ? "/dashboard/links" : "/auth/register"}>{isLoggedIn ? "Go to Dashboard" : "Get Started"}</Link>
         </Button>
         <Button
@@ -50,12 +50,6 @@ export function Hero({ isLoggedIn }: HeroProps) {
             className="ring-1 ring-gray-200 sm:ring-0 dark:ring-gray-900"
             target="_blank"
           >
-            {/* <span className="mr-1 flex size-6 items-center justify-center rounded-full bg-gray-50 transition-all group-hover:bg-gray-200 dark:bg-gray-800 dark:group-hover:bg-gray-700">
-              <RiPlayCircleFill
-                aria-hidden="true"
-                className="size-5 shrink-0 text-gray-900 dark:text-gray-50"
-              />
-            </span> */}
             Star on Github
           </Link>
         </Button>

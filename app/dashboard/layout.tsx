@@ -13,7 +13,7 @@ export default async function Layout({ children }: Readonly<{ children: React.Re
 
   // const filters = new Map();
   // const now = new Date();
-  // console.log({ now });
+
   return (
     <div className="flex flex-col min-h-screen">
       <VercelNavbar email={email} name={name} image={image} />

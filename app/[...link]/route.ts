@@ -18,9 +18,6 @@ function parseRequest(request: NextRequest) {
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ link: string[] }> }) {
 
-  // console.log("HERERERERER")
-  // console.log(request)
-
   let country = request.headers.get("x-vercel-ip-country") || undefined;
   let region = request.headers.get("x-vercel-ip-country-region") || undefined;
   const city = request.headers.get("x-vercel-ip-city") || undefined;
@@ -79,19 +76,19 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const osName = os.name || undefined;
   const deviceType = device.type || undefined;
 
-  console.log({
-    code,
-    source: source === "qr" ? "qr" : "link",
-    city,
-    continent,
-    country,
-    latitude: parsedLatitude,
-    longitude: parsedLongitude,
-    region,
-    browser: browserName,
-    os: osName,
-    device: deviceType
-  })
+  // console.log({
+  //   code,
+  //   source: source === "qr" ? "qr" : "link",
+  //   city,
+  //   continent,
+  //   country,
+  //   latitude: parsedLatitude,
+  //   longitude: parsedLongitude,
+  //   region,
+  //   browser: browserName,
+  //   os: osName,
+  //   device: deviceType
+  // })
 
   const clickResponse = await ClickEvents.recordClickIfExists({
     code,
@@ -107,8 +104,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     device: deviceType || "unknown"
   });
 
-  console.log({success: clickResponse.success})
-  if (clickResponse.success) console.log({success: clickResponse.data});
+  // console.log({success: clickResponse.success})
+  // if (clickResponse.success) console.log({success: clickResponse.data});
 
   if (clickResponse.success) permanentRedirect(clickResponse.data.originalUrl);
   redirect("/");

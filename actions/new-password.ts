@@ -18,7 +18,5 @@ export const newPassword = async (values: z.infer<typeof NewPasswordSchema>, tok
     }
   });
 
-  console.log("better-new-password", x);
-
   return { success: "Password updated" };
 };

@@ -29,8 +29,6 @@ export const createLink = async (params: LinkTypes.CreateLink) => {
     ...validated.data,
   });
 
-  console.log({response})
-
   // 4 - Handle DAL response
   return ServerResponse.success('');
   // return response;

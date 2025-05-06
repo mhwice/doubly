@@ -53,13 +53,14 @@ export function CallToAction({ isLoggedIn }: CTAProps) {
           </p>
 
           <div className="mt-12 flex flex-wrap justify-center gap-4">
-            <Button className="h-10 px-6 font-semibold hover:cursor-pointer">
+            <Button asChild className="h-10 px-6 font-semibold hover:cursor-pointer">
               <Link href={isLoggedIn ? "/dashboard/links" : "/auth/register"}>
                 {isLoggedIn ? "Go to Dashboard" : "Get Started Free"}
               </Link>
             </Button>
 
             <ShadButton
+              asChild
               variant="flat"
               className="h-10 px-6 font-semibold hover:cursor-pointer"
             >

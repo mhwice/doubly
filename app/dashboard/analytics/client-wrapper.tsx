@@ -37,7 +37,6 @@ export function ClientWrapper() {
   const { date: now, setDate } = useCurrentDate();
 
   useEffect(() => {
-    console.log({now})
     setDateRange((prevDateRange) => {
       return [prevDateRange[0], now];
     })
@@ -77,20 +76,14 @@ export function ClientWrapper() {
 
   useEffect(() => {
     if (!hasInitialized.current && data) {
-      console.log(data.empty)
       setHasData(data.empty);
       hasInitialized.current = true;
     }
-
     setChartData(data?.chart);
     setFilteredData(data?.tabs);
     setStatsHeaderData(data?.stats);
     setComboboxData(data?.combobox);
   }, [data]);
-
-  useEffect(() => {
-    console.log({isValidating})
-  }, [isValidating])
 
   if (isLoading && !data) return (
     <>
@@ -120,10 +113,8 @@ export function ClientWrapper() {
 
           <TagGroup />
           <div className="flex flex-row justify-start space-x-[6px] sm:space-x-3">
-            {/* {filters.size > 0 && <Button className="text-vprimary font-normal" variant="link" onClick={clearFilters}>Clear Filters</Button>} */}
             {comboboxData && <Combobox comboboxData={comboboxData} dateRange={dateRange} />}
             <TimePicker dateRange={dateRange} setDateRange={setDateRange} now={now} />
-            {/* <Button onClick={handleOnRefreshClicked} variant="flat" className="text-vprimary font-normal"><RefreshCw strokeWidth={1.75} className="text-vprimary"/>Refresh</Button> */}
             <RefreshButton isLoading={isValidating}/>
           </div>
 
