@@ -7,7 +7,6 @@ if (!connectionString) throw new Error("failed to read Database url");
 
 // Configuring Neon for local development
 if (process.env.ENV === 'dev') {
-  console.log("in dev env")
   connectionString = 'postgres://postgres:postgres@db.localtest.me:5432/postgres';
   neonConfig.fetchEndpoint = (host) => {
     const [protocol, port] = host === 'db.localtest.me' ? ['http', 4444] : ['https', 443];

@@ -37,7 +37,6 @@ export function ClientWrapper() {
   const { date: now, setDate } = useCurrentDate();
 
   useEffect(() => {
-    console.log({now})
     setDateRange((prevDateRange) => {
       return [prevDateRange[0], now];
     })
@@ -77,20 +76,14 @@ export function ClientWrapper() {
 
   useEffect(() => {
     if (!hasInitialized.current && data) {
-      console.log(data.empty)
       setHasData(data.empty);
       hasInitialized.current = true;
     }
-
     setChartData(data?.chart);
     setFilteredData(data?.tabs);
     setStatsHeaderData(data?.stats);
     setComboboxData(data?.combobox);
   }, [data]);
-
-  useEffect(() => {
-    console.log({isValidating})
-  }, [isValidating])
 
   if (isLoading && !data) return (
     <>

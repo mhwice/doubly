@@ -10,7 +10,7 @@ import {
 export default function SettingsPage() {
 
   const onClick = () => {
-    console.log("click")
+    // console.log("click")
   }
 
   return (

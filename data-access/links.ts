@@ -168,8 +168,6 @@ export class LinkTable {
 
   static async getAllLinks(params: z.infer<typeof APILinkGetAllSchema>): Promise<ServerResponseType<LinkTypes.Dashboard[]>> {
 
-    console.log("refetching")
-
     // this needs to be updated so it takes in the (date optional) and filters using that
     try {
       const { userId, dateEnd } = APILinkGetAllSchema.parse(params);
@@ -203,7 +201,6 @@ export class LinkTable {
       `;
 
       const response: QueryResponse = await sql(query, [userId, dateEnd]);
-      console.log(response)
       const result = parseQueryResponse(response, LinkSchemas.Dashboard);
 
       // this should only return the dto, not full list of links

@@ -28,14 +28,13 @@ Next steps
 */
 
 export default function OAuthProviders({ accounts }: OAuthProvidersProps) {
-  console.log(accounts)
 
   const [isPending, startTransition] = useTransition();
   const [githubLinked, setGithubLinked] = useState(false);
   const linkGithub = () => {
     startTransition(async () => {
       await linkSocial("github").then((data) => {
-        console.log("ere", data);
+        // console.log("ere", data);
       });
 
       // await listAccounts().then((data) => {

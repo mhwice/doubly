@@ -19,9 +19,8 @@ export function DeleteAccountModal({ isOpen, onOpenChange }: CustomDialogProps) 
   const handleOnDelete = async () => {
     setIsPending(true);
     try {
-      // console.log("deleting")
+
       const response = await deleteAccount();
-      // console.log(response)
       // await authClient.deleteUser({callbackURL: "/"});
       if (response.success && response.data) {
         localStorage.clear();

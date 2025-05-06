@@ -22,11 +22,9 @@ export async function GET(request: NextRequest) {
   // 1 - Read and parse request params
   const searchParams = request.nextUrl.searchParams;
   const params = Array.from(searchParams.entries());
-  // console.log({params})
 
   // 2 - Validate the incoming data
   const validated = QueryArraySchema.safeParse(params);
-  // if (!validated.success) console.log(validated.error)
   if (!validated.success) return NextResponse.json(serialize(ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS)));
 
   // 3 - Get session data

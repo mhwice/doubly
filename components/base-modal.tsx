@@ -41,6 +41,7 @@ export function BaseModal({
 }: BaseModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      {/* <form onSubmit={(e) => { e.preventDefault(); onSubmit(); }}> */}
       <DialogContent
         onCloseAutoFocus={() => {}}
         className="sm:max-w-lg border-[#dedede] p-0 overflow-hidden sm:rounded-xl shadow-custom"
@@ -74,6 +75,7 @@ export function BaseModal({
           </Button>
         </DialogFooter>
       </DialogContent>
+      {/* </form> */}
     </Dialog>
   );
 }

@@ -9,7 +9,7 @@ export function LogoutButton() {
   function handleOnLogoutClick() {
     startTransition(async () => {
       await logout().then((data) => {
-        console.log("something went wrong", data.error);
+        // console.log("something went wrong", data.error);
       });
     });
   }

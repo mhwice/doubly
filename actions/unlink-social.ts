@@ -18,8 +18,6 @@ export const unlinkSocial = async (provider: "github" | "google" | "apple") => {
       headers: await headers()
     });
 
-    console.log(res);
-
     // const res = await auth.api.linkSocialAccount({
     //   body: {
     //     provider,

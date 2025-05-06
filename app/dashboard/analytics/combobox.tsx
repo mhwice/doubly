@@ -97,7 +97,7 @@ export function Combobox({ comboboxData, dateRange }: ComboboxProps) {
     device: comboboxData.device.length >= LIMIT,
     os: comboboxData.os.length >= LIMIT,
   };
-  // console.log({shouldUseServerFetch})
+
 
   // Combobox state
   const [open, setOpen] = useState(false);
@@ -162,10 +162,6 @@ export function Combobox({ comboboxData, dateRange }: ComboboxProps) {
     if (data) setCurrentPage(data);
   }, [data]);
 
-  // useEffect(() => {
-  //   console.log({wholeMenu})
-  // }, [wholeMenu]);
-
   // Clear when closed
   useEffect(() => {
 
@@ -184,10 +180,6 @@ export function Combobox({ comboboxData, dateRange }: ComboboxProps) {
     return () => clearTimeout(timer);
   }, [open]);
 
-  // useEffect(() => {
-  //   console.log("currentMenu", currentMenu)
-  // }, [currentMenu]);
-
   useEffect(() => {
 
     if (queryString === "") {
@@ -201,15 +193,11 @@ export function Combobox({ comboboxData, dateRange }: ComboboxProps) {
       return;
     }
 
-    // console.log(`${!shouldUseServerFetch[page]? 'client' : 'server'}`)
     if (!shouldUseServerFetch[page]) {
-      // console.log("yep client")
-      // should be client side. dont fetch;
       return;
     }
 
     setMounted(true);
-    // console.log("fetching...");
 
     // setLoading(true);
 
@@ -227,12 +215,9 @@ export function Combobox({ comboboxData, dateRange }: ComboboxProps) {
     //     if (!validated.success) throw new Error("failed to validate api response");
     //     if (!validated.data.success) throw new Error(validated.data.error);
     //     const x = validated.data.data;
-    //     // console.log(x);
 
-    //     // console.log(currentMenu)
     //     setLoading(false);
     //     setCurrentPage(x);
-    //     // console.log(currentMenu)
     //   })
 
   }, [debouncedQueryString]);
