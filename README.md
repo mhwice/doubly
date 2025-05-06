@@ -1,36 +1,26 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# doubly
 
-## Getting Started
+**Track Every Click. Master Every Metric.**
 
-First, run the development server:
+**Doubly** is a powerful link shortener and analytics platform designed to give you deep insights into how your links are performing. Simply provide a URL, and Doubly generates a smart proxy link. When users click this link, they’re seamlessly redirected to your original destination—while Doubly captures detailed data about the click event.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+From device type to geographic location, Doubly collects and organizes valuable metrics, presenting them in a clear, user-friendly dashboard. With intuitive filtering options, you can quickly drill down to the data that matters most. For example, you can effortlessly view how many users from the Americas (excluding the United States) clicked your link last week using Android devices—no complex queries required.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Doubly empowers you to make informed decisions based on real user behavior, all in just a few clicks.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Built With
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+  - [Next.js](https://nextjs.org/) - Fullstack React framework
+  - [Typescript](https://www.typescriptlang.org/) - Javascript with less bugs
+  - [Neon](https://neon.tech/) - Serverless Postgres database (note - we do not use any ORMs)
+  - [React.js](https://react.dev/) - Frontend library
+  - [Better Auth](https://www.better-auth.com/) - Session-based auth library
+  - [shadcn/ui](https://ui.shadcn.com/) - Component library
+  - [TailwindCSS](https://tailwindcss.com/) - CSS directly in JSX code
+  - [React Hook Form](https://react-hook-form.com/) - Simplifies fronend forms
+  - [Zod](https://zod.dev/) - Build time type safety and run time validation safety
+  - [Nanoid](https://github.com/ai/nanoid) - Used to generate random codes for links 
+  - [React Table](https://tanstack.com/table/v7) - Library for making frontend tables
+  - [Resend](https://resend.com/) - Email sending service
+  - [Docker](https://www.docker.com/) - Used for local development with Postgres
+  - [Vercel](https://vercel.com/) - Hosting + edge functions
