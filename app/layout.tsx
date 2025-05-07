@@ -23,7 +23,7 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "Doubly: Links with superpowers",
+  title: "Doubly: Track Every Click. Master Every Metric.",
   description: "Doubly is a modern link shortening and tracking service, built for scale and ease-of-use.",
 };
 
@@ -34,11 +34,7 @@ export default async function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <link rel="icon" href="/favicon.ico" sizes="any" />
-      <link rel="icon" href="/icon.ico" sizes="any" />
-      <link rel="icon" href="/favicon-96x96.png" sizes="32x32" />
-      <link rel="mask-icon" href="/favicon.svg" color="#000000" />
-      <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+      <meta name="apple-mobile-web-app-title" content="Doubly" />
       <body className={`${geist.className} antialiased`}>
         <Toaster />
         {children}
