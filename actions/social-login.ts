@@ -17,8 +17,7 @@ export const socialLogin = async (values: z.infer<typeof SocialSchema>) => {
         callbackURL: "/dashboard/links",
         disableRedirect: true,
         errorCallbackURL: "/"
-      },
-      disableRedirect: true,
+      }
     });
 
     if (!res.url) {
