@@ -17,6 +17,13 @@ import { Button } from "@/components/ui/button";
 import { EditLinkModal } from "@/components/edit-link-modal";
 import { QRCodeModal } from "@/components/new-qr-modal";
 import { DeleteLinkModal } from "@/components/delete-link-modal";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+
 
 export function ClientWrapper() {
 
@@ -59,7 +66,8 @@ export function ClientWrapper() {
   const { data, error, isLoading, isValidating } = useSWR(url, fetcher, {
     revalidateIfStale: false,
     revalidateOnFocus: false,
-    revalidateOnReconnect: false
+    revalidateOnReconnect: false,
+    keepPreviousData: true
   });
 
   const columns = useMemo<ColumnDef<LinkTypes.Dashboard>[]>(
@@ -105,7 +113,16 @@ export function ClientWrapper() {
         header: ({ column }) => <DataTableColumnHeader column={column} title="Shortened Url" className="text-vsecondary text-sm px-4" />,
         cell: ({ row }) => (
           <div className="flex space-x-1 items-center">
-            <Button onClick={() => navigator.clipboard.writeText(row.getValue("shortUrl"))} className="font-mono font-normal text-sm text-vsecondary" variant="ghost">{cleanUrl(row.getValue("shortUrl"))}</Button>
+            <TooltipProvider>
+              <Tooltip>
+              <TooltipTrigger asChild>
+              <Button onClick={() => navigator.clipboard.writeText(row.getValue("shortUrl"))} className="font-mono font-normal text-sm text-vsecondary" variant="ghost">{cleanUrl(row.getValue("shortUrl"))}</Button>
+              </TooltipTrigger>
+                <TooltipContent>
+                  <p>Copy Short Link</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         ),
         enableSorting: false,
@@ -147,9 +164,9 @@ export function ClientWrapper() {
     setRowSelection({});
   }
 
-  if (isLoading) return (
-    <div className="h-full mx-[15%]">
-      <Skeleton className="pt-[200px] h-[50%] w-[100%]" />
+  if (!isValidating && isLoading) return (
+    <div className="w-full h-[400px] z-50 mt-14">
+      <Skeleton className="w-full h-full" />
     </div>
   );
 

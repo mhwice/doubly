@@ -6,7 +6,8 @@ import { sendBetterPasswordResetEmail, sendBetterVerificationEmail } from "@/lib
 import { env } from "@/data-access/env";
 
 export const auth = betterAuth({
-  appName: "NextAuth",
+  appName: "Doubly",
+  baseURL: env.BETTER_AUTH_URL,
   database: new Pool({
     connectionString: env.DATABASE_URL
   }),

@@ -41,10 +41,11 @@ export const LoginForm = () => {
     try {
       const { data, error } = await authClient.signIn.email({
         email: values.email,
-        password: values.password
+        password: values.password,
+        callbackURL: "/dashboard/links"
       });
 
-      if (data) return router.push("/dashboard/links");
+      // if (data) return router.push("/dashboard/links");
       if (error) setError(error.message);
     } catch (error) {
       console.error("Failed to sign in", error);

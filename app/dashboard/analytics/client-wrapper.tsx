@@ -85,11 +85,17 @@ export function ClientWrapper() {
     setComboboxData(data?.combobox);
   }, [data]);
 
+  // if (isLoading && !data) return (
+  //   <>
+  //     <Skeleton className="mt-20 h-[50%] w-[100%]" />
+  //     <div> loading...</div>
+  //   </>
+  // );
+
   if (isLoading && !data) return (
-    <>
-      <Skeleton className="mt-20 h-[50%] w-[100%]" />
-      <div> loading...</div>
-    </>
+    <div className="w-full h-[400px] z-50 mt-14">
+      <Skeleton className="w-full h-full" />
+    </div>
   );
 
 
