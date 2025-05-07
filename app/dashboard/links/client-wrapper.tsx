@@ -11,7 +11,7 @@ import { useMemo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableRowActions } from "./components/data-table-row-actions";
 import { DataTableColumnHeader } from "./static-components/data-table-column-header";
-import { RefreshCw, SquareArrowOutUpRight } from "lucide-react";
+import { SquareArrowOutUpRight } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { EditLinkModal } from "@/components/edit-link-modal";
@@ -164,7 +164,7 @@ export function ClientWrapper() {
     setRowSelection({});
   }
 
-  if (!isValidating && isLoading) return (
+  if (!data) return (
     <div className="w-full h-[400px] z-50 mt-14">
       <Skeleton className="w-full h-full" />
     </div>
@@ -176,6 +176,8 @@ export function ClientWrapper() {
       {/* <div>
         <Button onClick={handleOnRefreshClicked} variant="flat" className="text-vprimary font-normal"><RefreshCw strokeWidth={1.75} className="text-vprimary"/>Refresh</Button>
       </div> */}
+      {/* {isLoading && <div className="bg-red-500 w-[300px] h-[300px]"></div>}
+      {isValidating && <div className="bg-blue-500 w-[300px] h-[300px]"></div>} */}
       {activeLink && <>
         <QRCodeModal isOpen={showQRModal} onOpenChange={setShowQRModal} shortUrl={activeLink.shortUrl} />
         <DeleteLinkModal onLinkDelete={onLinkDelete} isOpen={showDeleteModal} onOpenChange={setShowDeleteModal} ids={[activeLink.id]}/>

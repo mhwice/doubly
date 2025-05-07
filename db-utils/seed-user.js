@@ -4,42 +4,19 @@ import { loadLocationData, getRandomInt, getRandomDate, makeCode } from './utils
 import { faker } from '@faker-js/faker';
 import { UAParser } from 'ua-parser-js';
 import { eachDayOfInterval } from "date-fns";
+import iso3166 from "iso-3166-2";
 
 import { neon } from '@neondatabase/serverless';
-// import { sql as localSQL } from "../data-access/local-connect-test.js";
-const sql = neon("");
+const sql = neon("my-db-string");
 
-const NUM_USERS = [1, 1];
-// const LINKS_PER_USER = [30,40];
-const LINKS_PER_USER = [2,3];
-// const CLICKS_PER_LINK = [0, 400];
-const CLICKS_PER_LINK = [1, 5];
+const LINKS_PER_USER = [30,40];
+// const LINKS_PER_USER = [2,2];
+const CLICKS_PER_LINK = [0, 400];
+// const CLICKS_PER_LINK = [1, 3];
 const AVG_NUM_CITY_COLLISIONS = 5;
 const NUM_SUPER_USERS = 0;
 
-const env = "prod";
-const URL = env === "dev" ? "http://localhost:3000" : "https://doubly.dev"
-
-// let client;
-// if (env === "dev") {
-//   client = new Client({
-//     host: 'localhost',
-//     port: 5432,
-//     user: 'postgres',
-//     password: 'password',
-//     database: 'postgres',
-//     connectionString: 'postgres://postgres:postgres@db.localtest.me'
-//   });
-// } else {
-//   client = new Client({
-//     host: 'localhost',
-//     port: 5432,
-//     user: 'postgres',
-//     password: 'password',
-//     database: 'postgres',
-//     connectionString: 'postgres://postgres:postgres@db.localtest.me'
-//   });
-// }
+const URL = "https://doubly.dev"
 
 async function seed() {
   try {
@@ -50,24 +27,25 @@ async function seed() {
 
     const allowedDates = getAllowedDates(new Date(2024, 0, 1), new Date());
 
-    const randomNumUsers = getRandomInt(...NUM_USERS);
-    for (let u = 0; u < randomNumUsers; u += 1) {
-      const uid = await createUser(sql);
-      const randomNumLinks = getRandomInt(...LINKS_PER_USER);
-      for (let l = 0; l < randomNumLinks; l += 1) {
-        const linkId = await createLink(sql, uid);
-        // console.log({ linkId, CLICKS_PER_LINK })
-        const randomNumClicks = getRandomInt(...CLICKS_PER_LINK);
-        const locSubset = pickFromLoc(loc, randomNumClicks);
-        for (let c = 0; c < randomNumClicks; c += 1) {
-          await createClick(sql, linkId, locSubset, allowedDates);
-          // console.log(`Clicks Created: ${c + 1}/${randomNumClicks}`);
-        }
-        console.log(`Links Created: ${l + 1}/${randomNumLinks}`);
+    // const randomNumUsers = getRandomInt(...NUM_USERS);
+    // for (let u = 0; u < randomNumUsers; u += 1) {
+    //   const uid = await createUser(sql);
+    const randomNumLinks = getRandomInt(...LINKS_PER_USER);
+    const uid = "mid-uid";
+    for (let l = 0; l < randomNumLinks; l += 1) {
+      const linkId = await createLink(sql, uid);
+      // console.log({ linkId, CLICKS_PER_LINK })
+      const randomNumClicks = getRandomInt(...CLICKS_PER_LINK);
+      const locSubset = pickFromLoc(loc, randomNumClicks);
+      for (let c = 0; c < randomNumClicks; c += 1) {
+        await createClick(sql, linkId, locSubset, allowedDates);
+        // console.log(`Clicks Created: ${c + 1}/${randomNumClicks}`);
       }
+      console.log(`Links Created: ${l + 1}/${randomNumLinks}`);
+    }
 
       // console.log(`Users Created: ${u + 1}/${randomNumUsers}`);
-    }
+    // }
 
     console.log('Seeding complete');
   } catch (err) {
@@ -164,13 +142,47 @@ async function createClick(sql, linkId, loc, allowedDates) {
 
   const QR_PERCENTAGE = Math.random();
   const source = Math.random() < QR_PERCENTAGE ? 'qr' : 'link';
-  const country = randomLocation.countryCode;
+  let country = randomLocation.countryCode;
   const city = randomLocation.city;
   const region = "unknown";
-  const continent = randomLocation.continentCode;
+  let continent = randomLocation.continentCode;
   const latitude = randomLocation.lat;
   const longitude = randomLocation.lng;
   const createdAt = allowedDates[getRandomInt(0, allowedDates.length - 1)];
+
+  if (country) {
+    // converts 'CA' to 'Canada'
+    country = iso3166.country(country)?.name;
+  }
+
+  if (continent) {
+    switch (continent) {
+      case 'NA':
+        continent = 'North America';
+        break;
+      case 'EU':
+        continent = 'Europe';
+        break;
+      case 'AF':
+        continent = 'Africa';
+        break;
+      case 'AS':
+        continent = 'Asia';
+        break;
+      case 'SA':
+        continent = 'South America';
+        break;
+      case 'OC':
+        continent = 'Oceania';
+        break;
+      case 'AN':
+        continent = 'Antarctica';
+        break;
+
+      default:
+        break;
+    }
+  }
 
   const ua = faker.internet.userAgent();
   const parser = new UAParser(ua);

@@ -42,7 +42,7 @@ export function CallToAction({ isLoggedIn }: CTAProps) {
           <p className="mt-4">
             Create your account and start shortening links in seconds.
             <br />
-            Prefer a preview?{" "}
+            Prefer a preview?
           <Link
             href="/"
             className="font-medium text-[var(--database)] hover:none"

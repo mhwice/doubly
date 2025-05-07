@@ -9,6 +9,7 @@ const envSchema = z.object({
   GOOGLE_CLIENT_SECRET: z.string().trim().min(1),
   RESEND_API_KEY: z.string().trim().min(1),
   BETTER_AUTH_URL: z.string().trim().min(1),
+  DEMO_UID: z.string().trim().min(1),
   APP_URL: z.string().trim().min(1),
   ENV: z.enum(["dev", "prod"])
 });
@@ -21,6 +22,7 @@ const envServer = envSchema.safeParse({
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
   RESEND_API_KEY: process.env.RESEND_API_KEY,
   BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
+  DEMO_UID: process.env.DEMO_UID,
   APP_URL: process.env.APP_URL,
   ENV: process.env.ENV,
 });
