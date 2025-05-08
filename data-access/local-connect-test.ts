@@ -1,5 +1,4 @@
 import { neon, neonConfig, Pool } from '@neondatabase/serverless';
-// import ws from 'ws';
 import * as WebSocket from "ws";
 
 let connectionString = process.env.DATABASE_URL;

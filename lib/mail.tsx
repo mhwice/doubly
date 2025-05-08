@@ -6,7 +6,7 @@ const resend = new Resend(env.RESEND_API_KEY);
 
 export const testEmail = async (email: string, name: string) => {
   const { data, error } = await resend.emails.send({
-    from: "suppport@doubly.dev",
+    from: "support@doubly.dev",
     to: email,
     subject: 'hello world',
     react: <VerifyEmail name={name} callbackURL="https://leetcode.com/problems/count-numbers-with-unique-digits/" />,
@@ -37,7 +37,7 @@ export const testEmail = async (email: string, name: string) => {
 
 export const sendBetterVerificationEmail = async (email: string, callbackURL: string, name: string) => {
   const { error } = await resend.emails.send({
-    from: "suppport@doubly.dev",
+    from: "Doubly <support@doubly.dev>",
     to: email,
     subject: "Confirm your email",
     react: <VerifyEmail name={name} callbackURL={callbackURL} />,
@@ -65,7 +65,7 @@ export const sendBetterVerificationEmail = async (email: string, callbackURL: st
 
 export const sendBetterPasswordResetEmail = async (email: string, callbackURL: string, name: string) => {
   const { error } = await resend.emails.send({
-    from: "suppport@doubly.dev",
+    from: "Doubly <support@doubly.dev>",
     to: email,
     subject: "Reset your password",
     react: <ResetPasswordEmail name={name} callbackURL={callbackURL} />,

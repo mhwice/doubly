@@ -11,12 +11,19 @@ import { useMemo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableRowActions } from "./components/data-table-row-actions";
 import { DataTableColumnHeader } from "./static-components/data-table-column-header";
-import { RefreshCw, SquareArrowOutUpRight } from "lucide-react";
+import { SquareArrowOutUpRight } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { EditLinkModal } from "@/components/edit-link-modal";
 import { QRCodeModal } from "@/components/new-qr-modal";
 import { DeleteLinkModal } from "@/components/delete-link-modal";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+
 
 export function ClientWrapper() {
 
@@ -59,7 +66,8 @@ export function ClientWrapper() {
   const { data, error, isLoading, isValidating } = useSWR(url, fetcher, {
     revalidateIfStale: false,
     revalidateOnFocus: false,
-    revalidateOnReconnect: false
+    revalidateOnReconnect: false,
+    keepPreviousData: true
   });
 
   const columns = useMemo<ColumnDef<LinkTypes.Dashboard>[]>(
@@ -105,7 +113,16 @@ export function ClientWrapper() {
         header: ({ column }) => <DataTableColumnHeader column={column} title="Shortened Url" className="text-vsecondary text-sm px-4" />,
         cell: ({ row }) => (
           <div className="flex space-x-1 items-center">
-            <Button onClick={() => navigator.clipboard.writeText(row.getValue("shortUrl"))} className="font-mono font-normal text-sm text-vsecondary" variant="ghost">{cleanUrl(row.getValue("shortUrl"))}</Button>
+            <TooltipProvider>
+              <Tooltip>
+              <TooltipTrigger asChild>
+              <Button onClick={() => navigator.clipboard.writeText(row.getValue("shortUrl"))} className="font-mono font-normal text-sm text-vsecondary" variant="ghost">{cleanUrl(row.getValue("shortUrl"))}</Button>
+              </TooltipTrigger>
+                <TooltipContent>
+                  <p>Copy Short Link</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         ),
         enableSorting: false,
@@ -147,9 +164,9 @@ export function ClientWrapper() {
     setRowSelection({});
   }
 
-  if (isLoading) return (
-    <div className="h-full mx-[15%]">
-      <Skeleton className="pt-[200px] h-[50%] w-[100%]" />
+  if (!data) return (
+    <div className="w-full h-[400px] z-50 mt-14">
+      <Skeleton className="w-full h-full" />
     </div>
   );
 
@@ -159,6 +176,8 @@ export function ClientWrapper() {
       {/* <div>
         <Button onClick={handleOnRefreshClicked} variant="flat" className="text-vprimary font-normal"><RefreshCw strokeWidth={1.75} className="text-vprimary"/>Refresh</Button>
       </div> */}
+      {/* {isLoading && <div className="bg-red-500 w-[300px] h-[300px]"></div>}
+      {isValidating && <div className="bg-blue-500 w-[300px] h-[300px]"></div>} */}
       {activeLink && <>
         <QRCodeModal isOpen={showQRModal} onOpenChange={setShowQRModal} shortUrl={activeLink.shortUrl} />
         <DeleteLinkModal onLinkDelete={onLinkDelete} isOpen={showDeleteModal} onOpenChange={setShowDeleteModal} ids={[activeLink.id]}/>

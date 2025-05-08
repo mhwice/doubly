@@ -85,11 +85,17 @@ export function ClientWrapper() {
     setComboboxData(data?.combobox);
   }, [data]);
 
+  // if (isLoading && !data) return (
+  //   <>
+  //     <Skeleton className="mt-20 h-[50%] w-[100%]" />
+  //     <div> loading...</div>
+  //   </>
+  // );
+
   if (isLoading && !data) return (
-    <>
-      <Skeleton className="mt-20 h-[50%] w-[100%]" />
-      <div> loading...</div>
-    </>
+    <div className="w-full h-[400px] z-50 mt-14">
+      <Skeleton className="w-full h-full" />
+    </div>
   );
 
 
@@ -145,6 +151,8 @@ export function ClientWrapper() {
         <div className="flex flex-col text-center justify-center h-24 mt-20">
           <div className="text-vprimary font-medium text-base">No data found.</div>
           <div className="text-vsecondary font-normal text-sm">None of your links have received any clicks yet.<br/>You can create a new link <Link className="text-[var(--database)]" href="/dashboard/links">here</Link>.</div>
+
+          <div className="mt-5"><RefreshButton isLoading={isValidating} /></div>
         </div>
       }
     </>
