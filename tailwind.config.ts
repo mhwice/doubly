@@ -24,8 +24,11 @@ export default {
         },
         xsuccess: 'oklch(var(--xsuccess) / <alpha-value>)',
         xwarning: 'oklch(var(--xwarning) / <alpha-value>)',
-        xerror: 'oklch(var(--xerror) / <alpha-value>)',
-        'xerror-dark': 'oklch(var(--xerror-dark) / <alpha-value>)',
+        xerror: {
+          DEFAULT: 'oklch(var(--xerror) / <alpha-value>)',
+          light: 'oklch(var(--xerror-light) / <alpha-value>)',
+          dark: 'oklch(var(--xerror-dark) / <alpha-value>)'
+        },
         xnotify: 'oklch(var(--xnotify) / <alpha-value>)',
         xbg: {
           DEFAULT: 'oklch(var(--xbg) / <alpha-value>)',

@@ -6,36 +6,35 @@ import { twMerge } from "tailwind-merge";
 import { OctagonXIcon } from "lucide-react";
 
 const wrapperVariants = cva(
-  "flex items-center rounded-xmd border border-vborder bg-white overflow-hidden transition duration-300 ease-in-out [&:not(:focus-within):hover]:border-[#c9c9c9] focus-within:border-[#8d8d8d] focus-within:shadow-[0px_0px_0px_3px_rgba(0,0,0,0.08)]",
+  "flex items-center rounded-xmd border border-xborder bg-white overflow-hidden transition duration-300 ease-in-out [&:not(:focus-within):hover]:border-xborder-hover focus-within:border-xborder-active focus-within:shadow-[0px_0px_0px_3px_rgba(0,0,0,0.08)]",
   {
     variants: {
       size: {
-        sm: "h-8 text-sm",
-        md: "h-10 text-sm",
-        lg: "h-12 text-base",
+        sm: "h-8 text-sm w-[300px]",
+        md: "h-10 text-sm w-[400px]",
+        lg: "h-12 text-base w-[500px]",
       },
       disabled: {
         true: "pointer-events-none bg-[#f2f2f2]"
       },
       error: {
-        true: "border-red-500 shadow-[0px_0px_0px_3px_rgba(198,25,25,0.08)] [&:not(:focus-within):hover]:shadow-[0px_0px_0px_3px_rgba(198,25,25,0.2)] [&:not(:focus-within):hover]:border-red-500 focus-within:border-red-500 focus-within:shadow-[0px_0px_0px_3px_rgba(198,25,25,0.08)]"
+        true: "border-xerror-dark shadow-[0px_0px_0px_3px_rgba(238,0,0,0.1)] [&:not(:focus-within):hover]:shadow-[0px_0px_0px_3px_rgba(238,0,0,0.25)] [&:not(:focus-within):hover]:border-xerror focus-within:border-xerror focus-within:shadow-[0px_0px_0px_3px_rgba(238,0,0,0.1)]"
+      },
+      fullWidth: {
+        true: "w-full"
       }
     },
     defaultVariants: {
       size: "md",
       disabled: false,
-      error: false
+      error: false,
+      fullWidth: false
     },
   }
 );
 
 const inputVariants = cva("outline-none border-none shadow-none focus-visible:ring-0 text-xtext placeholder:text-[#c3c3c3] bg-transparent", {
   variants: {
-    variant: {
-      default: "",
-      primary: "",
-      destructive: "bg-red-500",
-    },
     size: {
       sm: "h-8 text-sm md:text-sm",
       md: "h-10 text-sm md:text-sm",
@@ -46,20 +45,16 @@ const inputVariants = cva("outline-none border-none shadow-none focus-visible:ri
     }
   },
   defaultVariants: {
-    variant: "default",
     size: "md",
     disabled: false
   },
 });
 
-// type CustomInputProps = React.ComponentProps<typeof ShadcnInput> & VariantProps<typeof inputVariants>;
-
 type BaseInputProps = Omit<
   React.ComponentProps<typeof ShadcnInput>,
-  "disabled" | "suffix" | "prefix" | "size" | "variant" | "className"
+  "fullWidth" | "disabled" | "suffix" | "prefix" | "size" | "className"
 >;
 
-// 3) Compose your final props type
 export type CustomInputProps = BaseInputProps & VariantProps<
   typeof inputVariants
 > & {
@@ -68,65 +63,76 @@ export type CustomInputProps = BaseInputProps & VariantProps<
   suffix?: string | React.ReactNode;
   prefixStyling?: boolean;
   suffixStyling?: boolean;
-  error?: string
+  error?: string,
+  fullWidth?: boolean;
 };
 
-const Input = React.forwardRef<HTMLInputElement, CustomInputProps>(({ variant, size, className, prefix, suffix, prefixStyling = true, suffixStyling = true, disabled, error, ...props }, ref) => {
-    if (disabled) return (
-      <div className="cursor-not-allowed">
-        <div className={cn(wrapperVariants({ size, disabled }))}>
-          {prefix && (<div className={cn("pl-4 text-[#8f8f8f] font-normal flex-shrink-0 items-center justify-center text-center h-full flex", prefixStyling && "bg-[var(--dashboard-bg)] border-r border-vborder pr-4")}>{prefix}</div>)}
-          <ShadcnInput
-            ref={ref}
-            disabled
-            autoCapitalize="none"
-            autoComplete="off"
-            autoCorrect="off"
-            spellCheck="false"
-            className={twMerge(inputVariants({ variant, size, disabled }), className)}
-            {...props}
-          />
-          {suffix && (<div className={cn("pr-4 text-[#8f8f8f] font-normal flex-shrink-0 items-center justify-center text-center h-full flex", suffixStyling && "bg-[var(--dashboard-bg)] border-l border-vborder pl-4")}>{suffix}</div>)}
-        </div>
-      </div>
-    );
+interface AffixProps {
+  side: 'left' | 'right';
+  enabled: boolean;
+  styling: boolean;
+  children: React.ReactNode;
+}
 
-    if (!!error) return (
-      <div className="flex flex-col gap-2">
-        <div className={cn(wrapperVariants({ size, error: !!error }))}>
-          {prefix && (<div className={cn("pl-4 text-[#8f8f8f] font-normal flex-shrink-0 items-center justify-center text-center h-full flex", prefixStyling && "bg-[var(--dashboard-bg)] border-r border-vborder pr-4")}>{prefix}</div>)}
-          <ShadcnInput
-            ref={ref}
-            autoCapitalize="none"
-            autoComplete="off"
-            autoCorrect="off"
-            spellCheck="false"
-            className={twMerge(inputVariants({ variant, size }), className)}
-            {...props}
-          />
-          {suffix && (<div className={cn("pr-4 text-[#8f8f8f] font-normal flex-shrink-0 items-center justify-center text-center h-full flex", suffixStyling && "bg-[var(--dashboard-bg)] border-l border-vborder pl-4")}>{suffix}</div>)}
-        </div>
-        <span className={`flex items-center gap-1 text-red-500 ${size === "lg" ? "text-base" : "text-sm"}`}><OctagonXIcon size="18"/>{error}</span>
-      </div>
-    );
+const Affix = ({ side, enabled, styling, children }: AffixProps) => {
+  if (!enabled) return null;
+  const borderClass = side === 'left' ? 'border-r' : 'border-l';
+  let padding = "pr-4 pl-4";
+  if (!styling) padding = side === 'left' ? 'pl-4 pr-0' : 'pr-4 pl-0';
 
-    return (
-      <div className={cn(wrapperVariants({ size }))}>
-        {prefix && (<div className={cn("pl-4 text-[#8f8f8f] font-normal flex-shrink-0 items-center justify-center text-center h-full flex", prefixStyling && "bg-[var(--dashboard-bg)] border-r border-vborder pr-4")}>{prefix}</div>)}
+  return (
+    <div
+      className={cn(
+        'flex-shrink-0 flex items-center justify-center h-full text-[#8f8f8f] text-sm font-normal',
+        styling && `bg-[var(--dashboard-bg)] ${borderClass} border-vborder`,
+        padding
+      )}
+    >
+      {children}
+    </div>
+  );
+};
+
+interface ErrorMessageProps {
+  disabled: boolean,
+  error?: string,
+  size: "sm" | "md" | "lg"
+}
+
+const ErrorMessage = ({ disabled, error, size }: ErrorMessageProps) => {
+  if (disabled || !error) return null;
+  return <span className={`flex items-center gap-1 text-xerror-dark ${size === "lg" ? "text-base" : "text-sm"}`}><OctagonXIcon size="18"/>{error}</span>
+}
+
+const Input = React.memo(React.forwardRef<HTMLInputElement, CustomInputProps>(({ size, className, prefix, suffix, prefixStyling = true, suffixStyling = true, disabled, error, fullWidth = false, ...props }, ref) => {
+
+  const hasError = !!error;
+  const hasPrefix = !!prefix;
+  const hasSuffix = !!suffix;
+
+  const wrapperClass = React.useMemo(() => cn(wrapperVariants({ size, disabled, error: !disabled && hasError, fullWidth })), [size, disabled, error, fullWidth]);
+  const inputClass = React.useMemo(() => twMerge(inputVariants({ size, disabled }), className), [size, disabled, className]);
+
+  return (
+    <div className={cn(disabled ? "cursor-not-allowed" : hasError ? "flex flex-col gap-2" : "")}>
+      <div className={wrapperClass}>
+        <Affix enabled={!!prefix} side="left" styling={hasPrefix}>{prefix}</Affix>
         <ShadcnInput
           ref={ref}
+          disabled={!!disabled}
           autoCapitalize="none"
           autoComplete="off"
           autoCorrect="off"
           spellCheck="false"
-          className={twMerge(inputVariants({ variant, size }), className)}
+          className={inputClass}
           {...props}
         />
-        {suffix && (<div className={cn("pr-4 text-[#8f8f8f] font-normal flex-shrink-0 items-center justify-center text-center h-full flex", suffixStyling && "bg-[var(--dashboard-bg)] border-l border-vborder pl-4")}>{suffix}</div>)}
+        <Affix enabled={!!suffix} side="right" styling={hasSuffix}>{suffix}</Affix>
       </div>
-    );
-  }
-);
+      <ErrorMessage disabled={!!disabled} error={error} size={size as "sm" | "md" | "lg"} />
+    </div>
+  );
+}));
 
 Input.displayName = "Input";
 

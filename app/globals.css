@@ -60,8 +60,9 @@ body,
     --xbrand-secondary:          40% 32% 278deg;
     --xsuccess:                  64% 36% 148deg;
     --xwarning:                  82% 41% 76deg;
-    --xerror:                    63% 48% 23deg;
-    --xerror-dark:               55% 49% 25deg;
+    --xerror-light:              63% 63% 28deg;
+    --xerror:                    60% 61% 29deg;
+    --xerror-dark:               52% 53% 29deg;
     --xnotify:                   58% 54% 258deg;
 
     --xbg:                       100% 0% 68deg;
