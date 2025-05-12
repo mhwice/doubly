@@ -29,6 +29,9 @@ const buttonStyles = cva(
       },
       disabled: {
         true: 'pointer-events-none bg-xcomp-bg-active text-xtext border-xborder-hover !opacity-40'
+      },
+      fullWidth: {
+        true: 'w-full'
       }
     },
     defaultVariants: {
@@ -36,18 +39,72 @@ const buttonStyles = cva(
       variant: 'default',
       rounded: false,
       shadow: false,
-      disabled: false
+      disabled: false,
+      fullWidth: false
     },
   }
 );
 
-export interface CustomButtonProps extends Omit<ShadcnButtonProps, 'disabled' | 'prefix' | 'suffix' | 'size' | 'variant'>, VariantProps<typeof buttonStyles> {
+// export interface CustomButtonProps extends Omit<ShadcnButtonProps, 'fullWidth' | 'disabled' | 'prefix' | 'suffix' | 'size' | 'variant'>, VariantProps<typeof buttonStyles> {
+//   loading?: boolean;
+//   prefix?: React.ReactNode;
+//   suffix?: React.ReactNode;
+// }
+
+// export const Button: React.FC<CustomButtonProps> = ({
+//   size,
+//   variant,
+//   rounded,
+//   shadow,
+//   loading = false,
+//   prefix,
+//   suffix,
+//   className,
+//   disabled,
+//   fullWidth,
+//   ...props
+// }) => {
+//   const merged = twMerge(
+//     className,
+//     buttonStyles({ size, variant, rounded, shadow, disabled: disabled || loading, fullWidth })
+//   );
+
+//   if (loading || disabled) return (
+//     <span className="cursor-not-allowed">
+//       <ShadcnButton className={merged} disabled {...props}>
+//         {loading && <RiLoader2Fill className="size-4 shrink-0 animate-spin mr-2" aria-hidden />}
+//         {prefix}
+//         {props.children}
+//         {suffix}
+//       </ShadcnButton>
+//     </span>
+//   );
+
+//   return (
+//     <ShadcnButton className={merged} {...props}>
+//       {prefix}
+//       {props.children}
+//       {suffix}
+//     </ShadcnButton>
+//   );
+// };
+
+export interface CustomButtonProps
+  extends Omit<
+    ShadcnButtonProps,
+    "variant" | "size" | "fullWidth" | "disabled" | "prefix" | "suffix"
+  >,
+    VariantProps<typeof buttonStyles> {
   loading?: boolean;
   prefix?: React.ReactNode;
   suffix?: React.ReactNode;
 }
 
-export const Button: React.FC<CustomButtonProps> = ({
+// Use forwardRef to expose the button’s DOM node
+export const Button = React.forwardRef<
+  HTMLButtonElement,
+  CustomButtonProps
+>(({
   size,
   variant,
   rounded,
@@ -57,29 +114,52 @@ export const Button: React.FC<CustomButtonProps> = ({
   suffix,
   className,
   disabled,
+  fullWidth,
   ...props
-}) => {
-  const merged = twMerge(
-    className,
-    buttonStyles({ size, variant, rounded, shadow, disabled: disabled || loading })
+}, ref) => {
+  const mergedClasses = twMerge(
+    buttonStyles({
+      size,
+      variant,
+      rounded,
+      shadow,
+      disabled: disabled || loading,
+      fullWidth,
+    }),
+    className
   );
 
   if (loading || disabled) return (
-    <span className="cursor-not-allowed">
-      <ShadcnButton className={merged} disabled {...props}>
-        {loading && <RiLoader2Fill className="size-4 shrink-0 animate-spin mr-2" aria-hidden />}
+    <div className="cursor-not-allowed">
+      <ShadcnButton
+        ref={ref}
+        className={mergedClasses}
+        disabled={disabled || loading}
+        {...props}
+      >
+        {(loading || disabled) && (
+          <RiLoader2Fill
+            className="size-4 shrink-0 animate-spin mr-2"
+            aria-hidden
+          />
+        )}
         {prefix}
         {props.children}
         {suffix}
       </ShadcnButton>
-    </span>
+    </div>
   );
 
   return (
-    <ShadcnButton className={merged} {...props}>
+    <ShadcnButton
+      ref={ref}
+      className={mergedClasses}
+      {...props}
+    >
       {prefix}
       {props.children}
       {suffix}
     </ShadcnButton>
   );
-};
+});
+Button.displayName = "Button";

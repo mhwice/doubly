@@ -51,6 +51,18 @@ export default function Page() {
           <Button disabled={isDisabled} loading={isLoading} rounded variant="ghost">ghost</Button>
           <Button disabled={isDisabled} loading={isLoading} rounded variant="destructive">destructive</Button>
         </div>
+        <h1>Full Width</h1>
+        <div className="flex gap-3">
+          <div className="flex justify-center items-center border border-black h-[70px] w-[200px]">
+            <Button>Regular</Button>
+          </div>
+          <div className="flex justify-center items-center border border-black h-[70px] w-[200px]">
+            <Button fullWidth>Full Width</Button>
+          </div>
+          <div className="flex justify-center items-center border border-black h-[70px] w-[200px]">
+            <Button fullWidth prefix={<ArrowLeft />}>Full w icon</Button>
+          </div>
+        </div>
       </div>
     </div>
   );
