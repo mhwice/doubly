@@ -33,7 +33,7 @@ const wrapperVariants = cva(
   }
 );
 
-const inputVariants = cva("outline-none border-none shadow-none focus-visible:ring-0 text-xtext placeholder:text-[#c3c3c3] bg-transparent", {
+const inputVariants = cva("outline-none border-none shadow-none focus-visible:ring-0 text-xtext placeholder:text-xsecondary bg-transparent", {
   variants: {
     size: {
       sm: "h-8 text-sm md:text-sm",
@@ -65,6 +65,8 @@ export type CustomInputProps = BaseInputProps & VariantProps<
   suffixStyling?: boolean;
   error?: string,
   fullWidth?: boolean;
+  onPrefixClick?: () => void;
+  onSuffixClick?: () => void;
 };
 
 interface AffixProps {
@@ -72,25 +74,23 @@ interface AffixProps {
   enabled: boolean;
   styling: boolean;
   children: React.ReactNode;
+  onClick?: () => void;
 }
 
-const Affix = ({ side, enabled, styling, children }: AffixProps) => {
+const Affix = ({ side, enabled, styling, children, onClick }: AffixProps) => {
   if (!enabled) return null;
   const borderClass = side === 'left' ? 'border-r' : 'border-l';
   let padding = "pr-4 pl-4";
-  if (!styling) padding = side === 'left' ? 'pl-4 pr-0' : 'pr-4 pl-0';
+  if (!styling && !onClick) padding = side === 'left' ? 'pl-4 pr-0' : 'pr-4 pl-0';
 
-  return (
-    <div
-      className={cn(
-        'flex-shrink-0 flex items-center justify-center h-full text-[#8f8f8f] text-sm font-normal',
-        styling && `bg-[var(--dashboard-bg)] ${borderClass} border-vborder`,
-        padding
-      )}
-    >
-      {children}
-    </div>
+  const base = cn(
+    'flex-shrink-0 flex items-center justify-center h-full text-[#8f8f8f] text-sm font-normal',
+    styling && `bg-[var(--dashboard-bg)] ${borderClass} border-vborder`,
+    padding
   );
+
+  if (onClick) return <button onClick={onClick} type="button" className={cn(base, "cursor-pointer")}>{children}</button>
+  return <div className={base}>{children}</div>
 };
 
 interface ErrorMessageProps {
@@ -104,19 +104,19 @@ const ErrorMessage = ({ disabled, error, size }: ErrorMessageProps) => {
   return <span className={`flex items-center gap-1 text-xerror-dark ${size === "lg" ? "text-base" : "text-sm"}`}><OctagonXIcon size="18"/>{error}</span>
 }
 
-const Input = React.memo(React.forwardRef<HTMLInputElement, CustomInputProps>(({ size, className, prefix, suffix, prefixStyling = true, suffixStyling = true, disabled, error, fullWidth = false, ...props }, ref) => {
+const Input = React.memo(React.forwardRef<HTMLInputElement, CustomInputProps>(({ size, className, prefix, suffix, prefixStyling = true, suffixStyling = true, disabled, error, fullWidth = false, onPrefixClick, onSuffixClick, ...props }, ref) => {
 
   const hasError = !!error;
   const hasPrefix = !!prefix;
   const hasSuffix = !!suffix;
 
   const wrapperClass = React.useMemo(() => cn(wrapperVariants({ size, disabled, error: !disabled && hasError, fullWidth })), [size, disabled, error, fullWidth]);
-  const inputClass = React.useMemo(() => twMerge(inputVariants({ size, disabled }), className), [size, disabled, className]);
+  const inputClass = React.useMemo(() => cn(twMerge(inputVariants({ size, disabled }), className), (onSuffixClick && !suffixStyling) && "pr-0", (onPrefixClick && !prefixStyling) && "pl-0"), [size, disabled, className]);
 
   return (
     <div className={cn(disabled ? "cursor-not-allowed" : hasError ? "flex flex-col gap-2" : "")}>
       <div className={wrapperClass}>
-        <Affix enabled={!!prefix} side="left" styling={hasPrefix}>{prefix}</Affix>
+        <Affix enabled={hasPrefix} side="left" styling={prefixStyling} onClick={onPrefixClick}>{prefix}</Affix>
         <ShadcnInput
           ref={ref}
           disabled={!!disabled}
@@ -127,7 +127,7 @@ const Input = React.memo(React.forwardRef<HTMLInputElement, CustomInputProps>(({
           className={inputClass}
           {...props}
         />
-        <Affix enabled={!!suffix} side="right" styling={hasSuffix}>{suffix}</Affix>
+        <Affix enabled={hasSuffix} side="right" styling={suffixStyling} onClick={onSuffixClick}>{suffix}</Affix>
       </div>
       <ErrorMessage disabled={!!disabled} error={error} size={size as "sm" | "md" | "lg"} />
     </div>

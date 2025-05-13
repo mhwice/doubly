@@ -3,6 +3,7 @@ import { Button as ShadcnButton, ButtonProps as ShadcnButtonProps } from '@/comp
 import { RiLoader2Fill } from '@remixicon/react';
 import { cva, VariantProps } from 'class-variance-authority';
 import { twMerge } from 'tailwind-merge';
+import { cn } from '@/lib/utils';
 
 const buttonStyles = cva(
   'gap-1 font-medium border border-transparent',
@@ -45,50 +46,6 @@ const buttonStyles = cva(
   }
 );
 
-// export interface CustomButtonProps extends Omit<ShadcnButtonProps, 'fullWidth' | 'disabled' | 'prefix' | 'suffix' | 'size' | 'variant'>, VariantProps<typeof buttonStyles> {
-//   loading?: boolean;
-//   prefix?: React.ReactNode;
-//   suffix?: React.ReactNode;
-// }
-
-// export const Button: React.FC<CustomButtonProps> = ({
-//   size,
-//   variant,
-//   rounded,
-//   shadow,
-//   loading = false,
-//   prefix,
-//   suffix,
-//   className,
-//   disabled,
-//   fullWidth,
-//   ...props
-// }) => {
-//   const merged = twMerge(
-//     className,
-//     buttonStyles({ size, variant, rounded, shadow, disabled: disabled || loading, fullWidth })
-//   );
-
-//   if (loading || disabled) return (
-//     <span className="cursor-not-allowed">
-//       <ShadcnButton className={merged} disabled {...props}>
-//         {loading && <RiLoader2Fill className="size-4 shrink-0 animate-spin mr-2" aria-hidden />}
-//         {prefix}
-//         {props.children}
-//         {suffix}
-//       </ShadcnButton>
-//     </span>
-//   );
-
-//   return (
-//     <ShadcnButton className={merged} {...props}>
-//       {prefix}
-//       {props.children}
-//       {suffix}
-//     </ShadcnButton>
-//   );
-// };
-
 export interface CustomButtonProps
   extends Omit<
     ShadcnButtonProps,
@@ -130,14 +87,14 @@ export const Button = React.forwardRef<
   );
 
   if (loading || disabled) return (
-    <div className="cursor-not-allowed">
+    <div className={cn("cursor-not-allowed")}>
       <ShadcnButton
         ref={ref}
         className={mergedClasses}
         disabled={disabled || loading}
         {...props}
       >
-        {(loading || disabled) && (
+        {(loading) && (
           <RiLoader2Fill
             className="size-4 shrink-0 animate-spin mr-2"
             aria-hidden

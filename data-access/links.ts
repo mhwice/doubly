@@ -200,6 +200,7 @@ export class LinkTable {
         ORDER BY fl.updated_at DESC;
       `;
 
+      // console.log(query, userId, dateEnd)
       const response: QueryResponse = await sql(query, [userId, dateEnd]);
       const result = parseQueryResponse(response, LinkSchemas.Dashboard);
 

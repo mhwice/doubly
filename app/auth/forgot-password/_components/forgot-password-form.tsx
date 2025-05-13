@@ -7,16 +7,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
 import { ResetSchema } from "@/schema";
-import { reset } from "@/actions/reset";
 
 import { CardWrapper } from "@/components/auth/card-wrapper";
-import { Input } from "@/components/ui/input";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { FormError } from "@/components/form-error";
 import { FormSuccess } from "@/components/form-success";
-import { LoadingButton } from "@/components/auth/loading-button";
-import { TextInput } from "@/components/text-input";
 import { authClient } from "@/utils/auth-client";
+import { Input } from "@/components/doubly/ui/input";
+import { Button } from "@/components/doubly/ui/button";
 
 export const ForgotPasswordForm = () => {
 
@@ -65,21 +63,19 @@ export const ForgotPasswordForm = () => {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <div className="space-y-4">
-            <FormField control={form.control} name="email" render={({ field }) => (
+            <FormField control={form.control} name="email" render={({ field, fieldState }) => (
                 <FormItem>
                   <FormLabel>Enter your email</FormLabel>
                   <FormControl>
-                    {/* <Input {...field} disabled={isLoading} placeholder="john.doe@example.com" type="email" className="shadow-none border-vborder"/> */}
-                    <TextInput disabled={isLoading} placeholder="john.doe@example.com" type="email" {...field}/>
+                    <Input fullWidth disabled={isLoading} placeholder="john.doe@example.com" type="email" error={fieldState.error?.message} {...field}/>
                   </FormControl>
-                  <FormMessage />
                 </FormItem>
               )}
             />
           </div>
           <FormError message={error} />
           <FormSuccess message={success} />
-          <LoadingButton loading={isLoading}>Reset Password</LoadingButton>
+          <Button fullWidth loading={isLoading}>Reset Password</Button>
         </form>
       </Form>
     </CardWrapper>

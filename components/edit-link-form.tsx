@@ -9,9 +9,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { FormError } from "@/components/form-error";
-import { LoadingButton } from "@/components/auth/loading-button";
 import { createLink } from "@/actions/safe-create-link";
 import { editLink } from "@/actions/safe-edit-link";
+import { Button } from "./doubly/ui/button";
 
 // import { useUser } from "@/app/dashboard/UserContext";
 
@@ -94,7 +94,7 @@ export const EditLinkForm = ({ setIsOpen, link, isEditing, id }: EditLinkFormPro
           )} /> */}
         </div>
         <FormError message={error} />
-        <LoadingButton loading={isPending}>{isEditing ? "Update" : "Create"}</LoadingButton>
+        <Button fullWidth loading={isPending}>{isEditing ? "Update" : "Create"}</Button>
       </form>
     </Form>
   );
