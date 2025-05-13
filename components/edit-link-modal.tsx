@@ -16,10 +16,11 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { FormError } from "@/components/form-error";
-import { UrlInput } from "./url-input";
 import { BaseModal } from "./base-modal";
 import { editLink } from "@/actions/safe-edit-link";
 import { useCurrentDate } from '@/app/dashboard/date-context';
+import { Input } from './doubly/ui/input';
+import { cleanUrl } from '@/app/dashboard/links/components/columns';
 
 interface CustomDialogProps {
   isOpen: boolean;
@@ -123,7 +124,7 @@ export function EditLinkModal({ isOpen, onOpenChange, link, id }: CustomDialogPr
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <UrlInput {...field} placeholder="www.google.com" disabled={isPending} />
+                  <Input {...field} value={cleanUrl(field.value)} prefix="https://" fullWidth placeholder="www.google.com" disabled={isPending} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

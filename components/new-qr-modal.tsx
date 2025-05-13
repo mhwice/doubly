@@ -2,9 +2,6 @@
 
 import { useCallback, useEffect, useState } from "react";
 // import { toast } from "sonner";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import Image from "next/image";
-import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import { generateQRCode } from "@/utils/qr-code";
 import { QRCode } from "./qr-code";

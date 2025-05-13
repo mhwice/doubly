@@ -86,7 +86,7 @@ export const LoginForm = () => {
             />
           </div>
           <FormError message={error} />
-          <Button fullWidth loading={isLoading}>Sign in</Button>
+          <Button fullWidth loading={isLoading}>{isLoading ? "Signing in..." : "Sign in"}</Button>
         </form>
       </Form>
     </CardWrapper>

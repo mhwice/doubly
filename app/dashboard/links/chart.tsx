@@ -10,6 +10,7 @@ import { LineChartContainer } from "./line-chart"
 import { differenceInCalendarDays } from "date-fns";
 import { ChartArea, ChartColumn, ChartLine } from "lucide-react"
 import { useLocalStorage } from 'usehooks-ts';
+import { StyledSelectTrigger } from "@/components/doubly/ui/select"
 
 interface ChartProps {
   clickEvents: ClickEventTypes.Chart[],
@@ -31,9 +32,12 @@ export function Chart({ clickEvents, dateRange }: ChartProps) {
           </CardDescription>
         </div>
         <Select value={chartType} onValueChange={(value) => setChartType(value as "area" | "bar" | "line")}>
-          <SelectTrigger className="bg-white hover:bg-gray-100 border transition w-[160px] shadow-none border-vborder rounded-[var(--bradius)] text-vprimary">
-          <SelectValue placeholder="Area" />
-        </SelectTrigger>
+          {/* <SelectTrigger className="bg-white hover:bg-gray-100 border transition w-[160px] shadow-none border-vborder rounded-[var(--bradius)] text-vprimary">
+            <SelectValue placeholder="Area" />
+          </SelectTrigger> */}
+          <StyledSelectTrigger className="w-[160px]">
+            <SelectValue placeholder="Area" />
+          </StyledSelectTrigger>
           <SelectContent className="border-vborder rounded-[var(--bradius)]">
             <SelectItem value="area" className="rounded-[var(--bradius)]">
               <div className="flex flex-row gap-2 items-center py-[2px] text-vprimary">

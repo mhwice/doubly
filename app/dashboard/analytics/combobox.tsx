@@ -16,7 +16,7 @@
 import { useState, useEffect, Dispatch, SetStateAction } from "react"
 import { LinkIcon, Loader2, Filter, Flag, Building2, SquareArrowOutUpRight, AppWindow, Smartphone, CodeXml, Globe, MapPinned, MousePointerClick } from "lucide-react"
 
-import { Button } from "@/components/ui/button"
+import { Button as ShadButton } from "@/components/ui/button"
 import {
   Command,
   CommandEmpty,
@@ -41,6 +41,7 @@ import { cleanUrl } from "../links/components/columns";
 import useSWR from 'swr';
 import { useCurrentFilters } from "../filters-context"
 import { sleep } from "@/utils/helper"
+import { Button } from "@/components/doubly/ui/button"
 
 type ComboboxProps = {
   comboboxData: ComboboxType,
@@ -266,9 +267,8 @@ export function Combobox({ comboboxData, dateRange }: ComboboxProps) {
     <div className="flex flex-col">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button variant="flat" role="combobox" aria-expanded={open} className="w-[120px] justify-center font-normal text-vprimary" >
-            {/* <IoFilter className="w-4 h-4 text-vprimary"/> */}
-            <Filter strokeWidth={1.75} className="text-vprimary"/>
+          <Button variant="outline" role="combobox" aria-expanded={open}>
+            <Filter strokeWidth={1.75} className="text-xprimary"/>
             Add Filter
           </Button>
         </PopoverTrigger>

@@ -18,7 +18,6 @@ export function SearchInput({ value, setValue, ...props }: SearchInputProps) {
       prefix={<Search size={16} />}
       prefixStyling={false}
       onKeyDown={(e) => {
-        console.log(e.key);
         if (e.key === "Escape") setValue("");
       }}
       suffix={

@@ -8,9 +8,8 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
 import { ReactNode } from "react";
+import { Button } from "./doubly/ui/button";
 
 interface BaseModalProps {
   isOpen: boolean;
@@ -58,21 +57,14 @@ export function BaseModal({
           {children}
         </div>}
         <DialogFooter className="flex sm:justify-between border-t border-vborder bg-[var(--dashboard-bg)] p-4 px-6">
-          <Button size="lg" variant="flat" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button
-            size="lg"
             type="submit"
-            variant={isDelete ? "destructiveFlat" : "defaultFlat"}
-            disabled={disableSubmit || isPending}
+            variant={isDelete ? "destructive" : "default"}
+            loading={isPending}
+            disabled={disableSubmit && !isPending}
             onClick={onSubmit}
-          >
-            {isPending ? <Loader2 className="animate-spin mr-2" /> : submitIcon}
-            {/* {submitIcon} */}
-            {submitLabel}
-            {/* {isPending && <Loader2 className="animate-spin mr-2" />} */}
-          </Button>
+          >{!isPending && submitIcon}{submitLabel}</Button>
         </DialogFooter>
       </DialogContent>
       {/* </form> */}

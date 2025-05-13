@@ -27,17 +27,15 @@ import {
 } from "@/components/ui/table";
 
 import { DataTablePagination } from "../static-components/data-table-pagination";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { NewLinkButton } from "../new-link-button";
 import { LinkTypes } from "@/lib/zod/links";
 import { DeleteLinkModal } from "@/components/delete-link-modal";
 import { useCurrentFilters } from "../../filters-context";
 import { useRouter } from "next/navigation";
-import { RefreshCw, Search } from "lucide-react";
-import { useCurrentDate } from "../../date-context";
+import { Search } from "lucide-react";
 import { RefreshButton } from "@/components/refresh-button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/doubly/ui/button";
+import { SearchInput } from "@/components/doubly/ui/search-input";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -113,13 +111,6 @@ export function DataTable<TData, TValue>({
     router.push("/dashboard/analytics");
   };
 
-  const { date: now, setDate } = useCurrentDate();
-
-  // const handleOnRefreshClicked = () => {
-  //   const newNow = new Date();
-  //   setDate(newNow);
-  // }
-
   const onLinkDelete = () => {
     setRowSelection({});
   };
@@ -132,71 +123,30 @@ export function DataTable<TData, TValue>({
         onOpenChange={setShowDeleteModal}
         ids={badIds}
       />
-      {/* <DataTableToolbar table={table} /> */}
       <div className="flex gap-2 flex-col-reverse md:flex-row md:items-center w-full justify-between">
-        {/* <Input
-          placeholder="Filter original urls..."
+        <SearchInput
+          placeholder="Enter a url..."
           value={(table.getColumn("originalUrl")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("originalUrl")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm bg-white rounded-[var(--bradius)] shadow-none border-vborder text-vprimary placeholder:text-vsecondary"
-        /> */}
-        <div
-          className="
-            max-[420px]:w-[100%]
-            sm:w-[400px]
-            flex items-center
-            rounded-[var(--bradius)] border border-vborder
-            bg-white overflow-hidden
-            transition duration-300 ease-in-out
-            [&:not(:focus-within):hover]:border-[#c9c9c9]
-            focus-within:border-[#8d8d8d]
-            focus-within:shadow-[0px_0px_0px_3px_rgba(0,0,0,0.08)]
-          "
-        >
-          <div className="flex-shrink-0 px-3 py-[10px] bg-white text-[#8f8f8f] text-sm font-normal border-vborder">
-            <Search className="w-5 h-5" />
-          </div>
-          <input
-            type="text"
-            value={
-              (table.getColumn("originalUrl")?.getFilterValue() as string) ?? ""
-            }
-            onChange={(event) =>
-              table.getColumn("originalUrl")?.setFilterValue(event.target.value)
-            }
-            placeholder="enter a url..."
-            className="w-full py-2 text-vprimary text-sm outline-none placeholder:text-[#8f8f8f]"
-          />
-        </div>
+          setValue={(value) => table.getColumn("originalUrl")?.setFilterValue(value)}
+        />
         <div className="flex gap-2">
           {table.getFilteredSelectedRowModel().rows.length >= 1 ? (
             <>
               <Button
-                onClick={() =>
-                  handleOnMultipleDeleteClicked(
-                    table.getFilteredSelectedRowModel().rows
-                  )
-                }
-                variant="destructiveFlat"
-              >
-                Delete {table.getFilteredSelectedRowModel().rows.length}
-              </Button>
+                variant="destructive"
+                onClick={() => handleOnMultipleDeleteClicked(table.getFilteredSelectedRowModel().rows)}
+              >Delete {table.getFilteredSelectedRowModel().rows.length}</Button>
               <Button
+                variant="outline"
                 disabled={table.getFilteredSelectedRowModel().rows.length > 50}
-                onClick={() =>
-                  viewManyAnalytics(table.getFilteredSelectedRowModel().rows)
-                }
-                variant="flat"
+                onClick={() => viewManyAnalytics(table.getFilteredSelectedRowModel().rows)}
               >
-                View Analytics for{" "}
-                {table.getFilteredSelectedRowModel().rows.length} Links
+                View Analytics for {table.getFilteredSelectedRowModel().rows.length} Links
               </Button>
             </>
           ) : (
-            // <Button onClick={handleOnRefreshClicked} variant="flat" className="text-vprimary font-normal"><RefreshCw strokeWidth={1.75} className="text-vprimary"/>Refresh</Button>
             <RefreshButton isLoading={isLoading} />
+
           )}
         </div>
       </div>

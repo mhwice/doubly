@@ -96,7 +96,7 @@ export const Button = React.forwardRef<
       >
         {(loading) && (
           <RiLoader2Fill
-            className="size-4 shrink-0 animate-spin mr-2"
+            className="size-4 shrink-0 animate-spin"
             aria-hidden
           />
         )}
