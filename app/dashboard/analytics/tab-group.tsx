@@ -1,14 +1,5 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { TabStuff } from "./tab-content";
 import React from "react";
-
-// Make this flexible so I can re-use with any kind of content!
-
-type TabData = {
-  title: string;
-  count: number;
-  percent: number;
-}
 
 interface TabGroupParams {
   items: {
@@ -17,17 +8,6 @@ interface TabGroupParams {
     children: React.ReactNode
   }[]
 }
-
-/*
-
-[
-  {
-    title: string,
-    children: react.reactnode
-  }
-]
-
-*/
 
 export function TabGroup({ items }: TabGroupParams) {
   return (
