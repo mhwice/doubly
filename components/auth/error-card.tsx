@@ -1,6 +1,6 @@
 import { Header } from "./header";
-import { BackButton } from "./back-button";
 import { Card, CardHeader, CardFooter } from "@/components/ui/card"
+import Link from "next/link";
 
 export const ErrorCard = () => {
   return (
@@ -9,7 +9,7 @@ export const ErrorCard = () => {
         <Header label="Oops! Something went wrong!"/>
       </CardHeader>
       <CardFooter>
-        <BackButton label="Back to login" href="/auth/login"/>
+        <Link className="text-xprimary text-xs font-normal mx-auto p-3" href="/auth/login">Back to login</Link>
       </CardFooter>
     </Card>
   );

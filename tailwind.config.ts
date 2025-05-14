@@ -12,7 +12,44 @@ export default {
   		fontFamily: {
   			sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
   		},
+      screens: {
+        min: '20rem',
+        xs: '25rem',
+        max: '120rem',
+      },
   		colors: {
+        xbrand: {
+          DEFAULT: 'oklch(var(--xbrand) / <alpha-value>)',
+          secondary: 'oklch(var(--xbrand-secondary) / <alpha-value>)'
+        },
+        xsuccess: 'oklch(var(--xsuccess) / <alpha-value>)',
+        xwarning: 'oklch(var(--xwarning) / <alpha-value>)',
+        xerror: {
+          DEFAULT: 'oklch(var(--xerror) / <alpha-value>)',
+          light: 'oklch(var(--xerror-light) / <alpha-value>)',
+          dark: 'oklch(var(--xerror-dark) / <alpha-value>)'
+        },
+        xnotify: 'oklch(var(--xnotify) / <alpha-value>)',
+        xbg: {
+          DEFAULT: 'oklch(var(--xbg) / <alpha-value>)',
+          secondary: 'oklch(var(--xbg-secondary) / <alpha-value>)'
+        },
+        'xcomp-bg': {
+          DEFAULT: 'oklch(var(--xcomp-bg) / <alpha-value>)',
+          hover: 'oklch(var(--xcomp-bg-hover) / <alpha-value>)',
+          active: 'oklch(var(--xcomp-bg-active) / <alpha-value>)',
+          contrast: 'oklch(var(--xcomp-bg-contrast) / <alpha-value>)',
+          'contrast-hover': 'oklch(var(--xcomp-bg-contrast-hover) / <alpha-value>)'
+        },
+        xborder: {
+          DEFAULT: 'oklch(var(--xborder) / <alpha-value>)',
+          hover: 'oklch(var(--xborder-hover) / <alpha-value>)',
+          active: 'oklch(var(--xborder-active) / <alpha-value>)',
+        },
+        xtext: {
+          DEFAULT: 'oklch(var(--xtext) / <alpha-value>)',
+          secondary: 'oklch(var(--xtext-secondary) / <alpha-value>)'
+        },
         vprimary: 'var(--vercel-primary)',
         vsecondary: 'var(--vercel-secondary)',
         vtertiary: 'var(--vercel-tertiary)',
@@ -70,9 +107,14 @@ export default {
   			}
   		},
   		borderRadius: {
-  			lg: 'var(--radius)',
+  			sm: 'calc(var(--radius) - 4px)',
   			md: 'calc(var(--radius) - 2px)',
-  			sm: 'calc(var(--radius) - 4px)'
+  			lg: 'var(--radius)',
+
+        xsm: 'calc(var(--xradius) - 2px)',
+        xmd: 'var(--xradius)',
+        xlg: 'calc(var(--xradius) + 2px)',
+        xxl: 'calc(var(--xradius) + 4px)',
   		},
       boxShadow: {
         custom: [
@@ -88,6 +130,10 @@ export default {
     variants: {
       extend: {
         transitionProperty: ['hover', 'focus-within'],
+        backgroundColor: ['disabled'],
+        borderColor: ['disabled'],
+        textColor: ['disabled'],
+        border: ['disabled']
       },
     },
   },

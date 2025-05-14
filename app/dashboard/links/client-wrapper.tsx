@@ -6,7 +6,6 @@ import { cleanUrl } from "./components/columns";
 import { useCurrentDate } from "../date-context";
 import useSWR from "swr";
 import { deserialize } from "superjson";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useMemo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableRowActions } from "./components/data-table-row-actions";
@@ -27,7 +26,7 @@ import {
 
 export function ClientWrapper() {
 
-  const { date: now, setDate } = useCurrentDate();
+  const { date: now } = useCurrentDate();
 
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -153,37 +152,21 @@ export function ClientWrapper() {
     [handleEditClick]
   );
 
-  // const handleOnRefreshClicked = () => {
-  //   const newNow = new Date();
-  //   setDate(newNow);
-  // }
-
   const [rowSelection, setRowSelection] = useState({});
 
   const onLinkDelete = () => {
     setRowSelection({});
   }
 
-  if (!data) return (
-    <div className="w-full h-[400px] z-50 mt-14">
-      <Skeleton className="w-full h-full" />
-    </div>
-  );
-
   return (
     <div className="flex flex-col pb-14">
       <div className="pt-14"></div>
-      {/* <div>
-        <Button onClick={handleOnRefreshClicked} variant="flat" className="text-vprimary font-normal"><RefreshCw strokeWidth={1.75} className="text-vprimary"/>Refresh</Button>
-      </div> */}
-      {/* {isLoading && <div className="bg-red-500 w-[300px] h-[300px]"></div>}
-      {isValidating && <div className="bg-blue-500 w-[300px] h-[300px]"></div>} */}
       {activeLink && <>
         <QRCodeModal isOpen={showQRModal} onOpenChange={setShowQRModal} shortUrl={activeLink.shortUrl} />
         <DeleteLinkModal onLinkDelete={onLinkDelete} isOpen={showDeleteModal} onOpenChange={setShowDeleteModal} ids={[activeLink.id]}/>
         <EditLinkModal isOpen={showEditModal} onOpenChange={setShowEditModal} id={activeLink.id} link={activeLink.originalUrl} />
       </>}
-      {data && <DataTable isLoading={isValidating} rowSelection={rowSelection} setRowSelection={setRowSelection} data={data} columns={columns} />}
+      <DataTable isLoading={isValidating} rowSelection={rowSelection} setRowSelection={setRowSelection} data={data || []} columns={columns} />
     </div>
   );
 }

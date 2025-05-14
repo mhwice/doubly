@@ -53,11 +53,8 @@ export class ClickEvents {
         FROM matching_link;
       `;
 
-      // console.log({query})
       const response: QueryResponse = await sql(query, [code, ...values]);
-      // console.log({response})
       const result = parseQueryResponse(response, OriginalUrlSchema);
-      // console.log({result});
 
       if (result.length === 0) return ServerResponse.fail(ERROR_MESSAGES.NOT_FOUND);
 

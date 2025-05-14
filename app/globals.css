@@ -54,6 +54,35 @@ body,
     --vercel-secondary: #666666;
     --vercel-tertiary: #7d7d7d;
     --vercel-red: #c40000;
+
+    /* Custom styles */
+    --xbrand:                    59% 51% 277deg;
+    --xbrand-secondary:          40% 32% 278deg;
+    --xsuccess:                  64% 36% 148deg;
+    --xwarning:                  82% 41% 76deg;
+    --xerror-light:              63% 63% 28deg;
+    --xerror:                    60% 61% 29deg;
+    --xerror-dark:               52% 53% 29deg;
+    --xnotify:                   58% 54% 258deg;
+
+    --xbg:                       100% 0% 68deg;
+    --xbg-secondary:             99% 0% 68deg;
+    --xcomp-bg:                  96% 0% 68deg;
+    --xcomp-bg-hover:            94% 0% 68deg;
+    --xcomp-bg-active:           92% 0% 68deg;
+    --xcomp-bg-contrast:         65% 0% 68deg;
+    --xcomp-bg-contrast-hover:   59% 0% 68deg;
+
+    --xborder:                   94% 0% 68deg;
+    --xborder-hover:             84% 0% 68deg;
+    --xborder-active:            73% 0% 68deg;
+
+    --xtext:                     20% 0% 68deg;
+    --xtext-secondary:           51% 0% 68deg;
+
+
+    /* Spacing and layouts */
+    --xradius: 0.375rem;
   }
   .dark {
     --background: 240 10% 3.9%;

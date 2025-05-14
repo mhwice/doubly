@@ -1,7 +1,7 @@
 "use client";
 
 import { DeleteAccountModal } from "@/components/delete-account-modal";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/doubly/ui/button";
 import {
   Card,
   CardContent,
@@ -34,9 +34,7 @@ export default function DeleteAccountCard() {
           </p>
         </CardContent>
         <CardFooter className="bg-red-50 p-3 flex justify-end border-t border-red-100">
-          <Button variant="destructiveFlat" className="bg-red-600 hover:bg-red-700" onClick={onDeleteClicked}>
-            Delete Account
-          </Button>
+          <Button variant="destructive" onClick={onDeleteClicked}>Delete Account</Button>
         </CardFooter>
       </Card>
     </>

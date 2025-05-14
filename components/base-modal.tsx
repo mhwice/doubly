@@ -8,9 +8,10 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Button as ShadButton } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { ReactNode } from "react";
+import { Button } from "./doubly/ui/button";
 
 interface BaseModalProps {
   isOpen: boolean;
@@ -57,22 +58,17 @@ export function BaseModal({
         {children && <div className="px-6 py-4">
           {children}
         </div>}
-        <DialogFooter className="flex sm:justify-between border-t border-vborder bg-[var(--dashboard-bg)] p-4 px-6">
-          <Button size="lg" variant="flat" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button
-            size="lg"
-            type="submit"
-            variant={isDelete ? "destructiveFlat" : "defaultFlat"}
-            disabled={disableSubmit || isPending}
-            onClick={onSubmit}
-          >
-            {isPending ? <Loader2 className="animate-spin mr-2" /> : submitIcon}
-            {/* {submitIcon} */}
-            {submitLabel}
-            {/* {isPending && <Loader2 className="animate-spin mr-2" />} */}
-          </Button>
+        <DialogFooter className="flex border-t border-vborder bg-[var(--dashboard-bg)] p-4 px-6">
+          <div className="w-full flex justify-between">
+            <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+            <Button
+              type="submit"
+              variant={isDelete ? "destructive" : "default"}
+              loading={isPending}
+              disabled={disableSubmit && !isPending}
+              onClick={onSubmit}
+              >{!isPending && submitIcon}{submitLabel}</Button>
+          </div>
         </DialogFooter>
       </DialogContent>
       {/* </form> */}

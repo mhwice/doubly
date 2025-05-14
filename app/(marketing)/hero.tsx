@@ -14,7 +14,7 @@ export function Hero({ isLoggedIn }: HeroProps) {
       className="mt-32 flex flex-col items-center justify-center text-center sm:mt-40 container mx-auto px-4 sm:px-6 lg:px-8"
       // className="mt-32 px-20 sm:px-6 lg:px-8 flex flex-col items-center justify-center text-center sm:mt-40"
     >
-      <Link href="https://github.com/mhwice/"><Badge variant="outline" className="shadow-none mb-5">Proudly Open Source</Badge></Link>
+      <Link href="https://github.com/mhwice/doubly"><Badge variant="outline" className="shadow-none mb-5">Proudly Open Source</Badge></Link>
       <h1
         id="hero-title"
         className="inline-block animate-slide-up-fade bg-gradient-to-br from-gray-900 to-gray-800 bg-clip-text p-2 text-4xl font-bold tracking-tighter text-transparent sm:text-6xl md:text-7xl dark:from-gray-50 dark:to-gray-300"
@@ -46,7 +46,7 @@ export function Hero({ isLoggedIn }: HeroProps) {
           className="group gap-x-2 bg-transparent font-semibold hover:bg-transparent dark:bg-transparent hover:dark:bg-transparent"
         >
           <Link
-            href="https://github.com/mhwice/"
+            href="https://github.com/mhwice/doubly"
             className="ring-1 ring-gray-200 sm:ring-0 dark:ring-gray-900"
             target="_blank"
           >
