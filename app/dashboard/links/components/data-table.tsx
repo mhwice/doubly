@@ -31,7 +31,6 @@ import { LinkTypes } from "@/lib/zod/links";
 import { DeleteLinkModal } from "@/components/delete-link-modal";
 import { useCurrentFilters } from "../../filters-context";
 import { useRouter } from "next/navigation";
-import { Search } from "lucide-react";
 import { RefreshButton } from "@/components/refresh-button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/doubly/ui/button";
@@ -52,12 +51,8 @@ export function DataTable<TData, TValue>({
   setRowSelection,
   isLoading,
 }: DataTableProps<TData, TValue>) {
-  // const [rowSelection, setRowSelection] = React.useState({})
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  );
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [showDeleteModal, setShowDeleteModal] = React.useState<boolean>(false);
   const [badIds, setBadIds] = React.useState<number[]>([]);
@@ -130,7 +125,7 @@ export function DataTable<TData, TValue>({
           setValue={(value) => table.getColumn("originalUrl")?.setFilterValue(value)}
         />
         <div className="flex gap-2">
-          {table.getFilteredSelectedRowModel().rows.length >= 1 ? (
+          {!isLoading && table.getFilteredSelectedRowModel().rows.length >= 1 ? (
             <>
               <Button
                 variant="destructive"
@@ -146,7 +141,6 @@ export function DataTable<TData, TValue>({
             </>
           ) : (
             <RefreshButton isLoading={isLoading} />
-
           )}
         </div>
       </div>
@@ -172,12 +166,12 @@ export function DataTable<TData, TValue>({
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              [1, 2, 3, 4, 5].map((_, idx) => (
-                <TableRow key={`${idx}-row`}>
+              new Array(10).fill(null).map((_, idx) => (
+                <TableRow key={`${idx}-row`} className="h-16">
                   <TableCell
                     key={`${idx}-cell`}
                     colSpan={columns.length}
-                    className="h-24 text-center"
+                    className="text-center h-full"
                   >
                     <Skeleton className="w-full h-full" />
                   </TableCell>
@@ -190,10 +184,10 @@ export function DataTable<TData, TValue>({
                     <TableRow
                       key={row.id}
                       data-state={row.getIsSelected() && "selected"}
-                      className="group border-vborder"
+                      className="group border-vborder h-16"
                     >
                       {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id} className="py-5">
+                        <TableCell key={cell.id}>
                           {flexRender(
                             cell.column.columnDef.cell,
                             cell.getContext()

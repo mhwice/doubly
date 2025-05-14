@@ -13,10 +13,9 @@
 
 "use client"
 
-import { useState, useEffect, Dispatch, SetStateAction } from "react"
+import { useState, useEffect } from "react"
 import { LinkIcon, Loader2, Filter, Flag, Building2, SquareArrowOutUpRight, AppWindow, Smartphone, CodeXml, Globe, MapPinned, MousePointerClick } from "lucide-react"
 
-import { Button as ShadButton } from "@/components/ui/button"
 import {
   Command,
   CommandEmpty,
@@ -31,22 +30,19 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 
-import { AnalyticsServerResponseSchema, ClickEventSchemas, ClickEventTypes, ComboboxType, ServerResponseComboboxSchema } from "@/lib/zod/clicks"
+import { ComboboxType, ServerResponseComboboxSchema } from "@/lib/zod/clicks"
 import { useDebounce } from "./use-debounce"
-import { deserialize, stringify } from "superjson"
+import { deserialize } from "superjson"
 import { type FilterEnumType } from "@/lib/zod/links"
 import { CircularCheckbox } from "./circular-checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cleanUrl } from "../links/components/columns";
 import useSWR from 'swr';
 import { useCurrentFilters } from "../filters-context"
-import { sleep } from "@/utils/helper"
 import { Button } from "@/components/doubly/ui/button"
 
 type ComboboxProps = {
-  comboboxData: ComboboxType,
-  // selectedValues: string[][],
-  // setSelectedValues: Dispatch<SetStateAction<string[][]>>,
+  comboboxData: ComboboxType | undefined,
   dateRange: [Date | undefined, Date]
 };
 
@@ -87,27 +83,21 @@ export function Combobox({ comboboxData, dateRange }: ComboboxProps) {
   const LIMIT = 50;
   const shouldUseServerFetch = {
     root: false,
-    source: comboboxData.source.length >= LIMIT,
-    country: comboboxData.country.length >= LIMIT,
-    region: comboboxData.region.length >= LIMIT,
-    city: comboboxData.city.length >= LIMIT,
-    continent: comboboxData.continent.length >= LIMIT,
-    shortUrl: comboboxData.shortUrl.length >= LIMIT,
-    originalUrl: comboboxData.originalUrl.length >= LIMIT,
-    browser: comboboxData.browser.length >= LIMIT,
-    device: comboboxData.device.length >= LIMIT,
-    os: comboboxData.os.length >= LIMIT,
+    source: comboboxData && comboboxData.source.length >= LIMIT,
+    country: comboboxData && comboboxData.country.length >= LIMIT,
+    region: comboboxData && comboboxData.region.length >= LIMIT,
+    city: comboboxData && comboboxData.city.length >= LIMIT,
+    continent: comboboxData && comboboxData.continent.length >= LIMIT,
+    shortUrl: comboboxData && comboboxData.shortUrl.length >= LIMIT,
+    originalUrl: comboboxData && comboboxData.originalUrl.length >= LIMIT,
+    browser: comboboxData && comboboxData.browser.length >= LIMIT,
+    device: comboboxData && comboboxData.device.length >= LIMIT,
+    os: comboboxData && comboboxData.os.length >= LIMIT,
   };
-
 
   // Combobox state
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
-  const [loadingSpinner, setLoadingSpinner] = useState(false);
-
-  // What to display is no query
-  // const [fallbackMenu, setFallbackMenu] = useState(buildMenu(frozen.current));
-  // const [wholeMenu, setWholeMenu] = useState(buildMenu(comboboxData));
 
   // What to display if there is a query
   const [currentPage, setCurrentPage] = useState<Menu>(rootPage);
@@ -182,6 +172,7 @@ export function Combobox({ comboboxData, dateRange }: ComboboxProps) {
   }, [open]);
 
   useEffect(() => {
+    if (!comboboxData) return;
 
     if (queryString === "") {
       // set menu to fallback
@@ -200,57 +191,22 @@ export function Combobox({ comboboxData, dateRange }: ComboboxProps) {
 
     setMounted(true);
 
-    // setLoading(true);
-
-    // fetch("/api/query", {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: stringify({ selectedValues: [], dateRange: [undefined, new Date()], queryString: debouncedQueryString, queryField: page }),
-    // })
-    //   .then((res) => {
-    //     return res.json()
-    //   })
-    //   .then((res) => {
-    //     const deserialized = deserialize(res);
-    //     const validated = ClickEventSchemas.ServerResponsQuery.safeParse(deserialized);
-    //     if (!validated.success) throw new Error("failed to validate api response");
-    //     if (!validated.data.success) throw new Error(validated.data.error);
-    //     const x = validated.data.data;
-
-    //     setLoading(false);
-    //     setCurrentPage(x);
-    //   })
-
   }, [debouncedQueryString]);
 
   const handleSelect = (value: string, item: MenuItem) => {
+    if (!comboboxData) return;
 
     if (item.label in comboboxData) {
       setQueryString("");
       setPage(item.label as FilterEnumType);
       setCurrentPage(comboboxData[item.label as FilterEnumType]);
     } else {
-      // select this thing
-      // console.log("selected", item.value);
-      // setSelectedValues()
 
       if (hasFilter(page, item.value)) {
         deleteFilter(page, item.value);
       } else {
         addFilter(page, item.value);
       }
-
-      // setSelectedValues((currentlySelected) => {
-
-      //   const without = currentlySelected.filter(([k, v]) => !(k === page && v === item.value));
-      //   if (without.length === currentlySelected.length) {
-      //     // its not currently selected -> select it
-      //     return [...currentlySelected, [page, item.value]];
-      //   } else {
-      //     // its currently selected -> remove it
-      //     return without;
-      //   }
-      // });
     }
   }
 
@@ -260,7 +216,6 @@ export function Combobox({ comboboxData, dateRange }: ComboboxProps) {
 
   function isSelected(field: string, value: string) {
     return hasFilter(field, value);
-    // return selectedValues.filter(([k, v]) => k === field && v === value).length > 0;
   }
 
   return (
@@ -303,7 +258,7 @@ export function Combobox({ comboboxData, dateRange }: ComboboxProps) {
             </div>
             {/* <CommandInput placeholder="search..." className="h-9" value={queryString} onValueChange={(e) => handleOnValueChange(e)}/> */}
             <CommandList>
-              {isLoading ? <LoadingSkeleton /> :
+              {isLoading || !comboboxData ? <LoadingSkeleton /> :
                 <>
                   <CommandEmpty>Not found.</CommandEmpty>
                   <CommandGroup heading={value || ""} >
