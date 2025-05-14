@@ -64,20 +64,21 @@ export function Navbar({ isLoggedIn }: NavbarProps) {
           </Link>
           <nav className="hidden md:absolute md:left-1/2 md:top-1/2 md:block md:-translate-x-1/2 md:-translate-y-1/2 md:transform">
             <div className="flex items-center gap-10 font-medium">
-              <Link className="px-2 py-1 text-gray-900 dark:text-gray-50" href="">Solutions</Link>
-              <Link className="px-2 py-1 text-gray-900 dark:text-gray-50" href="/learn-more">Resources</Link>
-              <Link className="px-2 py-1 text-gray-900 dark:text-gray-50" href="">Changelog</Link>
+              {/* <Link className="px-2 py-1 text-gray-900 dark:text-gray-50" href="">Solutions</Link> */}
+              {/* <Link className="px-2 py-1 text-gray-900 dark:text-gray-50" href="">GitHub</Link> */}
+              {/* <Link className="px-2 py-1 text-gray-900 dark:text-gray-50" href="/learn-more">Resources</Link> */}
+              {/* <Link className="px-2 py-1 text-gray-900 dark:text-gray-50" href="">Changelog</Link> */}
             </div>
           </nav>
           <Button onClick={handleOnSignInClicked} className="hidden h-10 font-semibold md:flex bg-[var(--database)]">{isLoggedIn ? "Dashboard" : "Sign In"}</Button>
           <div className="flex gap-x-2 md:hidden">
             <Button onClick={handleOnSignInClicked}>{isLoggedIn ? "Dashboard" : "Sign In"}</Button>
-            <Button onClick={() => setOpen(!open)} variant="light" className="aspect-square p-2">
+            {/* <Button onClick={() => setOpen(!open)} variant="light" className="aspect-square p-2">
               {open ? (<RiCloseLine aria-hidden="true" className="size-5" />) : (<RiMenuLine aria-hidden="true" className="size-5" />)}
-            </Button>
+            </Button> */}
           </div>
         </div>
-        <nav className={cx("my-6 flex text-lg ease-in-out will-change-transform md:hidden", open ? "" : "hidden",)}>
+        {/* <nav className={cx("my-6 flex text-lg ease-in-out will-change-transform md:hidden", open ? "" : "hidden",)}>
           <ul className="space-y-4 font-medium">
             <li onClick={() => setOpen(false)}>
               <Link href="">Solutions</Link>
@@ -89,7 +90,7 @@ export function Navbar({ isLoggedIn }: NavbarProps) {
               <Link href="">Changelog</Link>
             </li>
           </ul>
-        </nav>
+        </nav> */}
       </div>
     </header>
   )

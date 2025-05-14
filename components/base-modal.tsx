@@ -8,6 +8,8 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { Button as ShadButton } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 import { ReactNode } from "react";
 import { Button } from "./doubly/ui/button";
 
@@ -56,15 +58,17 @@ export function BaseModal({
         {children && <div className="px-6 py-4">
           {children}
         </div>}
-        <DialogFooter className="flex sm:justify-between border-t border-vborder bg-[var(--dashboard-bg)] p-4 px-6">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button
-            type="submit"
-            variant={isDelete ? "destructive" : "default"}
-            loading={isPending}
-            disabled={disableSubmit && !isPending}
-            onClick={onSubmit}
-          >{!isPending && submitIcon}{submitLabel}</Button>
+        <DialogFooter className="flex border-t border-vborder bg-[var(--dashboard-bg)] p-4 px-6">
+          <div className="w-full flex justify-between">
+            <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+            <Button
+              type="submit"
+              variant={isDelete ? "destructive" : "default"}
+              loading={isPending}
+              disabled={disableSubmit && !isPending}
+              onClick={onSubmit}
+              >{!isPending && submitIcon}{submitLabel}</Button>
+          </div>
         </DialogFooter>
       </DialogContent>
       {/* </form> */}

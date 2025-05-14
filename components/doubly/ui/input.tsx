@@ -33,7 +33,7 @@ const wrapperVariants = cva(
   }
 );
 
-const inputVariants = cva("outline-none border-none shadow-none focus-visible:ring-0 text-xtext placeholder:text-xsecondary bg-transparent", {
+const inputVariants = cva("outline-none border-none shadow-none focus-visible:ring-0 text-xtext placeholder:text-xsecondary bg-transparent w-full", {
   variants: {
     size: {
       sm: "h-8 text-sm md:text-sm",
@@ -110,11 +110,11 @@ const Input = React.memo(React.forwardRef<HTMLInputElement, CustomInputProps>(({
   const hasPrefix = !!prefix;
   const hasSuffix = !!suffix;
 
-  const wrapperClass = React.useMemo(() => cn(wrapperVariants({ size, disabled, error: !disabled && hasError, fullWidth })), [size, disabled, error, fullWidth]);
-  const inputClass = React.useMemo(() => cn(twMerge(inputVariants({ size, disabled }), className), (onSuffixClick && !suffixStyling) && "pr-0", (onPrefixClick && !prefixStyling) && "pl-0"), [size, disabled, className]);
+  const wrapperClass = React.useMemo(() => cn(wrapperVariants({ size, disabled, error: !disabled && hasError, fullWidth }), className), [size, disabled, error, fullWidth]);
+  const inputClass = React.useMemo(() => cn(twMerge(inputVariants({ size, disabled })), (onSuffixClick && !suffixStyling) && "pr-0", (onPrefixClick && !prefixStyling) && "pl-0"), [size, disabled, className]);
 
   return (
-    <div className={cn(disabled ? "cursor-not-allowed" : hasError ? "flex flex-col gap-2" : "")}>
+    <div className={cn(fullWidth ? "flex-1" : "flex-none", disabled ? "cursor-not-allowed" : hasError ? "flex flex-col gap-2" : "")}>
       <div className={wrapperClass}>
         <Affix enabled={hasPrefix} side="left" styling={prefixStyling} onClick={onPrefixClick}>{prefix}</Affix>
         <ShadcnInput

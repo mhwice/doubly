@@ -118,8 +118,9 @@ export function DataTable<TData, TValue>({
         onOpenChange={setShowDeleteModal}
         ids={badIds}
       />
-      <div className="flex gap-2 flex-col-reverse md:flex-row md:items-center w-full justify-between">
+      <div className="flex gap-2 flex-col-reverse md:flex-row md:items-center justify-between">
         <SearchInput
+          className="w-full sm:w-[400px]"
           placeholder="Enter a url..."
           value={(table.getColumn("originalUrl")?.getFilterValue() as string) ?? ""}
           setValue={(value) => table.getColumn("originalUrl")?.setFilterValue(value)}

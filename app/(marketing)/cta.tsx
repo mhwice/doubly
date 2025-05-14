@@ -41,15 +41,15 @@ export function CallToAction({ isLoggedIn }: CTAProps) {
           </h2>
           <p className="mt-4">
             Create your account and start shortening links in seconds.
-            <br />
-            Prefer a preview?
-          <Link
+            {/* <br />
+            Prefer a preview? */}
+          {/* <Link
             href="/"
             className="font-medium text-[var(--database)] hover:none"
           >
-              See it in action
+               {" "}See it in action
             </Link>
-            .
+            . */}
           </p>
 
           <div className="mt-12 flex flex-wrap justify-center gap-4">
@@ -59,13 +59,13 @@ export function CallToAction({ isLoggedIn }: CTAProps) {
               </Link>
             </Button>
 
-            <ShadButton
+            {/* <ShadButton
               asChild
               variant="flat"
               className="h-10 px-6 font-semibold hover:cursor-pointer"
             >
               <Link href="/">Try the Demo</Link>
-            </ShadButton>
+            </ShadButton> */}
           </div>
         </div>
       </div>
