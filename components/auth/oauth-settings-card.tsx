@@ -5,10 +5,7 @@ import { FaApple, FaFacebook, FaGithub } from "react-icons/fa";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { linkSocial } from "@/actions/link-social";
-import { useEffect, useState, useTransition } from "react";
-import { listAccounts } from "@/actions/list-accounts";
-import { unlinkSocial } from "@/actions/unlink-social";
-import type { SocialProvider } from "@/app/(protected)/admin/page";
+import { useState, useTransition } from "react";
 
 interface OAuthProvidersProps {
   accounts: string[];

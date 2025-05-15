@@ -1,17 +1,6 @@
 "use client";
 
 import { AnimatedTabs } from "./animated-tabs";
-import { DatabaseLogo } from "../landing/DatabaseLogo";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { BookOpen, ChevronsUpDown, House, LogOut, Settings2, User } from "lucide-react";
-import { DropdownUserProfile } from "./user-dropdown";
 import { UserNav } from "./new-user-dropdown";
 import Image from "next/image";
 
