@@ -2,10 +2,8 @@
 
 import useScroll from "./lib/use-scroll"
 import { cx } from "./lib/utils"
-import { RiCloseLine, RiMenuLine } from "@remixicon/react"
 import Link from "next/link"
 import { useState, useEffect } from "react"
-import { DatabaseLogo } from "./DatabaseLogo"
 import { Button } from "./Button"
 import { useRouter } from 'next/navigation';
 import Image from "next/image"

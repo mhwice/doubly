@@ -65,7 +65,7 @@ export function Hero({ isLoggedIn }: HeroProps) {
         >
         <HeroImage />
         <div
-          className="absolute inset-x-0 -bottom-20 -mx-10 max-[400px]:h-4/5 max-[550px]:h-3/4 h-2/4 bg-gradient-to-t from-white via-white to-transparent"
+          className="absolute inset-x-0 -bottom-20 -mx-10 max-[400px]:h-4/5 h-2/4 bg-gradient-to-t from-white via-white to-transparent"
           aria-hidden="true"
         />
       </div>

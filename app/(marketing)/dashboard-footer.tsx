@@ -1,5 +1,4 @@
 import Link from "next/link"
-import { DatabaseLogo } from "../(marketing)/DatabaseLogo"
 import Image from "next/image"
 
 export function Footer() {
