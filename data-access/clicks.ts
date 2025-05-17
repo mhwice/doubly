@@ -10,6 +10,7 @@ import { snakeCase } from "change-case";
 import { ERROR_MESSAGES } from "@/lib/error-messages";
 import { ServerResponse, ServerResponseType } from "@/lib/server-repsonse";
 import { sql as localSQL } from "./local-connect-test";
+import { Click, ClickEventSchema } from "@/lib/schemas/click/click.entity";
 
 const sql = env.ENV === "dev" ? localSQL : neon(env.DATABASE_URL);
 
@@ -66,7 +67,7 @@ export class ClickEvents {
     }
   }
 
-  static async recordClick(params: ClickEventTypes.Create): Promise<ServerResponseType<ClickEventTypes.Click>> {
+  static async recordClick(params: ClickEventTypes.Create): Promise<ServerResponseType<Click>> {
     try {
       const tableData = ClickEventSchemas.Create.parse(params);
 
@@ -81,7 +82,7 @@ export class ClickEvents {
       `;
 
       const response: QueryResponse = await sql(query, values);
-      const result = parseQueryResponse(response, ClickEventSchemas.Click);
+      const result = parseQueryResponse(response, ClickEventSchema);
 
       if (result.length !== 1) return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
 
@@ -94,7 +95,7 @@ export class ClickEvents {
   }
 
   // All clicks for all links for the current user
-  // static async getAllClicks(params: LinkTypes.GetAll): Promise<ServerResponseType<ClickEventTypes.Click[]>> {
+  // static async getAllClicks(params: LinkTypes.GetAll): Promise<ServerResponseType<Click[]>> {
   //   try {
   //     const { userId } = LinkSchemas.GetAll.parse(params);
 
@@ -109,7 +110,7 @@ export class ClickEvents {
   //     `;
 
   //     const response: QueryResponse = await sql(query, [userId]);
-  //     const result = parseQueryResponse(response, ClickEventSchemas.Click);
+  //     const result = parseQueryResponse(response, ClickEventSchemas);
 
   //     // this should only return the dto, not full list of clicks?
   //     return ServerResponse.success(result);
@@ -122,7 +123,7 @@ export class ClickEvents {
   // }
 
   // All clicks for the given link and user
-  // static async getClicksByLinkId(params: LinkTypes.ClickEvent): Promise<ServerResponseType<ClickEventTypes.Click[]>> {
+  // static async getClicksByLinkId(params: LinkTypes.ClickEvent): Promise<ServerResponseType<Click[]>> {
   //   try {
   //     const { id, userId } = LinkSchemas.ClickEvent.parse(params);
 
@@ -137,7 +138,7 @@ export class ClickEvents {
   //     `;
 
   //     const response: QueryResponse = await sql(query, [id, userId]);
-  //     const result = parseQueryResponse(response, ClickEventSchemas.Click);
+  //     const result = parseQueryResponse(response, ClickEventSchemas);
 
   //     // this should only return the dto, not full list of links
   //     return ServerResponse.success(result);

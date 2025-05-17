@@ -1,23 +1,11 @@
 import { snakeCase } from "change-case";
 import { z } from "zod";
-import { serverResponseSchema } from "./clicks";
+import { serverResponseSchema } from "./server-response-schema";
+import { LinkSchema } from "../schemas/link/link.entity";
 
-const LinkTableSchema = z.object({
-  id: z.number().nonnegative().lt(2_147_483_648),
-  originalUrl: z.string().trim().min(1).max(255).url(),
-  shortUrl: z.string().trim().min(1).max(63).url(),
-  code: z.string().trim().min(1).max(15),
-  createdAt: z.date(),
-  updatedAt: z.date(),
-  userId: z.string().trim().min(1),
-  expiresAt: z.date().optional(),
-  password: z.string().trim().min(1).max(63).optional(),
-});
+export const OriginalUrlSchema = LinkSchema.pick({ originalUrl: true });
 
-export const OriginalUrlSchema = LinkTableSchema.pick({ originalUrl: true });
-export type OriginalUrlSchemaType = z.infer<typeof OriginalUrlSchema>;
-
-const LinkDashboardSchema = LinkTableSchema.pick({
+const LinkDashboardSchema = LinkSchema.pick({
   id: true,
   originalUrl: true,
   shortUrl: true,
@@ -43,7 +31,7 @@ const LinkCreateLinkSchema = z.object({
   }
 });
 
-const LinkCreateSchema = LinkTableSchema.pick({
+const LinkCreateSchema = LinkSchema.pick({
   originalUrl: true,
   shortUrl: true,
   code: true,
@@ -56,32 +44,19 @@ const LinkCreateSchema = LinkTableSchema.pick({
     );
 });
 
-const LinkDeleteSchema = LinkTableSchema.pick({
+const LinkDeleteSchema = LinkSchema.pick({
   id: true,
   userId: true,
 });
 
 export const LinkDeletesSchema = z.object({
-  ids: LinkTableSchema.shape.id.array(),
-  userId: LinkTableSchema.shape.userId
+  ids: LinkSchema.shape.id.array(),
+  userId: LinkSchema.shape.userId
 });
 
-export type LinkDeletesSchemaType = z.infer<typeof LinkDeletesSchema>;
+export const LinkDeleteLinksSchema = LinkSchema.pick({ id: true }).shape.id.array();
 
-const LinkDeleteLinkSchema = LinkTableSchema.pick({
-  id: true,
-});
-
-export const LinkDeleteLinksSchema = LinkTableSchema.pick({ id: true }).shape.id.array();
-export type DeleteMultiple = z.infer<typeof LinkDeleteLinksSchema>;
-
-const LinkDTOSchema = LinkTableSchema.pick({
-  id: true,
-  originalUrl: true,
-  shortUrl: true,
-});
-
-const LinkLookupSchema = LinkTableSchema.pick({
+const LinkLookupSchema = LinkSchema.pick({
   code: true,
 }).extend({
   source: z.enum(["qr", "link"]),
@@ -100,16 +75,14 @@ const FilterEnum = z.enum([
   "region",
 ]);
 
-export type FilterEnumType = z.infer<typeof FilterEnum>;
-
-export const APILinkGetAllSchema = LinkTableSchema.pick({
+export const APILinkGetAllSchema = LinkSchema.pick({
   userId: true,
 })
   .extend({
     dateEnd: z.date()
   });
 
-  const LinkGetAllSchema = LinkTableSchema.pick({
+  const LinkGetAllSchema = LinkSchema.pick({
     userId: true
   }).extend({
     options: z.map(
@@ -138,7 +111,7 @@ export const APILinkGetAllSchema = LinkTableSchema.pick({
     }
   );
 
-  export const QueryGetAllSchema = LinkTableSchema.pick({
+  export const QueryGetAllSchema = LinkSchema.pick({
     userId: true
   }).extend({
     options: z.map(
@@ -156,8 +129,6 @@ export const APILinkGetAllSchema = LinkTableSchema.pick({
     queryString: z.string().min(1),
     queryField: FilterEnum
   });
-
-export const ServerResponseLinksGetAllSchema = serverResponseSchema(LinkDashboardSchema.array());
 
 export const APIContents = z
   .object({
@@ -221,8 +192,6 @@ const singletonKeys = [
   "dateStart",
   "dateEnd",
 ] as const;
-
-type SingletonKey = typeof singletonKeys[number];
 
 // 4. Main schema: array of pairs
 export const QueryArraySchema = z
@@ -321,9 +290,6 @@ export const QueryArraySchema = z
     }
   );
 
-
-export type QueryArraySchema = z.infer<typeof QueryArraySchema>;
-
 export const QuerySchema = z
   .array(Pair).max(50)
   // 4a. No duplicate tuples
@@ -420,8 +386,6 @@ export const QuerySchema = z
     }
   );
 
-export type QuerySchema = z.infer<typeof QuerySchema>;
-
 export const NewAPIContents = z
   .object({
     selectedValues: z
@@ -466,44 +430,47 @@ export const NewAPIContents = z
     }
   );
 
-const LinkEditSchema = LinkTableSchema.pick({
+const LinkEditSchema = LinkSchema.pick({
   userId: true,
   id: true,
 }).extend({
-  updates: LinkTableSchema.pick({ originalUrl: true }),
+  updates: LinkSchema.pick({ originalUrl: true }),
 });
 
-const LinkEditLinkSchema = LinkTableSchema.pick({
+const LinkEditLinkSchema = LinkSchema.pick({
   id: true,
 }).extend({
-  updates: LinkTableSchema.pick({ originalUrl: true }),
+  updates: LinkSchema.pick({ originalUrl: true }),
 });
 
 export namespace LinkSchemas {
-  export const Table = LinkTableSchema;
   export const Create = LinkCreateSchema;
   export const CreateLink = LinkCreateLinkSchema;
   export const Edit = LinkEditSchema;
   export const EditLink = LinkEditLinkSchema;
-  export const Delete = LinkDeleteSchema;
-  export const DeleteLink = LinkDeleteLinkSchema;
-  export const DTO = LinkDTOSchema;
   export const GetAll = LinkGetAllSchema;
   export const Lookup = LinkLookupSchema;
   export const Dashboard = LinkDashboardSchema;
 }
 
 export namespace LinkTypes {
-  export type Link = z.infer<typeof LinkTableSchema>;
   export type Create = z.infer<typeof LinkCreateSchema>;
   export type CreateLink = z.infer<typeof LinkCreateLinkSchema>;
   export type Edit = z.infer<typeof LinkEditSchema>;
   export type EditLink = z.infer<typeof LinkEditLinkSchema>;
   export type Delete = z.infer<typeof LinkDeleteSchema>;
-  export type DeleteLink = z.infer<typeof LinkDeleteLinkSchema>;
-  export type DTO = z.infer<typeof LinkDTOSchema>;
   export type Id = Delete["id"];
   export type Lookup = z.infer<typeof LinkLookupSchema>;
   export type GetAll = z.infer<typeof LinkGetAllSchema>;
   export type Dashboard = z.infer<typeof LinkDashboardSchema>;
 }
+
+export const ServerResponseLinksGetAllSchema = serverResponseSchema(LinkDashboardSchema.array());
+
+export type OriginalUrlSchemaType = z.infer<typeof OriginalUrlSchema>;
+export type LinkDeletesSchemaType = z.infer<typeof LinkDeletesSchema>;
+export type DeleteMultiple = z.infer<typeof LinkDeleteLinksSchema>;
+export type FilterEnumType = z.infer<typeof FilterEnum>;
+type SingletonKey = typeof singletonKeys[number];
+export type QueryArraySchema = z.infer<typeof QueryArraySchema>;
+export type QuerySchema = z.infer<typeof QuerySchema>;

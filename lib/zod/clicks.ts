@@ -1,23 +1,7 @@
 import { z } from 'zod';
 import { snakeCase } from 'change-case';
-
-// TODO - check what happens if I insert a lat/lng into the db with too much precision
-//        such as 1.2345678901234567890123456789012345678901234567890
-const ClickEventSchema = z.object({
-  id: z.number().nonnegative().lt(2_147_483_648),
-  linkId: z.number().nonnegative().lt(2_147_483_648),
-  source: z.enum(["qr", "link"]),
-  createdAt: z.date(),
-  country: z.string().trim().min(1).max(63),
-  continent: z.string().trim().min(1).max(63),
-  region: z.string().trim().min(1).max(63),
-  city: z.string().trim().min(1).max(63),
-  latitude: z.number().gte(-90).lte(90).optional(),
-  longitude: z.number().gte(-180).lte(180).optional(),
-  device: z.string().trim().min(1),
-  browser: z.string().trim().min(1),
-  os: z.string().trim().min(1),
-});
+import { serverResponseSchema } from './server-response-schema';
+import { ClickEventSchema } from '../schemas/click/click.entity';
 
 export const ClickRecord = ClickEventSchema.omit({
   id: true,
@@ -234,7 +218,6 @@ export type ComboboxType = z.infer<typeof ComboboxSchema>;
 export type RecordClickIfExistsSchemaType = z.infer<typeof RecordClickIfExistsSchema>;
 
 export namespace ClickEventSchemas {
-  export const Click = ClickEventSchema;
   export const Create = ClickEventCreateSchema;
   export const Filter = ClickFilterSchema;
   export const Chart = ClickChartSchema;
@@ -244,30 +227,9 @@ export namespace ClickEventSchemas {
 }
 
 export namespace ClickEventTypes {
-  export type Click = z.infer<typeof ClickEventSchema>;
   export type Create = z.infer<typeof ClickEventCreateSchema>;
   export type Chart = z.infer<typeof ClickChartSchema>;
   export type ClickResponse = z.infer<typeof FilterRepsonseSchema>;
   export type JSONAgg = z.infer<typeof ClickJsonGetAllSchema>;
   export type AnalyticsJSON = z.infer<typeof AnalyticsJSONSchema>;
-}
-
-/**
- * Given a Zod schema, this function returns a new schema which mirrors a ServerResponse that contains the
- * provided schema. This is very useful for validating the data returned from an API or Server Action.
- *
- * @param dataSchema
- * @returns
- */
-export function serverResponseSchema<T>(dataSchema: z.ZodType<T>) {
-  return z.discriminatedUnion("success", [
-    z.object({
-      success: z.literal(true),
-      data: dataSchema,
-    }),
-    z.object({
-      success: z.literal(false),
-      error: z.string(),
-    }),
-  ]);
 }

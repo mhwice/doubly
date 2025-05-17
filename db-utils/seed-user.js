@@ -1,5 +1,3 @@
-import pg from 'pg'
-// const { Client } = pg;
 import { loadLocationData, getRandomInt, getRandomDate, makeCode } from './utils.js';
 import { faker } from '@faker-js/faker';
 import { UAParser } from 'ua-parser-js';
