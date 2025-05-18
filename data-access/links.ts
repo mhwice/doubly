@@ -118,54 +118,54 @@ export class LinkTable {
     }
   }
 
-  static async #recordClick(params: Link, source: "qr" | "link"): Promise<ServerResponseType<LinkTypes.Id>> {
-    // don't need to validate here since this method is private and data is already validated
-    try {
-      const { id } = params;
-      const field = source === "qr" ? "qr_clicks" : "link_clicks";
+  // static async #recordClick(params: Link, source: "qr" | "link"): Promise<ServerResponseType<LinkTypes.Id>> {
+  //   // don't need to validate here since this method is private and data is already validated
+  //   try {
+  //     const { id } = params;
+  //     const field = source === "qr" ? "qr_clicks" : "link_clicks";
 
-      const query = `
-        UPDATE links
-        SET ${field} = ${field} + 1
-        WHERE id = $1;
-      `;
+  //     const query = `
+  //       UPDATE links
+  //       SET ${field} = ${field} + 1
+  //       WHERE id = $1;
+  //     `;
 
-      await sql(query, [id]);
-      return ServerResponse.success(id);
+  //     await sql(query, [id]);
+  //     return ServerResponse.success(id);
 
-    } catch (error: unknown) {
-      return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
-    }
-  }
+  //   } catch (error: unknown) {
+  //     return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
+  //   }
+  // }
 
-  static async getLinkByCode(params: LinkTypes.Lookup): Promise<ServerResponseType<Link | null>> {
+  // static async getLinkByCode(params: LinkTypes.Lookup): Promise<ServerResponseType<Link | null>> {
 
-    try {
-      const { code, source } = LinkSchemas.Lookup.parse(params);
+  //   try {
+  //     const { code, source } = LinkSchemas.Lookup.parse(params);
 
-      const query = `
-        SELECT *
-        FROM links
-        WHERE code = $1;
-      `;
+  //     const query = `
+  //       SELECT *
+  //       FROM links
+  //       WHERE code = $1;
+  //     `;
 
-      const response: QueryResponse = await sql(query, [code]);
-      const result = parseQueryResponse(response, LinkSchema);
+  //     const response: QueryResponse = await sql(query, [code]);
+  //     const result = parseQueryResponse(response, LinkSchema);
 
-      // its not an error, there just doesn't exist any link
-      if (result.length === 0) return ServerResponse.success(null);
+  //     // its not an error, there just doesn't exist any link
+  //     if (result.length === 0) return ServerResponse.success(null);
 
-      const link = result[0];
+  //     const link = result[0];
 
-      await LinkTable.#recordClick(link, source);
+  //     await LinkTable.#recordClick(link, source);
 
-      return ServerResponse.success(link);
+  //     return ServerResponse.success(link);
 
-    } catch (error: unknown) {
-      if (error instanceof ZodError) return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS);
-      return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
-    }
-  }
+  //   } catch (error: unknown) {
+  //     if (error instanceof ZodError) return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS);
+  //     return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
+  //   }
+  // }
 
   static async getAllLinks(params: z.infer<typeof APILinkGetAllSchema>): Promise<ServerResponseType<LinkTypes.Dashboard[]>> {
 

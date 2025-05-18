@@ -56,12 +56,6 @@ export const LinkDeletesSchema = z.object({
 
 export const LinkDeleteLinksSchema = LinkSchema.pick({ id: true }).shape.id.array();
 
-const LinkLookupSchema = LinkSchema.pick({
-  code: true,
-}).extend({
-  source: z.enum(["qr", "link"]),
-});
-
 const FilterEnum = z.enum([
   "source",
   "continent",
@@ -449,7 +443,6 @@ export namespace LinkSchemas {
   export const Edit = LinkEditSchema;
   export const EditLink = LinkEditLinkSchema;
   export const GetAll = LinkGetAllSchema;
-  export const Lookup = LinkLookupSchema;
   export const Dashboard = LinkDashboardSchema;
 }
 
@@ -460,7 +453,6 @@ export namespace LinkTypes {
   export type EditLink = z.infer<typeof LinkEditLinkSchema>;
   export type Delete = z.infer<typeof LinkDeleteSchema>;
   export type Id = Delete["id"];
-  export type Lookup = z.infer<typeof LinkLookupSchema>;
   export type GetAll = z.infer<typeof LinkGetAllSchema>;
   export type Dashboard = z.infer<typeof LinkDashboardSchema>;
 }

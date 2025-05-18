@@ -84,6 +84,7 @@ export async function GET(request: NextRequest) {
   const metadata = extractMetadata(request);
   const payload = {
     code: "abc123def456",
+    linkId: 34,
     createdAt: new Date(),
     ...metadata
   }

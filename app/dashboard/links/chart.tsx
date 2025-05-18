@@ -1,9 +1,8 @@
 "use client"
 
-import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ClickEventTypes } from "@/lib/zod/clicks"
+import { Select, SelectContent, SelectItem, SelectValue } from "@/components/ui/select"
+import { ClickChartChart } from "@/lib/zod/clicks"
 import { AreaChartContainer } from "./area-chart"
 import { BarCharContainer } from "./bar-chart"
 import { LineChartContainer } from "./line-chart"
@@ -13,7 +12,7 @@ import { useLocalStorage } from 'usehooks-ts';
 import { StyledSelectTrigger } from "@/components/doubly/ui/select"
 
 interface ChartProps {
-  clickEvents: ClickEventTypes.Chart[],
+  clickEvents: ClickChartChart[],
   dateRange: [Date | undefined, Date]
 }
 
