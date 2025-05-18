@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Combobox } from "./combobox";
-import { AnalyticsServerResponseSchema, ClickEventTypes, ComboboxType } from "@/lib/zod/clicks";
+import { AnalyticsServerResponseSchema, ClickChartChart, ClickJsonGetAllType, ComboboxType } from "@/lib/zod/clicks";
 import { TimePicker } from "./time-picker";
 import { deserialize } from "superjson";
 import { TabGroup } from "./tab-group";
@@ -32,8 +32,8 @@ export function ClientWrapper() {
     })
   }, [now]);
 
-  const [chartData, setChartData] = useState<ClickEventTypes.Chart[]>();
-  const [filteredData, setFilteredData] = useState<ClickEventTypes.JSONAgg>();
+  const [chartData, setChartData] = useState<ClickChartChart[]>();
+  const [filteredData, setFilteredData] = useState<ClickJsonGetAllType>();
   const [statsHeaderData, setStatsHeaderData] = useState<StatsHeaderProps>();
   const [comboboxData, setComboboxData] = useState<ComboboxType>();
 

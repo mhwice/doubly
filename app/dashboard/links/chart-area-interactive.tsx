@@ -6,9 +6,7 @@ import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
-import { ClickEventTypes } from "@/lib/zod/clicks"
+import { ClickChartChart } from "@/lib/zod/clicks"
 
 const chartConfig = {
   visitors: {
@@ -25,7 +23,7 @@ const chartConfig = {
 } satisfies ChartConfig
 
 interface ChartProps {
-  clickEvents: ClickEventTypes.Chart[]
+  clickEvents: ClickChartChart[]
 }
 
 export function ChartAreaInteractive(clickEvents: ChartProps) {

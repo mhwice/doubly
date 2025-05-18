@@ -14,19 +14,13 @@ export const ClickRecord = ClickEventSchema.omit({
   );
 });
 
-const ClickEventCreateSchema = ClickEventSchema.omit({
+export const ClickEventCreateSchema = ClickEventSchema.omit({
   id: true
 }).transform((data) => {
   return Object.fromEntries(
     Object.entries(data).filter(([_, value]) => value !== undefined).map(([key, value]) => [snakeCase(key), value])
   );
 });
-
-const ClickFilterSchema = z.object({
-  field: z.string(),
-  value: z.string(),
-  count: z.number()
-})
 
 const ClickChartSchema = z.object({
   date: z.date(),
@@ -54,18 +48,13 @@ const ClickJsonGetAllSchema = z.object({
   os: JSONEntitySchema.array()
 });
 
-const FilterRepsonseSchema = z.object({
-  chart: ClickChartSchema.array(),
-  json: ClickJsonGetAllSchema,
-});
-
 export const ComboboxJSONEntitySchema = z.object({
   value: z.string(),
   count: z.number(),
   label: z.string()
 });
 
-const AnalyticsJSONSchema = z.object({
+export const AnalyticsJSONSchema = z.object({
   data: z.object({
     empty: z.boolean(),
     tabs: z.object({
@@ -217,19 +206,7 @@ export type ComboboxQuery = z.infer<typeof ComboboxJSONEntitySchema>;
 export type ComboboxType = z.infer<typeof ComboboxSchema>;
 export type RecordClickIfExistsSchemaType = z.infer<typeof RecordClickIfExistsSchema>;
 
-export namespace ClickEventSchemas {
-  export const Create = ClickEventCreateSchema;
-  export const Filter = ClickFilterSchema;
-  export const Chart = ClickChartSchema;
-  export const JSONAgg = ClickJsonGetAllSchema;
-  export const Query = JSONEntitySchema;
-  export const AnalyticsJSON = AnalyticsJSONSchema;
-}
-
-export namespace ClickEventTypes {
-  export type Create = z.infer<typeof ClickEventCreateSchema>;
-  export type Chart = z.infer<typeof ClickChartSchema>;
-  export type ClickResponse = z.infer<typeof FilterRepsonseSchema>;
-  export type JSONAgg = z.infer<typeof ClickJsonGetAllSchema>;
-  export type AnalyticsJSON = z.infer<typeof AnalyticsJSONSchema>;
-}
+export type ClickEventCreateType = z.infer<typeof ClickEventCreateSchema>;
+export type ClickChartChart = z.infer<typeof ClickChartSchema>;
+export type ClickJsonGetAllType = z.infer<typeof ClickJsonGetAllSchema>;
+export type AnalyticsJSONType = z.infer<typeof AnalyticsJSONSchema>;

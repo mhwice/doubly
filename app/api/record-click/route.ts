@@ -24,11 +24,9 @@ export const POST = verifySignatureAppRouter(async (req: Request) => {
 
 /*
 
-Should validate with Zod.
-then write to db.
-
-body {
+[INVALID DATA] {
   code: 'abc123def456',
+  createdAt: '2025-05-18T18:14:38.963Z',
   source: 'link',
   city: 'Duncan',
   continent: 'North America',
@@ -39,6 +37,22 @@ body {
   browser: 'Firefox',
   os: 'Mac OS',
   device: 'unknown'
+} Error [ZodError]: [
+  {
+    "code": "invalid_type",
+    "expected": "number",
+    "received": "undefined",
+    "path": [
+      "linkId"
+    ],
+    "message": "Required"
+  }
+]
+    at get error (.next/server/chunks/6408.js:1:9160)
+    at <unknown> (.next/server/app/api/record-click/route.js:1:2186) {
+  issues: [Array],
+  addIssue: [Function (anonymous)],
+  addIssues: [Function (anonymous)]
 }
 
 */
