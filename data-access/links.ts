@@ -32,12 +32,13 @@ import { APILinkGetAllSchema, LinkDeletesSchema, LinkDeletesSchemaType, LinkSche
 import { ERROR_MESSAGES } from "@/lib/error-messages";
 import { ServerResponse, ServerResponseType } from "@/lib/server-repsonse";
 import { sql as localSQL } from "./local-connect-test";
+import { Link, LinkSchema } from "@/lib/schemas/link/link.entity";
 
 const sql = env.ENV === "dev" ? localSQL : neon(env.DATABASE_URL);
 
 export class LinkTable {
 
-  static async createLink(params: LinkTypes.Create): Promise<ServerResponseType<LinkTypes.Link>> {
+  static async createLink(params: LinkTypes.Create): Promise<ServerResponseType<Link>> {
     try {
 
       const tableData = LinkSchemas.Create.parse(params);
@@ -53,7 +54,7 @@ export class LinkTable {
       `;
 
       const response: QueryResponse = await sql(query, values);
-      const result = parseQueryResponse(response, LinkSchemas.Table);
+      const result = parseQueryResponse(response, LinkSchema);
 
       if (result.length !== 1) return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
 
@@ -66,7 +67,7 @@ export class LinkTable {
     }
   }
 
-  static async editLink(params: LinkTypes.Edit): Promise<ServerResponseType<LinkTypes.Link>> {
+  static async editLink(params: LinkTypes.Edit): Promise<ServerResponseType<Link>> {
 
     try {
       const { userId, id, updates: { originalUrl } } = LinkSchemas.Edit.parse(params);
@@ -79,7 +80,7 @@ export class LinkTable {
       `;
 
       const response = await sql(query, [originalUrl, id, userId]);
-      const result = parseQueryResponse(response, LinkSchemas.Table);
+      const result = parseQueryResponse(response, LinkSchema);
 
       if (result.length !== 1) return ServerResponse.fail(ERROR_MESSAGES.NOT_FOUND);
 
@@ -104,7 +105,7 @@ export class LinkTable {
       `;
 
       const response: QueryResponse = await sql(query, [userId, ...ids]);
-      const result = parseQueryResponse(response, LinkSchemas.Table);
+      const result = parseQueryResponse(response, LinkSchema);
 
       // if (result.length !== 1) return ServerResponse.fail(ERROR_MESSAGES.NOT_FOUND);
 
@@ -117,7 +118,7 @@ export class LinkTable {
     }
   }
 
-  static async #recordClick(params: LinkTypes.Link, source: "qr" | "link"): Promise<ServerResponseType<LinkTypes.Id>> {
+  static async #recordClick(params: Link, source: "qr" | "link"): Promise<ServerResponseType<LinkTypes.Id>> {
     // don't need to validate here since this method is private and data is already validated
     try {
       const { id } = params;
@@ -137,7 +138,7 @@ export class LinkTable {
     }
   }
 
-  static async getLinkByCode(params: LinkTypes.Lookup): Promise<ServerResponseType<LinkTypes.Link | null>> {
+  static async getLinkByCode(params: LinkTypes.Lookup): Promise<ServerResponseType<Link | null>> {
 
     try {
       const { code, source } = LinkSchemas.Lookup.parse(params);
@@ -149,7 +150,7 @@ export class LinkTable {
       `;
 
       const response: QueryResponse = await sql(query, [code]);
-      const result = parseQueryResponse(response, LinkSchemas.Table);
+      const result = parseQueryResponse(response, LinkSchema);
 
       // its not an error, there just doesn't exist any link
       if (result.length === 0) return ServerResponse.success(null);
@@ -225,7 +226,7 @@ const result = await sql.transaction(async (tx) => {
   const response: QueryResponse = await tx(query, [code]);
   if (response.length === 0) return null;
 
-  const link = parseQueryResponse(response, LinkSchemas.Table)[0];
+  const link = parseQueryResponse(response, LinkSchema)[0];
   await LinkTable.#recordClick(link, source);
 
   return link;

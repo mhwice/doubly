@@ -3,11 +3,10 @@ import "server-only";
 import { env } from "@/data-access/env";
 import { neon } from '@neondatabase/serverless';
 import { z, ZodError } from 'zod';
-import { parseQueryResponse, type QueryResponse } from "@/utils/helper";
+import { type QueryResponse } from "@/utils/helper";
 import { ERROR_MESSAGES } from "@/lib/error-messages";
 import { ServerResponse, ServerResponseType } from "@/lib/server-repsonse";
 import { sql as localSQL } from "./local-connect-test";
-import { UserSchemas } from "@/lib/zod/user";
 
 const sql = env.ENV === "dev" ? localSQL : neon(env.DATABASE_URL);
 
@@ -23,15 +22,9 @@ export class UserTable {
       `;
 
       const response: QueryResponse = await sql(query, [validatedId]);
-      // [ { delete_user_cascade: '4XZoY55Dmzxh19I02o8DWgSGJmi5hWjD' } ]
       const validatedResult = z.object({ delete_user_cascade: z.string().trim().min(1).nullable() }).array().length(1).safeParse(response);
-      // console.log(validatedResult)
       if (!validatedResult.success) return ServerResponse.fail("failed to delete user");
       if (!validatedResult.data[0].delete_user_cascade) return ServerResponse.fail("failed to delete user");
-      // const result = parseQueryResponse(response, UserSchemas.Delete);
-
-      // if (result.length !== 1) return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
-      // if (!result[0].delete_user_cascade) return ServerResponse.fail("failed to delete user");
 
       return ServerResponse.success(true);
 
