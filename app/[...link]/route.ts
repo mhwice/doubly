@@ -1,18 +1,9 @@
-import { ClickEvents } from "@/data-access/clicks";
 import { permanentRedirect, redirect } from "next/navigation";
 import { NextRequest, userAgent } from 'next/server'
 import iso3166 from "iso-3166-2";
-import { Redis } from "@upstash/redis";
-
-/*
-
-Temporary workaround. Right now I am using Redis and then still waiting for the PG request to finish.
-This is because the route handlers cannot support fire-and-forget, and is temporary.
-Once I add a Queue then I can send to the queue and redirect early.
-
-*/
-
-const redis = Redis.fromEnv();
+import { cacheLink, getLink } from "@/data-access/redis";
+import { LinkTable } from "@/data-access/links";
+import { enqueueClick } from "@/data-access/queue";
 
 // Makes sure that we never cache anything
 export const dynamic = 'force-dynamic';
@@ -109,38 +100,34 @@ function extractMetadata(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
 
-  // 1 - Make sure that this is a short-link request, and not some other kind of request
-  // 2 - Parse shortlink code
+  // Parse code
   const code = extractCode(request);
   if (!code) {
-    console.log("[INVALID LINK]", request.url);
+    console.error("[BAD CODE]", request.url);
     redirect("/");
   }
 
-  // 3 - Send off request to Redis
-  const redisUrl = await redis.get(code);
-
-  const clickResponse = await ClickEvents.recordClickIfExists({
-    code,
-    ...extractMetadata(request)
-  });
-
-  // 4 - At the same time, gather metadata
-  if (redisUrl && typeof redisUrl === "string") {
-    // 5a - If redis returns url, add click event to PG, and redirect
-
-    permanentRedirect(redisUrl);
-  } else {
-    // 5b - If redis returns null, check pg for shortlink, and add click event if exits
-
-    if (clickResponse.success) {
-      // save url back into Redis for future lookups
-      await redis.set(code, clickResponse.data.originalUrl);
-    }
-
+  // Check cache for url
+  const redisLink = await getLink(code);
+  if (redisLink) {
+    await enqueueClick({ linkId: redisLink.linkId, ...extractMetadata(request)});
+    permanentRedirect(redisLink.originalUrl);
   }
-  // 6 - If PG returns url, update Redis, and redirect
 
-  if (clickResponse.success) permanentRedirect(clickResponse.data.originalUrl);
-  redirect("/");
+  // Cache miss → DB lookup
+  const response = await LinkTable.getLinkByCode({ code });
+  if (!response.success) {
+    console.error("[LINK DOES NOT EXIST]", code);
+    redirect("/");
+  }
+
+  const dbLink = response.data;
+
+  // Populate cache
+  await cacheLink(code, dbLink.originalUrl, dbLink.id);
+
+  // Enqueue click
+  await enqueueClick({ linkId: dbLink.id, ...extractMetadata(request) });
+
+  permanentRedirect(dbLink.originalUrl);
 }

@@ -6,7 +6,7 @@ export const ClickEventSchema = z.object({
   id: z.number().nonnegative().lt(2_147_483_648),
   linkId: z.number().nonnegative().lt(2_147_483_648),
   source: z.enum(["qr", "link"]),
-  createdAt: z.date(),
+  createdAt: z.coerce.date(),
   country: z.string().trim().min(1).max(63),
   continent: z.string().trim().min(1).max(63),
   region: z.string().trim().min(1).max(63),

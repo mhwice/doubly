@@ -9,8 +9,25 @@ import { VerticalTimeline } from "./vertical-timeline";
 import { GlobalDatabase } from "../landing/components/ui/GlobalDatabase";
 import HowItWorksSection from "./how-it-works";
 import { CallToAction } from "./cta";
+import { z } from "zod";
 
 export default async function Home() {
+
+  // const DemoSchema = z.object({
+  //   name: z.string(),
+  //   age: z.number(),
+  //   createdAt: z.coerce.date()
+  // });
+
+  // const data = {
+  //   name: "Marshall",
+  //   age: 30,
+  //   createdAt: "Jan Apples"
+  // }
+  // console.log(data);
+  // console.log(DemoSchema.safeParse(data));
+
+
   const session = await getSession();
 
   // if (session?.user) testEmail(session.user.email, session.user.name);

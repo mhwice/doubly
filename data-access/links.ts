@@ -28,7 +28,7 @@ import { env } from "@/data-access/env";
 import { neon } from '@neondatabase/serverless';
 import { z, ZodError } from 'zod';
 import { parseQueryResponse, type QueryResponse } from "@/utils/helper";
-import { APILinkGetAllSchema, LinkDeletesSchema, LinkDeletesSchemaType, LinkSchemas, type LinkTypes } from "@/lib/zod/links";
+import { APILinkGetAllSchema, LinkCode, LinkCodeSchema, LinkDeletesSchema, LinkDeletesSchemaType, LinkSchemas, type LinkTypes } from "@/lib/zod/links";
 import { ERROR_MESSAGES } from "@/lib/error-messages";
 import { ServerResponse, ServerResponseType } from "@/lib/server-repsonse";
 import { sql as localSQL } from "./local-connect-test";
@@ -37,6 +37,31 @@ import { Link, LinkSchema } from "@/lib/schemas/link/link.entity";
 const sql = env.ENV === "dev" ? localSQL : neon(env.DATABASE_URL);
 
 export class LinkTable {
+
+  static async getLinkByCode(params: LinkCode): Promise<ServerResponseType<Link>> {
+    try {
+
+      const { code } = LinkCodeSchema.parse(params);
+
+      const query = `
+        SELECT *
+        FROM links
+        WHERE code = $1
+      `;
+
+      const response: QueryResponse = await sql(query, [code]);
+      const result = parseQueryResponse(response, LinkSchema);
+
+      if (result.length !== 1) return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
+
+      return ServerResponse.success(result[0]);
+
+    } catch (error: unknown) {
+      console.log(error)
+      if (error instanceof ZodError) return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS);
+      return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
+    }
+  }
 
   static async createLink(params: LinkTypes.Create): Promise<ServerResponseType<Link>> {
     try {
@@ -118,55 +143,6 @@ export class LinkTable {
     }
   }
 
-  // static async #recordClick(params: Link, source: "qr" | "link"): Promise<ServerResponseType<LinkTypes.Id>> {
-  //   // don't need to validate here since this method is private and data is already validated
-  //   try {
-  //     const { id } = params;
-  //     const field = source === "qr" ? "qr_clicks" : "link_clicks";
-
-  //     const query = `
-  //       UPDATE links
-  //       SET ${field} = ${field} + 1
-  //       WHERE id = $1;
-  //     `;
-
-  //     await sql(query, [id]);
-  //     return ServerResponse.success(id);
-
-  //   } catch (error: unknown) {
-  //     return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
-  //   }
-  // }
-
-  // static async getLinkByCode(params: LinkTypes.Lookup): Promise<ServerResponseType<Link | null>> {
-
-  //   try {
-  //     const { code, source } = LinkSchemas.Lookup.parse(params);
-
-  //     const query = `
-  //       SELECT *
-  //       FROM links
-  //       WHERE code = $1;
-  //     `;
-
-  //     const response: QueryResponse = await sql(query, [code]);
-  //     const result = parseQueryResponse(response, LinkSchema);
-
-  //     // its not an error, there just doesn't exist any link
-  //     if (result.length === 0) return ServerResponse.success(null);
-
-  //     const link = result[0];
-
-  //     await LinkTable.#recordClick(link, source);
-
-  //     return ServerResponse.success(link);
-
-  //   } catch (error: unknown) {
-  //     if (error instanceof ZodError) return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS);
-  //     return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
-  //   }
-  // }
-
   static async getAllLinks(params: z.infer<typeof APILinkGetAllSchema>): Promise<ServerResponseType<LinkTypes.Dashboard[]>> {
 
     // this needs to be updated so it takes in the (date optional) and filters using that
@@ -215,26 +191,3 @@ export class LinkTable {
     }
   }
 }
-
-/*
-
-TODO: In the future, the two databse operations in LinkTable.getLinkByCode() should be
-      consolodated into a single transaction. I am not doing this right now, because
-      I might use Redis for these in the future.
-
-const result = await sql.transaction(async (tx) => {
-  const response: QueryResponse = await tx(query, [code]);
-  if (response.length === 0) return null;
-
-  const link = parseQueryResponse(response, LinkSchema)[0];
-  await LinkTable.#recordClick(link, source);
-
-  return link;
-});
-
-TODO: If a method requires only 1-2 properties from the link table, it might be better
-      to extract their type using:
-      type UserID = LinkTable['userId']
-      and then parse from that, rather than creating a new schema....not sure.
-
-*/

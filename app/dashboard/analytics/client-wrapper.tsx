@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Combobox } from "./combobox";
-import { AnalyticsServerResponseSchema, ClickChartChart, ClickJsonGetAllType, ComboboxType } from "@/lib/zod/clicks";
+import { Combobox as FilterPicker } from "./combobox";
+import { ServerResponseAnalyticsOutputSchema, type ClickChart, type AllGroupedData, type Combobox } from "@/lib/zod/clicks";
 import { TimePicker } from "./time-picker";
 import { deserialize } from "superjson";
 import { TabGroup } from "./tab-group";
@@ -32,10 +32,10 @@ export function ClientWrapper() {
     })
   }, [now]);
 
-  const [chartData, setChartData] = useState<ClickChartChart[]>();
-  const [filteredData, setFilteredData] = useState<ClickJsonGetAllType>();
+  const [chartData, setChartData] = useState<ClickChart>();
+  const [filteredData, setFilteredData] = useState<AllGroupedData>();
   const [statsHeaderData, setStatsHeaderData] = useState<StatsHeaderProps>();
-  const [comboboxData, setComboboxData] = useState<ComboboxType>();
+  const [comboboxData, setComboboxData] = useState<Combobox>();
 
   const [dateRange, setDateRange] = useState<[Date | undefined, Date]>([undefined, now]);
 
@@ -43,7 +43,7 @@ export function ClientWrapper() {
     const response = await fetch(url);
     const jsonResponse = await response.json();
     const deserialized = deserialize(jsonResponse);
-    const validated = AnalyticsServerResponseSchema.safeParse(deserialized);
+    const validated = ServerResponseAnalyticsOutputSchema.safeParse(deserialized);
     if (!validated.success) throw new Error("failed to validate api response");
     if (!validated.data.success) throw new Error(validated.data.error);
     return validated.data.data;
@@ -81,7 +81,7 @@ export function ClientWrapper() {
       <TagGroup />
 
       <div className="flex flex-row justify-start space-x-[6px] sm:space-x-3">
-        <Combobox comboboxData={comboboxData} dateRange={dateRange} />
+        <FilterPicker comboboxData={comboboxData} dateRange={dateRange} />
         <TimePicker dateRange={dateRange} setDateRange={setDateRange} now={now} />
         <RefreshButton isLoading={isValidating}/>
       </div>

@@ -3,7 +3,7 @@
 import * as React from "react"
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
 import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart"
-import { ClickChartChart } from "@/lib/zod/clicks"
+import { type ClickChart } from "@/lib/zod/clicks"
 
 const chartConfig = {
   visitors: {
@@ -20,7 +20,7 @@ const chartConfig = {
 } satisfies ChartConfig
 
 interface ChartProps {
-  clickEvents: ClickChartChart[]
+  clickEvents: ClickChart
 }
 
 export function AreaChartContainer(clickEvents: ChartProps) {
