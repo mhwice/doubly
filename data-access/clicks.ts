@@ -26,54 +26,37 @@ const sql = env.ENV === "dev" ? localSQL : neon(env.DATABASE_URL);
  */
 export class ClickEvents {
 
-  // static async recordClickagian(params: ClickPayload): Promise<ServerResponseType<OriginalUrlSchemaType>> {
-  //   try {
-  //     const tableData = ClickPayloadSchema.parse(params);
-
-  //     const columns = Object.keys(tableData);
-  //     const placeholders = columns.map((_, i) => `$${i+1}`).join(", ");
-  //     const values = Object.values(tableData);
-
-  //     const newQuery = `
-  //       INSERT INTO click_events(${columns})
-  //       VALUES (${placeholders})
-  //     `;
-
-  //     const query = `
-  //       WITH matching_link AS (
-  //         SELECT id, original_url
-  //         FROM links
-  //         WHERE code = $1
-  //       ),
-  //       click_cte AS (
-  //         INSERT INTO click_events(link_id, ${columns})
-  //         SELECT id, ${placeholders}
-  //         FROM matching_link
-  //       )
-
-  //       SELECT original_url
-  //       FROM matching_link;
-  //     `;
-
-  //     const response: QueryResponse = await sql(query, [code, ...values]);
-  //     const result = parseQueryResponse(response, OriginalUrlSchema);
-
-  //     if (result.length === 0) return ServerResponse.fail(ERROR_MESSAGES.NOT_FOUND);
-
-  //     return ServerResponse.success(result[0]);
-
-  //   } catch (error: unknown) {
-  //     console.error(error);
-  //     if (error instanceof ZodError) return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS);
-  //     return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
-  //   }
-  // }
-
   static async recordClick(params: unknown): Promise<ServerResponseType<Click>> {
     try {
       console.log({params})
+      /*
+
+      params: {
+        linkId: 56,
+        source: 'link',
+        city: 'Duncan',
+        continent: 'North America',
+        country: 'Canada',
+        latitude: 48.7835,
+        longitude: -123.7014,
+        region: 'British Columbia',
+        browser: 'Firefox',
+        os: 'Mac OS',
+        device: 'unknown'
+      }
+
+      Error [ZodError]: [
+        {
+          "code": "invalid_date",
+          "path": [
+            "createdAt"
+          ],
+          "message": "Invalid date"
+        }
+      ]
+
+      */
       const tableData = ClickPayloadSchema.parse(params);
-      tableData
 
       const columns = Object.keys(tableData);
       const placeholders = columns.map((_, i) => `$${i+1}`).join(", ");

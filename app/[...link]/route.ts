@@ -110,7 +110,11 @@ export async function GET(request: NextRequest) {
   // Check cache for url
   const redisLink = await getLink(code);
   if (redisLink) {
-    await enqueueClick({ linkId: redisLink.linkId, ...extractMetadata(request)});
+    await enqueueClick({
+      linkId: redisLink.linkId,
+      createdAt: new Date(),
+      ...extractMetadata(request)
+    });
     permanentRedirect(redisLink.originalUrl);
   }
 
@@ -127,7 +131,11 @@ export async function GET(request: NextRequest) {
   await cacheLink(code, dbLink.originalUrl, dbLink.id);
 
   // Enqueue click
-  await enqueueClick({ linkId: dbLink.id, ...extractMetadata(request) });
+  await enqueueClick({
+    linkId: dbLink.id,
+    createdAt: new Date(),
+    ...extractMetadata(request)
+  });
 
   permanentRedirect(dbLink.originalUrl);
 }
