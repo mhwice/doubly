@@ -12,15 +12,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-import { type LinkTypes } from "@/lib/zod/links";
+import { Dashboard } from "@/lib/zod/links";
 import { useRouter } from "next/navigation"
 import { useCurrentFilters } from "../../filters-context"
 
 interface DataTableRowActionsProps {
-  row: Row<LinkTypes.Dashboard>,
-  onEditClick: (link: LinkTypes.Dashboard) => void,
-  onDeleteClick: (link: LinkTypes.Dashboard) => void,
-  onViewQRClick: (link: LinkTypes.Dashboard) => void,
+  row: Row<Dashboard>,
+  onEditClick: (link: Dashboard) => void,
+  onDeleteClick: (link: Dashboard) => void,
+  onViewQRClick: (link: Dashboard) => void,
 }
 
 export function DataTableRowActions({ row, onEditClick, onDeleteClick, onViewQRClick }: DataTableRowActionsProps) {

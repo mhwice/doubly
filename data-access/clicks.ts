@@ -12,7 +12,7 @@ import {
   type AnalyticsRead,
   type ComboboxPage,
 } from "@/lib/zod/clicks";
-import { LinkSchemas, LinkTypes, OriginalUrlSchema, OriginalUrlSchemaType, QueryGetAllSchema } from "@/lib/zod/links";
+import { GetAll, LinkGetAllSchema, QueryGetAllSchema } from "@/lib/zod/links";
 import { snakeCase } from "change-case";
 import { ERROR_MESSAGES } from "@/lib/error-messages";
 import { ServerResponse, ServerResponseType } from "@/lib/server-repsonse";
@@ -82,7 +82,7 @@ export class ClickEvents {
     }
   }
 
-  static async getQueriedData(params: LinkTypes.GetAll): Promise<ServerResponseType<ComboboxPage>> {
+  static async getQueriedData(params: GetAll): Promise<ServerResponseType<ComboboxPage>> {
     try {
       const { userId, options, dateRange, queryString, queryField } = QueryGetAllSchema.parse(params);
 
@@ -175,9 +175,9 @@ export class ClickEvents {
     }
   }
 
-  static async getFilteredData(params: LinkTypes.GetAll): Promise<ServerResponseType<AnalyticsRead>> {
+  static async getFilteredData(params: GetAll): Promise<ServerResponseType<AnalyticsRead>> {
     try {
-      const { userId, options, dateRange } = LinkSchemas.GetAll.parse(params);
+      const { userId, options, dateRange } = LinkGetAllSchema.parse(params);
 
       const queryParams = [userId];
       let placeholderIndex = queryParams.length + 1;

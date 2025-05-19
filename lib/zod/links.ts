@@ -3,9 +3,7 @@ import { z } from "zod";
 import { serverResponseSchema } from "./server-response-schema";
 import { LinkSchema } from "../schemas/link/link.entity";
 
-export const OriginalUrlSchema = LinkSchema.pick({ originalUrl: true });
-
-const LinkDashboardSchema = LinkSchema.pick({
+export const LinkDashboardSchema = LinkSchema.pick({
   id: true,
   originalUrl: true,
   shortUrl: true,
@@ -15,8 +13,8 @@ const LinkDashboardSchema = LinkSchema.pick({
   qrClicks: z.number().nonnegative(),
 });
 
-const LinkCreateLinkSchema = z.object({
-  originalUrl: z.string(),
+export const LinkCreateLinkSchema = LinkSchema.pick({
+  originalUrl: true
 })
 .transform(({ originalUrl }) => {
   if (originalUrl.startsWith("https://")) return { originalUrl };
@@ -31,7 +29,7 @@ const LinkCreateLinkSchema = z.object({
   }
 });
 
-const LinkCreateSchema = LinkSchema.pick({
+export const LinkCreateSchema = LinkSchema.pick({
   originalUrl: true,
   shortUrl: true,
   code: true,
@@ -76,7 +74,7 @@ export const APILinkGetAllSchema = LinkSchema.pick({
     dateEnd: z.date()
   });
 
-  const LinkGetAllSchema = LinkSchema.pick({
+export const LinkGetAllSchema = LinkSchema.pick({
     userId: true
   }).extend({
     options: z.map(
@@ -424,48 +422,33 @@ export const NewAPIContents = z
     }
   );
 
-const LinkEditSchema = LinkSchema.pick({
+export const LinkEditSchema = LinkSchema.pick({
   userId: true,
   id: true,
 }).extend({
   updates: LinkSchema.pick({ originalUrl: true }),
 });
 
-const LinkEditLinkSchema = LinkSchema.pick({
+export const LinkEditLinkSchema = LinkSchema.pick({
   id: true,
 }).extend({
   updates: LinkSchema.pick({ originalUrl: true }),
 });
 
 export const LinkCodeSchema = LinkSchema.pick({ code: true });
-export type LinkCode = z.infer<typeof LinkCodeSchema>;
-
-export namespace LinkSchemas {
-  export const Create = LinkCreateSchema;
-  export const CreateLink = LinkCreateLinkSchema;
-  export const Edit = LinkEditSchema;
-  export const EditLink = LinkEditLinkSchema;
-  export const GetAll = LinkGetAllSchema;
-  export const Dashboard = LinkDashboardSchema;
-}
-
-export namespace LinkTypes {
-  export type Create = z.infer<typeof LinkCreateSchema>;
-  export type CreateLink = z.infer<typeof LinkCreateLinkSchema>;
-  export type Edit = z.infer<typeof LinkEditSchema>;
-  export type EditLink = z.infer<typeof LinkEditLinkSchema>;
-  export type Delete = z.infer<typeof LinkDeleteSchema>;
-  export type Id = Delete["id"];
-  export type GetAll = z.infer<typeof LinkGetAllSchema>;
-  export type Dashboard = z.infer<typeof LinkDashboardSchema>;
-}
 
 export const ServerResponseLinksGetAllSchema = serverResponseSchema(LinkDashboardSchema.array());
 
-export type OriginalUrlSchemaType = z.infer<typeof OriginalUrlSchema>;
+export type LinkCode = z.infer<typeof LinkCodeSchema>;
+export type Create = z.infer<typeof LinkCreateSchema>;
+export type CreateLink = z.infer<typeof LinkCreateLinkSchema>;
+export type Edit = z.infer<typeof LinkEditSchema>;
+export type EditLink = z.infer<typeof LinkEditLinkSchema>;
+type Delete = z.infer<typeof LinkDeleteSchema>;
+export type Id = Delete["id"];
+export type Dashboard = z.infer<typeof LinkDashboardSchema>;
+export type GetAll = z.infer<typeof LinkGetAllSchema>;
 export type LinkDeletesSchemaType = z.infer<typeof LinkDeletesSchema>;
 export type DeleteMultiple = z.infer<typeof LinkDeleteLinksSchema>;
 export type FilterEnumType = z.infer<typeof FilterEnum>;
 type SingletonKey = typeof singletonKeys[number];
-export type QueryArraySchema = z.infer<typeof QueryArraySchema>;
-export type QuerySchema = z.infer<typeof QuerySchema>;

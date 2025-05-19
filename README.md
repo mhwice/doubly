@@ -24,6 +24,8 @@ Doubly empowers you to make informed decisions based on real user behavior, all 
   - [Resend](https://resend.com/) - Email sending service
   - [Docker](https://www.docker.com/) - Used for local development with Postgres
   - [Vercel](https://vercel.com/) - Hosting + edge functions
+  - [Upstash Redis](https://upstash.com/) - Link caching
+  - [Upstash QStash](https://upstash.com/) - Serverless queues
 
 ### Local Development
 

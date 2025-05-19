@@ -2,13 +2,13 @@ import { DataTable } from "./components/data-table";
 import { LinkTable } from "@/data-access/links"
 import { redirect } from "next/navigation";
 import { StatsHeader } from "./stats-header";
-import { type LinkTypes } from "@/lib/zod/links";
+import { Dashboard } from "@/lib/zod/links";
 import { getSession } from "@/lib/get-session";
 import { ClientWrapper } from "./client-wrapper";
 import { NewLinkButton } from "./new-link-button";
 
 // TODO - it might be a better idea to query this from the db directly
-function makeStats(links: LinkTypes.Dashboard[]) {
+function makeStats(links: Dashboard[]) {
   let numUrls = 0;
   let numLinkClicks = 0;
   let numQRClicks = 0;

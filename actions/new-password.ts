@@ -4,6 +4,13 @@ import { NewPasswordSchema } from "@/schema";
 import * as z from "zod";
 import { auth } from "@/lib/auth";
 
+/*
+
+[TODO]
+This is wrong. Makes assumptions about token
+
+*/
+
 export const newPassword = async (values: z.infer<typeof NewPasswordSchema>, token?: string | null) => {
 
   if (!token) return { error: "Missing token" };

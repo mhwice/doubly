@@ -5,12 +5,12 @@ import { isAllowed } from "@/data-access/permission";
 import { ERROR_MESSAGES } from "@/lib/error-messages";
 import { getSession } from "@/lib/get-session";
 import { ServerResponse } from "@/lib/server-repsonse";
-import { DeleteMultiple, LinkDeleteLinksSchema, LinkSchemas, LinkTypes } from "@/lib/zod/links";
+import { LinkEditLinkSchema } from "@/lib/zod/links";
 
-export const deleteLink = async (params: DeleteMultiple) => {
+export const editLink = async (params: unknown) => {
 
   // 1 - Validate the incoming data
-  const validated = LinkDeleteLinksSchema.safeParse(params);
+  const validated = LinkEditLinkSchema.safeParse(params);
   if (!validated.success) return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS);
 
   // 2 - Get session data
@@ -19,11 +19,12 @@ export const deleteLink = async (params: DeleteMultiple) => {
   if (!isAllowed(session.user.id)) return ServerResponse.fail(ERROR_MESSAGES.UNAUTHORIZED);
 
   // 3 - Send request to DAL
-  const response = await LinkTable.deleteLinkById({
+  const response = await LinkTable.editLink({
     userId: session.user.id,
-    ids: validated.data
+    ...validated.data
   });
 
   // 4 - Handle DAL response
-  return response;
+  if (!response.success) return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS);
+  return response.data;
 }

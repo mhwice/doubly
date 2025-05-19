@@ -5,13 +5,13 @@ import { isAllowed } from "@/data-access/permission";
 import { ERROR_MESSAGES } from "@/lib/error-messages";
 import { getSession } from "@/lib/get-session";
 import { ServerResponse } from "@/lib/server-repsonse";
-import { LinkSchemas, LinkTypes } from "@/lib/zod/links";
+import { LinkCreateLinkSchema } from "@/lib/zod/links";
 import { makeCode, makeShortUrl } from "@/utils/generate-short-code";
 
-export const createLink = async (params: LinkTypes.CreateLink) => {
+export const createLink = async (params: unknown) => {
 
   // 1 - Validate the incoming data
-  const validated = LinkSchemas.CreateLink.safeParse(params);
+  const validated = LinkCreateLinkSchema.safeParse(params);
   if (!validated.success) return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS);
 
   // 2 - Get session data
@@ -34,5 +34,4 @@ export const createLink = async (params: LinkTypes.CreateLink) => {
 
   // 4 - Handle DAL response
   return ServerResponse.success('');
-  // return response;
 }

@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/form";
 import { FormError } from "@/components/form-error";
 import { BaseModal } from "./base-modal";
-import { editLink } from "@/actions/safe-edit-link";
+import { editLink } from "@/actions/edit-link";
 import { useCurrentDate } from '@/app/dashboard/date-context';
 import { Input } from './doubly/ui/input';
 import { cleanUrl } from '@/app/dashboard/links/components/columns';

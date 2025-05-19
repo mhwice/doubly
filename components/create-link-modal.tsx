@@ -16,7 +16,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { FormError } from "@/components/form-error";
-import { createLink } from "@/actions/safe-create-link";
+import { createLink } from "@/actions/create-link";
 import { BaseModal } from "./base-modal";
 import { useCurrentDate } from '@/app/dashboard/date-context';
 import { Input } from './doubly/ui/input';
