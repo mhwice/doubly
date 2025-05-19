@@ -33,39 +33,33 @@ const removeEmptyKeys = (obj: any) => {
   );
 }
 
+// function removeEmptyKeys<T extends object>(obj: T): Partial<T> {
+//   return Object.fromEntries(
+//     Object.entries(obj)
+//       .filter(([, v]) => v !== undefined)
+//   ) as Partial<T>;
+// }
+
+// function objToSnakeCase<T extends Record<string, any>>(obj: T): Record<string, any> {
+//   return Object.fromEntries(
+//     Object.entries(obj)
+//       .map(([k, v]) => [snakeCase(k), v])
+//   );
+// }
+
 const objToSnakeCase = (obj: any) => {
   return Object.fromEntries(
     Object.entries(obj).map(([key, value]) => [snakeCase(key), value])
   );
 }
 
-/*
-
-Sounds like I should be storing both the originalUrl and the linkId in Redis.
-This means that my payload should include the linkId, but not the short code.
-
-So essentially, its everything from the ClickEventSchema except 'id'.
-
-The only other thing to consider is the date/string issue.
-
-I can add a preprocess step that maps the createdAt from a string to a date.
-
-
-
-
-*/
-
 export const ClickPayloadSchema = ClickEventSchema.omit({
   id: true,
-}).transform((data) => objToSnakeCase(removeEmptyKeys(data)));
-
-// export const RecordClickIfExistsSchema = ClickEventSchema.omit({
-//   id: true,
-//   linkId: true,
-//   createdAt: true,
-// }).extend({
-//   code: z.string().trim().length(12)
-// }).transform((data) => objToSnakeCase(removeEmptyKeys(data)));
+}).transform((data) => {
+  const x = removeEmptyKeys(data);
+  const y = objToSnakeCase(x);
+  return y;
+});
 
 const ClickChartSchema = z.object({
   date: z.date(),

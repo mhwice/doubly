@@ -71,7 +71,9 @@ export class ClickEvents {
 
   static async recordClick(params: unknown): Promise<ServerResponseType<Click>> {
     try {
+      console.log({params})
       const tableData = ClickPayloadSchema.parse(params);
+      tableData
 
       const columns = Object.keys(tableData);
       const placeholders = columns.map((_, i) => `$${i+1}`).join(", ");
@@ -91,6 +93,7 @@ export class ClickEvents {
       return ServerResponse.success(result[0]);
 
     } catch (error: unknown) {
+      console.log(error);
       if (error instanceof ZodError) return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS);
       return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
     }
