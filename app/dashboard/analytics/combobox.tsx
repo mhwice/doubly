@@ -30,7 +30,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 
-import { ComboboxType, ServerResponseComboboxSchema } from "@/lib/zod/clicks"
+import { type Combobox, ServerResponseComboboxPageSchema } from "@/lib/zod/clicks"
 import { useDebounce } from "@/hooks/use-debounce";
 import { deserialize } from "superjson"
 import { type FilterEnumType } from "@/lib/zod/links"
@@ -42,7 +42,7 @@ import { useCurrentFilters } from "../filters-context"
 import { Button } from "@/components/doubly/ui/button"
 
 type ComboboxProps = {
-  comboboxData: ComboboxType | undefined,
+  comboboxData: Combobox | undefined,
   dateRange: [Date | undefined, Date]
 };
 
@@ -113,7 +113,7 @@ export function Combobox({ comboboxData, dateRange }: ComboboxProps) {
     const response = await fetch(url);
     const jsonResponse = await response.json();
     const deserialized = deserialize(jsonResponse);
-    const validated = ServerResponseComboboxSchema.safeParse(deserialized);
+    const validated = ServerResponseComboboxPageSchema.safeParse(deserialized);
     if (!validated.success) throw new Error("failed to validate api response");
     if (!validated.data.success) throw new Error(validated.data.error);
     return validated.data.data;

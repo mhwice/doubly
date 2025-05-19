@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectValue } from "@/components/ui/select"
-import { ClickChartChart } from "@/lib/zod/clicks"
+import { type ClickChart } from "@/lib/zod/clicks"
 import { AreaChartContainer } from "./area-chart"
 import { BarCharContainer } from "./bar-chart"
 import { LineChartContainer } from "./line-chart"
@@ -12,7 +12,7 @@ import { useLocalStorage } from 'usehooks-ts';
 import { StyledSelectTrigger } from "@/components/doubly/ui/select"
 
 interface ChartProps {
-  clickEvents: ClickChartChart[],
+  clickEvents: ClickChart,
   dateRange: [Date | undefined, Date]
 }
 

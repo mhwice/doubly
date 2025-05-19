@@ -3,71 +3,110 @@ import { snakeCase } from 'change-case';
 import { serverResponseSchema } from './server-response-schema';
 import { ClickEventSchema } from '../schemas/click/click.entity';
 
-export const ClickRecord = ClickEventSchema.omit({
-  id: true,
-  createdAt: true
-}).extend({
-  createdAt: z.string()
-}).transform((data) => {
-  return Object.fromEntries(
-    Object.entries(data).filter(([_, value]) => value !== undefined).map(([key, value]) => [snakeCase(key), value])
-  );
+/* Single item */
+export const ComboboxEntrySchema = z.object({
+  value: z.string(),
+  count: z.number(),
+  label: z.string()
+})
+
+/* Single page of items */
+export const ComboboxPageSchema = ComboboxEntrySchema.array();
+
+/* All pages */
+const ComboboxSchema = z.object({
+  source: ComboboxPageSchema,
+  country: ComboboxPageSchema,
+  region: ComboboxPageSchema,
+  continent: ComboboxPageSchema,
+  city: ComboboxPageSchema,
+  shortUrl: ComboboxPageSchema,
+  originalUrl: ComboboxPageSchema,
+  browser: ComboboxPageSchema,
+  device: ComboboxPageSchema,
+  os: ComboboxPageSchema,
 });
 
-export const ClickEventCreateSchema = ClickEventSchema.omit({
-  id: true
-}).transform((data) => {
+const removeEmptyKeys = (obj: any) => {
   return Object.fromEntries(
-    Object.entries(data).filter(([_, value]) => value !== undefined).map(([key, value]) => [snakeCase(key), value])
+    Object.entries(obj).filter(([_, value]) => value !== undefined)
   );
-});
+}
+
+const objToSnakeCase = (obj: any) => {
+  return Object.fromEntries(
+    Object.entries(obj).map(([key, value]) => [snakeCase(key), value])
+  );
+}
+
+/*
+
+Sounds like I should be storing both the originalUrl and the linkId in Redis.
+This means that my payload should include the linkId, but not the short code.
+
+So essentially, its everything from the ClickEventSchema except 'id'.
+
+The only other thing to consider is the date/string issue.
+
+I can add a preprocess step that maps the createdAt from a string to a date.
+
+
+
+
+*/
+
+export const ClickPayloadSchema = ClickEventSchema.omit({
+  id: true,
+}).transform((data) => objToSnakeCase(removeEmptyKeys(data)));
+
+// export const RecordClickIfExistsSchema = ClickEventSchema.omit({
+//   id: true,
+//   linkId: true,
+//   createdAt: true,
+// }).extend({
+//   code: z.string().trim().length(12)
+// }).transform((data) => objToSnakeCase(removeEmptyKeys(data)));
 
 const ClickChartSchema = z.object({
   date: z.date(),
   qrCount: z.number(),
   linkCount: z.number()
-})
+}).array()
 
-const JSONEntitySchema = z.object({
+const GroupedDataSchema = z.object({
   value: z.string(),
   count: z.number(),
   percent: z.number(),
   label: z.string()
+}).array();
+
+const AllGroupedDataSchema = z.object({
+  source: GroupedDataSchema,
+  country: GroupedDataSchema,
+  region: GroupedDataSchema,
+  continent: GroupedDataSchema,
+  city: GroupedDataSchema,
+  shortUrl: GroupedDataSchema,
+  originalUrl: GroupedDataSchema,
+  browser: GroupedDataSchema,
+  device: GroupedDataSchema,
+  os: GroupedDataSchema,
 });
 
-const ClickJsonGetAllSchema = z.object({
-  source: JSONEntitySchema.array(),
-  country: JSONEntitySchema.array(),
-  region: JSONEntitySchema.array(),
-  continent: JSONEntitySchema.array(),
-  city: JSONEntitySchema.array(),
-  shortUrl: JSONEntitySchema.array(),
-  originalUrl: JSONEntitySchema.array(),
-  browser: JSONEntitySchema.array(),
-  device: JSONEntitySchema.array(),
-  os: JSONEntitySchema.array()
-});
-
-export const ComboboxJSONEntitySchema = z.object({
-  value: z.string(),
-  count: z.number(),
-  label: z.string()
-});
-
-export const AnalyticsJSONSchema = z.object({
+export const AnalyticsReadSchema = z.object({
   data: z.object({
     empty: z.boolean(),
     tabs: z.object({
-      source: JSONEntitySchema.array(),
-      country: JSONEntitySchema.array(),
-      region: JSONEntitySchema.array(),
-      continent: JSONEntitySchema.array(),
-      city: JSONEntitySchema.array(),
-      short_url: JSONEntitySchema.array(),
-      original_url: JSONEntitySchema.array(),
-      browser: JSONEntitySchema.array(),
-      device: JSONEntitySchema.array(),
-      os: JSONEntitySchema.array()
+      source: GroupedDataSchema,
+      country: GroupedDataSchema,
+      region: GroupedDataSchema,
+      continent: GroupedDataSchema,
+      city: GroupedDataSchema,
+      short_url: GroupedDataSchema,
+      original_url: GroupedDataSchema,
+      browser: GroupedDataSchema,
+      device: GroupedDataSchema,
+      os: GroupedDataSchema,
     }),
     stats: z.object({
       num_links: z.number(),
@@ -75,16 +114,16 @@ export const AnalyticsJSONSchema = z.object({
       qr_clicks: z.number()
     }),
     combobox: z.object({
-      source: ComboboxJSONEntitySchema.array(),
-      country: ComboboxJSONEntitySchema.array(),
-      region: ComboboxJSONEntitySchema.array(),
-      continent: ComboboxJSONEntitySchema.array(),
-      city: ComboboxJSONEntitySchema.array(),
-      short_url: ComboboxJSONEntitySchema.array(),
-      original_url: ComboboxJSONEntitySchema.array(),
-      browser: ComboboxJSONEntitySchema.array(),
-      device: ComboboxJSONEntitySchema.array(),
-      os: ComboboxJSONEntitySchema.array()
+      source: ComboboxPageSchema,
+      country: ComboboxPageSchema,
+      region: ComboboxPageSchema,
+      continent: ComboboxPageSchema,
+      city: ComboboxPageSchema,
+      short_url: ComboboxPageSchema,
+      original_url: ComboboxPageSchema,
+      browser: ComboboxPageSchema,
+      device: ComboboxPageSchema,
+      os: ComboboxPageSchema,
     }),
     chart: z.object({
       date: z.string(),
@@ -135,78 +174,23 @@ export const AnalyticsJSONSchema = z.object({
 
 const AnalayticsOutputSchema = z.object({
   empty: z.boolean(),
-  tabs: z.object({
-    source: JSONEntitySchema.array(),
-    country: JSONEntitySchema.array(),
-    region: JSONEntitySchema.array(),
-    continent: JSONEntitySchema.array(),
-    city: JSONEntitySchema.array(),
-    shortUrl: JSONEntitySchema.array(),
-    originalUrl: JSONEntitySchema.array(),
-    browser: JSONEntitySchema.array(),
-    device: JSONEntitySchema.array(),
-    os: JSONEntitySchema.array()
-  }),
+  tabs: AllGroupedDataSchema,
   stats: z.object({
     numLinks: z.number(),
     linkClicks: z.number(),
     qrClicks: z.number()
   }),
-  combobox: z.object({
-    source: ComboboxJSONEntitySchema.array(),
-    country: ComboboxJSONEntitySchema.array(),
-    region: ComboboxJSONEntitySchema.array(),
-    continent: ComboboxJSONEntitySchema.array(),
-    city: ComboboxJSONEntitySchema.array(),
-    shortUrl: ComboboxJSONEntitySchema.array(),
-    originalUrl: ComboboxJSONEntitySchema.array(),
-    browser: ComboboxJSONEntitySchema.array(),
-    device: ComboboxJSONEntitySchema.array(),
-    os: ComboboxJSONEntitySchema.array()
-  }),
-  chart: z.object({
-    date: z.date(),
-    qrCount: z.number(),
-    linkCount: z.number()
-  }).array()
+  combobox: ComboboxSchema,
+  chart: ClickChartSchema
 });
 
-const ComboboxSchema = z.object({
-  source: ComboboxJSONEntitySchema.array(),
-  country: ComboboxJSONEntitySchema.array(),
-  region: ComboboxJSONEntitySchema.array(),
-  continent: ComboboxJSONEntitySchema.array(),
-  city: ComboboxJSONEntitySchema.array(),
-  shortUrl: ComboboxJSONEntitySchema.array(),
-  originalUrl: ComboboxJSONEntitySchema.array(),
-  browser: ComboboxJSONEntitySchema.array(),
-  device: ComboboxJSONEntitySchema.array(),
-  os: ComboboxJSONEntitySchema.array()
-})
+export const ServerResponseComboboxPageSchema = serverResponseSchema(ComboboxPageSchema);
+export const ServerResponseAnalyticsOutputSchema = serverResponseSchema(AnalayticsOutputSchema);
 
-export const RecordClickIfExistsSchema = ClickEventSchema.omit({
-  id: true,
-  linkId: true,
-  createdAt: true,
-}).extend({
-  code: z.string().trim().length(12)
-}).transform(data => {
-    // now `data` has type: { code: string; source: 'qr'|'link'; city?: string; ... }
-    return Object.fromEntries(
-      Object.entries(data)
-        .filter(([, v]) => v !== undefined)
-        .map(([k,v]) => [snakeCase(k), v])
-    );
-  });
-
-export const ServerResponseComboboxSchema = serverResponseSchema(ComboboxJSONEntitySchema.array());
-export const AnalyticsServerResponseSchema = serverResponseSchema(AnalayticsOutputSchema);
-
-export type ComboboxQuery = z.infer<typeof ComboboxJSONEntitySchema>;
-export type ComboboxType = z.infer<typeof ComboboxSchema>;
-export type RecordClickIfExistsSchemaType = z.infer<typeof RecordClickIfExistsSchema>;
-
-export type ClickEventCreateType = z.infer<typeof ClickEventCreateSchema>;
-export type ClickChartChart = z.infer<typeof ClickChartSchema>;
-export type ClickJsonGetAllType = z.infer<typeof ClickJsonGetAllSchema>;
-export type AnalyticsJSONType = z.infer<typeof AnalyticsJSONSchema>;
+export type ComboboxPage = z.infer<typeof ComboboxPageSchema>;
+export type Combobox = z.infer<typeof ComboboxSchema>;
+// export type RecordClickIfExists = z.infer<typeof RecordClickIfExistsSchema>;
+export type ClickPayload = z.infer<typeof ClickPayloadSchema>;
+export type ClickChart = z.infer<typeof ClickChartSchema>;
+export type AllGroupedData = z.infer<typeof AllGroupedDataSchema>;
+export type AnalyticsRead = z.infer<typeof AnalyticsReadSchema>;

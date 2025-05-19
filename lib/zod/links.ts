@@ -437,6 +437,9 @@ const LinkEditLinkSchema = LinkSchema.pick({
   updates: LinkSchema.pick({ originalUrl: true }),
 });
 
+export const LinkCodeSchema = LinkSchema.pick({ code: true });
+export type LinkCode = z.infer<typeof LinkCodeSchema>;
+
 export namespace LinkSchemas {
   export const Create = LinkCreateSchema;
   export const CreateLink = LinkCreateLinkSchema;

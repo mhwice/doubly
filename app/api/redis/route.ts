@@ -83,8 +83,7 @@ const queue = client.queue({
 export async function GET(request: NextRequest) {
   const metadata = extractMetadata(request);
   const payload = {
-    code: "abc123def456",
-    linkId: 34,
+    linkId: 34, // i get this from redis...
     createdAt: new Date(),
     ...metadata
   }
