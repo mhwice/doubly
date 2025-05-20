@@ -8,8 +8,6 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Button as ShadButton } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
 import { ReactNode } from "react";
 import { Button } from "./doubly/ui/button";
 

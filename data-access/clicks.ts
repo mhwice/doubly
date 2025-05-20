@@ -177,6 +177,9 @@ export class ClickEvents {
 
   static async getFilteredData(params: GetAll): Promise<ServerResponseType<AnalyticsRead>> {
     try {
+
+      // this should be exactly the output of the FilterAPIParamsSchema
+      // plus a userId field
       const { userId, options, dateRange } = LinkGetAllSchema.parse(params);
 
       const queryParams = [userId];

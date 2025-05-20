@@ -8,6 +8,14 @@ import { ServerResponse } from "@/lib/server-repsonse";
 import { LinkCreateLinkSchema } from "@/lib/zod/links";
 import { makeCode, makeShortUrl } from "@/utils/generate-short-code";
 
+/*
+
+params should just be
+
+{ originalUrl: string }
+
+*/
+
 export const createLink = async (params: unknown) => {
 
   // 1 - Validate the incoming data

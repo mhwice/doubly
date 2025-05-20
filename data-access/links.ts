@@ -28,20 +28,49 @@ import { env } from "@/data-access/env";
 import { neon } from '@neondatabase/serverless';
 import { z, ZodError } from 'zod';
 import { parseQueryResponse, type QueryResponse } from "@/utils/helper";
-import { APILinkGetAllSchema, Create, Dashboard, Edit, Id, LinkCode, LinkCodeSchema, LinkCreateSchema, LinkDashboardSchema, LinkDeletesSchema, LinkDeletesSchemaType, LinkEditSchema } from "@/lib/zod/links";
+import {
+  APILinkGetAllSchema,
+  LinkCreateSchema,
+  LinkDashboardSchema,
+  type Create,
+  type Dashboard,
+} from "@/lib/zod/links";
 import { ERROR_MESSAGES } from "@/lib/error-messages";
 import { ServerResponse, ServerResponseType } from "@/lib/server-repsonse";
 import { sql as localSQL } from "./local-connect-test";
-import { Link, LinkSchema } from "@/lib/schemas/link/link.entity";
+import {
+  LinkSchema,
+  type Link,
+} from "@/lib/schemas/link/link.entity";
 
 const sql = env.ENV === "dev" ? localSQL : neon(env.DATABASE_URL);
 
+/** An object holding a userId and an array of valid linkIds */
+const LinkDeleteSchema = z.object({
+  ids: LinkSchema.shape.id.array().nonempty(),
+  userId: LinkSchema.shape.userId
+}).strict();
+
+/** An object holding a userId, a linkId, and an object of updates */
+const LinkEditSchema = z.object({
+  userId: LinkSchema.shape.userId,
+  id: LinkSchema.shape.id,
+  updates: z.object({
+    originalUrl: LinkSchema.shape.originalUrl
+  }).strict()
+}).strict();
+
+/** A link code */
+const LinkCodeSchema = LinkSchema.shape.code;
+
+type LinkIdArray = z.infer<typeof LinkSchema.shape.id>[];
+
 export class LinkTable {
 
-  static async getLinkByCode(params: LinkCode): Promise<ServerResponseType<Link>> {
+  static async getLinkByCode(params: z.infer<typeof LinkCodeSchema>): Promise<ServerResponseType<Link>> {
     try {
 
-      const { code } = LinkCodeSchema.parse(params);
+      const code = LinkCodeSchema.parse(params);
 
       const query = `
         SELECT *
@@ -66,6 +95,18 @@ export class LinkTable {
   static async createLink(params: Create): Promise<ServerResponseType<Link>> {
     try {
 
+      /*
+
+        params = {
+          originalUrl
+          shortUrl
+          code
+          userId
+        }
+
+        all required. must map keys to snake case
+
+      */
       const tableData = LinkCreateSchema.parse(params);
 
       const columns = Object.keys(tableData);
@@ -92,9 +133,9 @@ export class LinkTable {
     }
   }
 
-  static async editLink(params: Edit): Promise<ServerResponseType<Link>> {
-
+  static async editLink(params: z.infer<typeof LinkEditSchema>): Promise<ServerResponseType<Link>> {
     try {
+
       const { userId, id, updates: { originalUrl } } = LinkEditSchema.parse(params);
 
       const query = `
@@ -117,9 +158,10 @@ export class LinkTable {
     }
   }
 
-  static async deleteLinkById(params: LinkDeletesSchemaType): Promise<ServerResponseType<Id[]>> {
+  static async deleteLinkById(params: z.infer<typeof LinkDeleteSchema>): Promise<ServerResponseType<LinkIdArray>> {
     try {
-      const { ids, userId } = LinkDeletesSchema.parse(params);
+
+      const { ids, userId } = LinkDeleteSchema.parse(params);
 
       const placeholders = ids.map((_, idx) => `$${idx+2}`).join(", ");
 

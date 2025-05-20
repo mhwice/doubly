@@ -1,32 +1,17 @@
 import { getSession } from "@/lib/get-session";
 import { Hero } from "./hero";
-import UrlShortenerDemo from "./url-shorener";
-import { Features } from "./features";
-import ABTestingExample from "./ab-test";
-import { VerticalTimeline } from "./vertical-timeline";
-// import Skew from "./skew";
-// import HeroSection from "./skew-full";
 import { GlobalDatabase } from "../landing/components/ui/GlobalDatabase";
 import HowItWorksSection from "./how-it-works";
 import { CallToAction } from "./cta";
-import { z } from "zod";
 
 export default async function Home() {
 
-  // const DemoSchema = z.object({
-  //   name: z.string(),
-  //   age: z.number(),
-  //   createdAt: z.coerce.date()
-  // });
-
-  // const data = {
-  //   name: "Marshall",
-  //   age: 30,
-  //   createdAt: "Jan Apples"
-  // }
-  // console.log(data);
-  // console.log(DemoSchema.safeParse(data));
-
+  // console.log(LinkDeleteSchema.safeParse({ userId: "123", ids: [213] }));
+  // console.log(LinkDeleteSchema.safeParse({ userId: "123", ids: [5432, 213] }));
+  // console.log(LinkDeleteSchema.safeParse({ userId: "123", ids: [-213] }));
+  // console.log(LinkDeleteSchema.safeParse({ userId: "123", ids: [213], heelo: 93 }));
+  // console.log(LinkDeleteSchema.safeParse({ userId: "123", ids: [] }));
+  // console.log(LinkDeleteSchema.safeParse({ ids: [32,12] }));
 
   const session = await getSession();
 

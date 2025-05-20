@@ -2,7 +2,7 @@ import { ClickEvents } from "@/data-access/clicks";
 import { ERROR_MESSAGES } from "@/lib/error-messages";
 import { getSession } from "@/lib/get-session";
 import { ServerResponse } from "@/lib/server-repsonse";
-import { QueryArraySchema } from "@/lib/zod/links";
+import { FilterAPIParamsSchema } from "@/lib/zod/links";
 import { NextRequest, NextResponse } from "next/server";
 import { serialize } from 'superjson';
 
@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
   const params = Array.from(searchParams.entries());
 
   // 2 - Validate the incoming data
-  const validated = QueryArraySchema.safeParse(params);
+  const validated = FilterAPIParamsSchema.safeParse(params);
   if (!validated.success) return NextResponse.json(serialize(ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS)));
 
   // 3 - Get session data
