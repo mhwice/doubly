@@ -18,37 +18,22 @@ import { BaseModal } from "./base-modal";
 import { useCurrentDate } from '@/app/dashboard/date-context';
 import { Input } from './doubly/ui/input';
 import { cleanUrl } from '@/app/dashboard/links/components/columns';
-import { LinkCreateLinkSchema } from '@/lib/zod/links';
+import { OriginalUrlSchema } from "@/lib/zod/links";
 
 interface CustomDialogProps {
   isOpen: boolean;
   onOpenChange: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-// I want to replace this, but its better to wait for Zod v4 which has better url handling
-const LinkSchema = z
-  .object({
-    originalUrl: z.string().trim().min(1, { message: "link is required" }),
-  }).transform(({ originalUrl }) => {
-    if (originalUrl.startsWith("https://")) return { originalUrl };
-    return { originalUrl: "https://" + originalUrl };
-  })
-  .refine(({ originalUrl }) => {
-    try {
-      const url = new URL(originalUrl);
-      return url.protocol === "https:";
-    } catch {
-      return false;
-    }
-  }, { message: "must be a valid url" })
-
 export function CreateLinkModal({ isOpen, onOpenChange }: CustomDialogProps) {
   const [isPending, startTransition] = useTransition();
 
   const { setDate } = useCurrentDate();
 
-  const form = useForm<z.infer<typeof LinkSchema>>({
-    resolver: zodResolver(LinkSchema),
+  const form = useForm<z.infer<typeof OriginalUrlSchema>>({
+    mode: "onSubmit",
+    reValidateMode: "onSubmit",
+    resolver: zodResolver(OriginalUrlSchema),
     defaultValues: {
       originalUrl: "",
     },
@@ -90,7 +75,26 @@ export function CreateLinkModal({ isOpen, onOpenChange }: CustomDialogProps) {
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <Input {...field} error={form.formState.errors.originalUrl?.message} value={cleanUrl(field.value)} fullWidth prefix="https://" placeholder="www.google.com" disabled={isPending} />
+                  <Input
+                    {...field}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      form.clearErrors("root");
+                      form.clearErrors("originalUrl");
+                    }}
+                    onKeyDown={e => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();  // avoid native form submit
+                        onSubmit();          // call your RHF submit
+                      }
+                    }}
+                    error={form.formState.errors.originalUrl?.message}
+                    value={cleanUrl(field.value)}
+                    fullWidth
+                    prefix="https://"
+                    placeholder="www.google.com"
+                    disabled={isPending}
+                  />
                 </FormControl>
               </FormItem>
             )}

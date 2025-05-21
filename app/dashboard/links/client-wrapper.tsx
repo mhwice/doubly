@@ -14,7 +14,7 @@ import { SquareArrowOutUpRight } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { EditLinkModal } from "@/components/edit-link-modal";
-import { QRCodeModal } from "@/components/new-qr-modal";
+import { QRCodeModal } from "@/components/qr-modal";
 import { DeleteLinkModal } from "@/components/delete-link-modal";
 import {
   Tooltip,

@@ -13,7 +13,7 @@ export const FilterEnum = z.enum([
   "region",
 ]);
 
-export const Pair = z.tuple([
+const Pair = z.tuple([
   z.string().trim().min(1).max(15), // key length
   z.string().trim().min(1).max(63), // value length
 ]);

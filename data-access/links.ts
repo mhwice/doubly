@@ -29,10 +29,8 @@ import { neon } from '@neondatabase/serverless';
 import { z, ZodError } from 'zod';
 import { parseQueryResponse, type QueryResponse } from "@/utils/helper";
 import {
-  APILinkGetAllSchema,
   LinkCreateSchema,
   LinkDashboardSchema,
-  type Create,
   type Dashboard,
 } from "@/lib/zod/links";
 import { ERROR_MESSAGES } from "@/lib/error-messages";
@@ -65,6 +63,12 @@ const LinkCodeSchema = LinkSchema.shape.code;
 
 type LinkIdArray = z.infer<typeof LinkSchema.shape.id>[];
 
+/** An object holding a userId and a date representing the last createdAt date to query */
+const LinkGetAllSchema = z.object({
+  userId: LinkSchema.shape.userId,
+  dateEnd: z.date()
+}).strict()
+
 export class LinkTable {
 
   static async getLinkByCode(params: z.infer<typeof LinkCodeSchema>): Promise<ServerResponseType<Link>> {
@@ -92,7 +96,7 @@ export class LinkTable {
     }
   }
 
-  static async createLink(params: Create): Promise<ServerResponseType<Link>> {
+  static async createLink(params: z.infer<typeof LinkCreateSchema>): Promise<ServerResponseType<Link>> {
     try {
 
       /*
@@ -185,11 +189,12 @@ export class LinkTable {
     }
   }
 
-  static async getAllLinks(params: z.infer<typeof APILinkGetAllSchema>): Promise<ServerResponseType<Dashboard[]>> {
+  static async getAllLinks(params: z.infer<typeof LinkGetAllSchema>): Promise<ServerResponseType<Dashboard[]>> {
 
     // this needs to be updated so it takes in the (date optional) and filters using that
     try {
-      const { userId, dateEnd } = APILinkGetAllSchema.parse(params);
+
+      const { userId, dateEnd } = LinkGetAllSchema.parse(params);
 
       const query = `
         SELECT

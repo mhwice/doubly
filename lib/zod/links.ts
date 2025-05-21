@@ -6,7 +6,6 @@ import {
   dateCheck,
   queryCheck,
   FilterEnum,
-  Pair,
   singletonAndEnumRefine,
   uniquePairsSchema
 } from "./link-helpers";
@@ -21,8 +20,9 @@ export const LinkDashboardSchema = LinkSchema.pick({
   qrClicks: z.number().nonnegative(),
 });
 
-export const LinkCreateLinkSchema = LinkSchema.pick({
-  originalUrl: true
+// I want to replace this, but its better to wait for Zod v4 which has better url handling
+export const OriginalUrlSchema = z.object({
+  originalUrl: z.string().trim().min(1).max(255)
 })
 .transform(({ originalUrl }) => {
   if (originalUrl.startsWith("https://")) return { originalUrl };
@@ -49,13 +49,6 @@ export const LinkCreateSchema = LinkSchema.pick({
       .map(([key, value]) => [snakeCase(key), value])
     );
 });
-
-export const APILinkGetAllSchema = LinkSchema.pick({
-  userId: true,
-})
-  .extend({
-    dateEnd: z.date()
-  });
 
 export const LinkGetAllSchema = LinkSchema.pick({
     userId: true
@@ -87,43 +80,6 @@ export const QueryGetAllSchema = LinkSchema.pick({
     queryString: z.string().min(1),
     queryField: FilterEnum
   });
-
-export const APIContents = z
-  .object({
-    selectedValues: z
-      .tuple([FilterEnum, z.string().trim().min(1)])
-      .array()
-      .refine(
-        (val) => {
-          const map: Map<FilterEnumType, Set<string>> = new Map();
-          for (const [k, v] of val) {
-            if (map.has(k)) {
-              if (map.get(k)?.has(v)) return false;
-              map.get(k)?.add(v);
-            } else {
-              map.set(k, new Set([v]));
-            }
-          }
-          return true;
-        },
-        { message: "a filter pair must be unique" }
-      ),
-    dateRange: z.tuple([z.date().optional(), z.date()]).refine(
-      ([start, end]) => {
-        if (start !== undefined) return start <= end;
-        return true;
-      },
-      { message: "range start date must be before range end data" }
-    ),
-    queryString: z.string().min(1).optional(),
-    queryField: FilterEnum.optional(),
-  })
-  .refine(...queryCheck)
-
-export const LinkAllSchema = z.array(Pair).length(1).refine((arr) => arr[0][0] === "dateEnd")
-  .transform((arr) => {
-    return { dateEnd: new Date(arr[0][1]) }
-  })
 
 export const FilterAPIParamsSchema = uniquePairsSchema
 .superRefine(singletonAndEnumRefine(["dateStart", "dateEnd"] as const))
@@ -197,42 +153,8 @@ export const QuerySchema = uniquePairsSchema
   .refine(...queryCheck)
   .refine(...dateCheck)
 
-export const NewAPIContents = z
-  .object({
-    selectedValues: z
-      .tuple([FilterEnum, z.string().trim().min(1)])
-      .array()
-      .refine(
-        (val) => {
-          const map: Map<FilterEnumType, Set<string>> = new Map();
-          for (const [k, v] of val) {
-            if (map.has(k)) {
-              if (map.get(k)?.has(v)) return false;
-              map.get(k)?.add(v);
-            } else {
-              map.set(k, new Set([v]));
-            }
-          }
-          return true;
-        },
-        { message: "a filter pair must be unique" }
-      ),
-    dateRange: z.tuple([z.coerce.date().optional(), z.coerce.date()]).refine(
-      ([start, end]) => {
-        if (start !== undefined) return start <= end;
-        return true;
-      },
-      { message: "range start date must be before range end data" }
-    ),
-    queryString: z.string().min(1).optional(),
-    queryField: FilterEnum.optional(),
-  })
-  .refine(...queryCheck)
-
 export const ServerResponseLinksGetAllSchema = serverResponseSchema(LinkDashboardSchema.array());
 
-export type Create = z.infer<typeof LinkCreateSchema>;
-export type CreateLink = z.infer<typeof LinkCreateLinkSchema>;
 export type Dashboard = z.infer<typeof LinkDashboardSchema>;
 export type GetAll = z.infer<typeof LinkGetAllSchema>;
 export type FilterEnumType = z.infer<typeof FilterEnum>;
