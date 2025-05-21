@@ -55,8 +55,9 @@ export function ClientWrapper() {
   }
   if (dateRange[0] !== undefined) params.append("dateStart", dateRange[0].toISOString());
   params.append("dateEnd", dateRange[1].toISOString());
-  const url = `/api/new-filter?${params.toString()}`;
+  const url = `/api/filter?${params.toString()}`;
 
+  // how can I add some client-side validation?
   const { data, error, isLoading, isValidating } = useSWR(url, fetcher, {
     revalidateIfStale: false,
     revalidateOnFocus: false,

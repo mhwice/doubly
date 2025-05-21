@@ -133,7 +133,7 @@ export function Combobox({ comboboxData, dateRange }: ComboboxProps) {
     params.append("queryField", page);
   }
 
-  const url = `/api/new-query?${params.toString()}`;
+  const url = `/api/query?${params.toString()}`;
 
   function allowedUrl() {
     if (debouncedQueryString === "") return null;

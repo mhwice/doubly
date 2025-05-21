@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import { BaseModal } from "./base-modal";
-import { deleteAccount } from "@/actions/safe-delete-account";
+import { deleteAccount } from "@/actions/delete-account";
 import { useRouter } from "next/navigation";
-import { authClient } from "@/utils/auth-client";
 
 
 interface CustomDialogProps {

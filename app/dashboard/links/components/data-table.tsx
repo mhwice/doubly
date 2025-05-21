@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/table";
 
 import { DataTablePagination } from "../static-components/data-table-pagination";
-import { LinkTypes } from "@/lib/zod/links";
+import { Dashboard } from "@/lib/zod/links";
 import { DeleteLinkModal } from "@/components/delete-link-modal";
 import { useCurrentFilters } from "../../filters-context";
 import { useRouter } from "next/navigation";
@@ -85,7 +85,7 @@ export function DataTable<TData, TValue>({
   const handleOnMultipleDeleteClicked = (rows: Row<TData>[]) => {
     const ids = [];
     for (const row of rows) {
-      const link = row.original as LinkTypes.Dashboard;
+      const link = row.original as Dashboard;
       const linkId = link.id;
       ids.push(linkId);
     }
@@ -97,7 +97,7 @@ export function DataTable<TData, TValue>({
   const viewManyAnalytics = (rows: Row<TData>[]) => {
     const shortUrls: [string, string][] = [];
     for (const row of rows) {
-      const link = row.original as LinkTypes.Dashboard;
+      const link = row.original as Dashboard;
       const linkId = link.shortUrl;
       shortUrls.push(["shortUrl", linkId]);
     }

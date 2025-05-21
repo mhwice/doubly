@@ -4,11 +4,10 @@ import { ColumnDef } from "@tanstack/react-table"
 import { Checkbox } from "@/components/ui/checkbox"
 import { DataTableColumnHeader } from "../static-components/data-table-column-header"
 import { DataTableRowActions } from "./data-table-row-actions"
-import { type LinkTypes } from "@/lib/zod/links"
 import { Button } from "@/components/ui/button"
 import { SquareArrowOutUpRight } from "lucide-react"
 
-// export const columns: ColumnDef<LinkTypes.Dashboard>[] = [
+// export const columns: ColumnDef<Dashboard>[] = [
 //   {
 //     id: "select",
 //     header: ({ table }) => (

@@ -1,6 +1,6 @@
 "use client";
 
-import { LinkTypes, ServerResponseLinksGetAllSchema } from "@/lib/zod/links";
+import { Dashboard, ServerResponseLinksGetAllSchema } from "@/lib/zod/links";
 import { DataTable } from "./components/data-table";
 import { cleanUrl } from "./components/columns";
 import { useCurrentDate } from "../date-context";
@@ -14,7 +14,7 @@ import { SquareArrowOutUpRight } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { EditLinkModal } from "@/components/edit-link-modal";
-import { QRCodeModal } from "@/components/new-qr-modal";
+import { QRCodeModal } from "@/components/qr-modal";
 import { DeleteLinkModal } from "@/components/delete-link-modal";
 import {
   Tooltip,
@@ -31,19 +31,19 @@ export function ClientWrapper() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
-  const [activeLink, setActiveLink] = useState<LinkTypes.Dashboard>();
+  const [activeLink, setActiveLink] = useState<Dashboard>();
 
-  const handleEditClick = (clickedLink: LinkTypes.Dashboard) => {
+  const handleEditClick = (clickedLink: Dashboard) => {
     setActiveLink(clickedLink);
     setShowEditModal(true);
   }
 
-  const handleDeleteClick = (clickedLink: LinkTypes.Dashboard) => {
+  const handleDeleteClick = (clickedLink: Dashboard) => {
     setActiveLink(clickedLink);
     setShowDeleteModal(true);
   }
 
-  const handleQRClick = (clickedLink: LinkTypes.Dashboard) => {
+  const handleQRClick = (clickedLink: Dashboard) => {
     setActiveLink(clickedLink);
     setShowQRModal(true);
   }
@@ -69,7 +69,7 @@ export function ClientWrapper() {
     keepPreviousData: true
   });
 
-  const columns = useMemo<ColumnDef<LinkTypes.Dashboard>[]>(
+  const columns = useMemo<ColumnDef<Dashboard>[]>(
     () => [
       {
         id: "select",

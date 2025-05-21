@@ -1,11 +1,10 @@
 "use server";
 
-import { z } from "zod";
 import { SocialSchema } from "@/schema";
 import { auth } from "@/lib/auth";
 import { APIError } from "better-auth/api";
 
-export const socialLogin = async (values: z.infer<typeof SocialSchema>) => {
+export const socialLogin = async (values: unknown) => {
   const validatedFields = SocialSchema.safeParse(values);
   if (!validatedFields.success) return { error: "Invalid fields" };
   const { provider } = validatedFields.data;

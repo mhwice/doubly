@@ -1,6 +1,6 @@
 "use client"
 
-import useScroll from "./lib/use-scroll"
+import useScroll from "@/hooks/use-scroll"
 import { cx } from "./lib/utils"
 import Link from "next/link"
 import { useState, useEffect } from "react"

@@ -1,11 +1,10 @@
 "use server";
 
 import { ResetSchema } from "@/schema";
-import * as z from "zod";
 import { auth } from "@/lib/auth";
 import { APIError } from "better-auth/api";
 
-export const reset = async (values: z.infer<typeof ResetSchema>) => {
+export const reset = async (values: unknown) => {
   const validatedFields = ResetSchema.safeParse(values);
   if (!validatedFields.success) return { error: "Invalid email" };
 

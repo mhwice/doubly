@@ -119,7 +119,7 @@ export async function GET(request: NextRequest) {
   }
 
   // Cache miss → DB lookup
-  const response = await LinkTable.getLinkByCode({ code });
+  const response = await LinkTable.getLinkByCode(code);
   if (!response.success) {
     console.error("[LINK DOES NOT EXIST]", code);
     redirect("/");

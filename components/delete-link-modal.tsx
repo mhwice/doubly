@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { BaseModal } from "./base-modal";
-import { deleteLink } from "@/actions/safe-delete-link";
+import { deleteLink } from "@/actions/delete-link";
 import { useSWRConfig } from 'swr'
 import { useCurrentDate } from "@/app/dashboard/date-context";
 

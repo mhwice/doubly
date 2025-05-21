@@ -1,8 +1,6 @@
 "use client";
 
-import { useSWRConfig } from 'swr'
-
-import { useState, useTransition } from "react";
+import { useTransition } from "react";
 
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -13,93 +11,58 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormMessage,
 } from "@/components/ui/form";
 import { FormError } from "@/components/form-error";
-import { createLink } from "@/actions/safe-create-link";
+import { createLink } from "@/actions/create-link";
 import { BaseModal } from "./base-modal";
 import { useCurrentDate } from '@/app/dashboard/date-context';
 import { Input } from './doubly/ui/input';
 import { cleanUrl } from '@/app/dashboard/links/components/columns';
+import { OriginalUrlSchema } from "@/lib/zod/links";
 
 interface CustomDialogProps {
   isOpen: boolean;
   onOpenChange: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const LinkSchema = z
-  .object({
-    link: z.string().trim().min(1, { message: "link is required" }),
-  }).transform(({ link }) => {
-    if (link.startsWith("https://")) return { link };
-    return { link: "https://" + link };
-  })
-  .refine(({ link }) => {
-    try {
-      const url = new URL(link);
-      return url.protocol === "https:";
-    } catch {
-      return false;
-    }
-  }, { message: "must be a valid url" })
-
 export function CreateLinkModal({ isOpen, onOpenChange }: CustomDialogProps) {
-  const [error, setError] = useState<string | undefined>();
   const [isPending, startTransition] = useTransition();
 
-  const { date: now, setDate } = useCurrentDate();
-  const { mutate } = useSWRConfig();
+  const { setDate } = useCurrentDate();
 
-  const form = useForm<z.infer<typeof LinkSchema>>({
-    resolver: zodResolver(LinkSchema),
+  const form = useForm<z.infer<typeof OriginalUrlSchema>>({
+    mode: "onSubmit",
+    reValidateMode: "onSubmit",
+    resolver: zodResolver(OriginalUrlSchema),
     defaultValues: {
-      link: "",
+      originalUrl: "",
     },
   });
 
-  const handleSubmit = () => {
-
-    form.handleSubmit(async (values) => {
-      const validatedFields = LinkSchema.safeParse(values);
-      if (!validatedFields.success) {
-        setError("Invalid fields");
-        return;
-      }
-
-      const { link } = validatedFields.data;
-      setError("");
-
+  const onSubmit = form.handleSubmit(({ originalUrl }) => {
+    startTransition(async () => {
       try {
-        const response = await createLink({ originalUrl: link });
-        if (!response.success) setError(response.error);
-        else {
-          const params = new URLSearchParams();
-          const newNow = new Date();
-          setDate(newNow);
-          // params.append("dateEnd", newNow.toISOString());
-          // const url = `/api/links?${params.toString()}`;
-          // mutate(url);
+        const res = await createLink({ originalUrl });
+        if (res.success) {
+          // [TODO] use optimistic update to make faster
+          setDate(new Date());
           onOpenChange(false);
+        } else {
+          form.setError("root", { message: res.error });
         }
-      } catch (error) {
-        console.error(error);
-        setError("Something went wrong, please try again in a few minutes");
+      } catch {
+        form.setError("root", { message: "Something went wrong. Please try again." });
       }
-    }, (errors) => {
-      // console.error("Validation errors:", errors);
-      setError("Invalid url");
-    })();
-  };
-
+    });
+  });
 
   return (
-
     <BaseModal
       isOpen={isOpen}
       onOpenChange={onOpenChange}
       title="Create Link"
       description="This is the URL you want your users to visit. All traffic to this URL will be tracked."
-      onSubmit={handleSubmit}
+      onSubmit={onSubmit}
       isPending={isPending}
       submitLabel="Create"
       disableSubmit={!form.formState.isDirty}
@@ -108,17 +71,35 @@ export function CreateLinkModal({ isOpen, onOpenChange }: CustomDialogProps) {
         <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
           <FormField
             control={form.control}
-            name="link"
+            name="originalUrl"
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <Input {...field} value={cleanUrl(field.value)} fullWidth prefix="https://" placeholder="www.google.com" disabled={isPending} />
+                  <Input
+                    {...field}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      form.clearErrors("root");
+                      form.clearErrors("originalUrl");
+                    }}
+                    onKeyDown={e => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();  // avoid native form submit
+                        onSubmit();          // call your RHF submit
+                      }
+                    }}
+                    error={form.formState.errors.originalUrl?.message}
+                    value={cleanUrl(field.value)}
+                    fullWidth
+                    prefix="https://"
+                    placeholder="www.google.com"
+                    disabled={isPending}
+                  />
                 </FormControl>
-                <FormMessage />
               </FormItem>
             )}
           />
-          <FormError message={error} />
+          <FormError message={form.formState.errors.root?.message} />
         </form>
       </Form>
     </BaseModal>

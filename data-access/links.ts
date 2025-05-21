@@ -28,20 +28,53 @@ import { env } from "@/data-access/env";
 import { neon } from '@neondatabase/serverless';
 import { z, ZodError } from 'zod';
 import { parseQueryResponse, type QueryResponse } from "@/utils/helper";
-import { APILinkGetAllSchema, LinkCode, LinkCodeSchema, LinkDeletesSchema, LinkDeletesSchemaType, LinkSchemas, type LinkTypes } from "@/lib/zod/links";
+import {
+  LinkCreateSchema,
+  LinkDashboardSchema,
+  type Dashboard,
+} from "@/lib/zod/links";
 import { ERROR_MESSAGES } from "@/lib/error-messages";
 import { ServerResponse, ServerResponseType } from "@/lib/server-repsonse";
 import { sql as localSQL } from "./local-connect-test";
-import { Link, LinkSchema } from "@/lib/schemas/link/link.entity";
+import {
+  LinkSchema,
+  type Link,
+} from "@/lib/schemas/link/link.entity";
 
 const sql = env.ENV === "dev" ? localSQL : neon(env.DATABASE_URL);
 
+/** An object holding a userId and an array of valid linkIds */
+const LinkDeleteSchema = z.object({
+  ids: LinkSchema.shape.id.array().nonempty(),
+  userId: LinkSchema.shape.userId
+}).strict();
+
+/** An object holding a userId, a linkId, and an object of updates */
+const LinkEditSchema = z.object({
+  userId: LinkSchema.shape.userId,
+  id: LinkSchema.shape.id,
+  updates: z.object({
+    originalUrl: LinkSchema.shape.originalUrl
+  }).strict()
+}).strict();
+
+/** A link code */
+const LinkCodeSchema = LinkSchema.shape.code;
+
+type LinkIdArray = z.infer<typeof LinkSchema.shape.id>[];
+
+/** An object holding a userId and a date representing the last createdAt date to query */
+const LinkGetAllSchema = z.object({
+  userId: LinkSchema.shape.userId,
+  dateEnd: z.date()
+}).strict()
+
 export class LinkTable {
 
-  static async getLinkByCode(params: LinkCode): Promise<ServerResponseType<Link>> {
+  static async getLinkByCode(params: z.infer<typeof LinkCodeSchema>): Promise<ServerResponseType<Link>> {
     try {
 
-      const { code } = LinkCodeSchema.parse(params);
+      const code = LinkCodeSchema.parse(params);
 
       const query = `
         SELECT *
@@ -63,10 +96,22 @@ export class LinkTable {
     }
   }
 
-  static async createLink(params: LinkTypes.Create): Promise<ServerResponseType<Link>> {
+  static async createLink(params: z.infer<typeof LinkCreateSchema>): Promise<ServerResponseType<Link>> {
     try {
 
-      const tableData = LinkSchemas.Create.parse(params);
+      /*
+
+        params = {
+          originalUrl
+          shortUrl
+          code
+          userId
+        }
+
+        all required. must map keys to snake case
+
+      */
+      const tableData = LinkCreateSchema.parse(params);
 
       const columns = Object.keys(tableData);
       const placeholders = columns.map((_, i) => `$${i+1}`).join(", ");
@@ -92,10 +137,10 @@ export class LinkTable {
     }
   }
 
-  static async editLink(params: LinkTypes.Edit): Promise<ServerResponseType<Link>> {
-
+  static async editLink(params: z.infer<typeof LinkEditSchema>): Promise<ServerResponseType<Link>> {
     try {
-      const { userId, id, updates: { originalUrl } } = LinkSchemas.Edit.parse(params);
+
+      const { userId, id, updates: { originalUrl } } = LinkEditSchema.parse(params);
 
       const query = `
         UPDATE links
@@ -117,9 +162,10 @@ export class LinkTable {
     }
   }
 
-  static async deleteLinkById(params: LinkDeletesSchemaType): Promise<ServerResponseType<LinkTypes.Id[]>> {
+  static async deleteLinkById(params: z.infer<typeof LinkDeleteSchema>): Promise<ServerResponseType<LinkIdArray>> {
     try {
-      const { ids, userId } = LinkDeletesSchema.parse(params);
+
+      const { ids, userId } = LinkDeleteSchema.parse(params);
 
       const placeholders = ids.map((_, idx) => `$${idx+2}`).join(", ");
 
@@ -143,11 +189,12 @@ export class LinkTable {
     }
   }
 
-  static async getAllLinks(params: z.infer<typeof APILinkGetAllSchema>): Promise<ServerResponseType<LinkTypes.Dashboard[]>> {
+  static async getAllLinks(params: z.infer<typeof LinkGetAllSchema>): Promise<ServerResponseType<Dashboard[]>> {
 
     // this needs to be updated so it takes in the (date optional) and filters using that
     try {
-      const { userId, dateEnd } = APILinkGetAllSchema.parse(params);
+
+      const { userId, dateEnd } = LinkGetAllSchema.parse(params);
 
       const query = `
         SELECT
@@ -179,7 +226,7 @@ export class LinkTable {
 
       // console.log(query, userId, dateEnd)
       const response: QueryResponse = await sql(query, [userId, dateEnd]);
-      const result = parseQueryResponse(response, LinkSchemas.Dashboard);
+      const result = parseQueryResponse(response, LinkDashboardSchema);
 
       // this should only return the dto, not full list of links
       return ServerResponse.success(result);
