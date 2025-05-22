@@ -1,6 +1,5 @@
 "use client";
 
-import { logout } from "@/actions/logout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,10 +13,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { authClient } from "@/utils/auth-client";
-import { sleep } from "@/utils/helper";
-import { BookOpen, House, LogOut, Settings2 } from "lucide-react";
+import { House, LogOut, Settings2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { startTransition, useState } from "react";
+import { useState } from "react";
 
 interface DropdownProps {
   image: string | undefined | null;

@@ -5,13 +5,8 @@ import { useCurrentFilters } from "../filters-context";
 import { Tag } from "./tag";
 import { Button } from "@/components/ui/button";
 
-interface TagGroupProps {
-  selectedValues: string[][],
-  onRemoveTag: (tag: string[]) => void
-}
-
 export function TagGroup() {
-  const { filters, addFilter, hasFilter, deleteFilter, clearFilters } = useCurrentFilters();
+  const { filters, deleteFilter, clearFilters } = useCurrentFilters();
 
   const tags: JSX.Element[] = []
   filters.forEach((values, field) => {
