@@ -6,7 +6,7 @@ import { twMerge } from "tailwind-merge";
 import { OctagonXIcon } from "lucide-react";
 
 const wrapperVariants = cva(
-  "flex items-center rounded-xmd border border-xborder bg-white overflow-hidden transition duration-300 ease-in-out [&:not(:focus-within):hover]:border-xborder-hover focus-within:border-xborder-active focus-within:shadow-[0px_0px_0px_3px_rgba(0,0,0,0.08)]",
+  "flex items-center rounded-xmd border border-xborder bg-white overflow-hidden transition duration-200 ease-in-out [&:not(:focus-within):hover]:border-xborder-hover focus-within:border-xborder-active focus-within:shadow-[0px_0px_0px_3px_rgba(0,0,0,0.08)]",
   {
     variants: {
       size: {

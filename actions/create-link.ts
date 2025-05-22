@@ -33,13 +33,10 @@ export const createLink = async (params: unknown) => {
   if (!code) return ServerResponse.fail(ERROR_MESSAGES.INTERNAL_SERVER_ERROR);
   const shortUrl = makeShortUrl(code);
 
-  const response = await LinkTable.createLink({
+  return await LinkTable.createLink({
     userId: session.user.id,
     code,
     shortUrl: shortUrl,
     ...validated.data,
   });
-
-  // 4 - Handle DAL response
-  return ServerResponse.success('');
 }

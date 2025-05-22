@@ -6,13 +6,6 @@ import { CallToAction } from "./cta";
 
 export default async function Home() {
 
-  // console.log(LinkDeleteSchema.safeParse({ userId: "123", ids: [213] }));
-  // console.log(LinkDeleteSchema.safeParse({ userId: "123", ids: [5432, 213] }));
-  // console.log(LinkDeleteSchema.safeParse({ userId: "123", ids: [-213] }));
-  // console.log(LinkDeleteSchema.safeParse({ userId: "123", ids: [213], heelo: 93 }));
-  // console.log(LinkDeleteSchema.safeParse({ userId: "123", ids: [] }));
-  // console.log(LinkDeleteSchema.safeParse({ ids: [32,12] }));
-
   const session = await getSession();
 
   // if (session?.user) testEmail(session.user.email, session.user.name);

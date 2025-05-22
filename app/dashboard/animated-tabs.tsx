@@ -77,13 +77,13 @@ export function AnimatedTabs() {
     <div className="relative">
       {/* Hover Highlight */}
       <div
-        className="absolute h-[30px] transition-all duration-300 ease-out bg-[#0e0f1114] rounded-[6px] flex items-center pointer-events-none"
+        className="absolute h-[30px] transition-all duration-200 ease-out bg-[#0e0f1114] rounded-[6px] flex items-center pointer-events-none"
         style={{ ...hoverStyle, opacity: hoveredIndex !== null ? 1 : 0 }}
       />
 
       {/* Active Indicator */}
       <div
-        className="absolute bottom-[-6px] h-[2px] bg-vprimary transition-all duration-300 ease-out pointer-events-none"
+        className="absolute bottom-[-6px] h-[2px] bg-vprimary transition-all duration-200 ease-out pointer-events-none"
         style={activeStyle}
       />
 
@@ -93,7 +93,7 @@ export function AnimatedTabs() {
           <Link
           key={index}
           href={tab.path}
-          className={`px-3 py-2 cursor-pointer transition-colors duration-300 h-[30px] ${
+          className={`px-3 py-2 cursor-pointer transition-colors duration-200 h-[30px] ${
             index === activeIndex
               ? "text-vprimary"
               : "text-vsecondary hover:text-[#0e0e10]"

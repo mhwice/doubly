@@ -21,21 +21,29 @@ export const LinkDashboardSchema = LinkSchema.pick({
 });
 
 // I want to replace this, but its better to wait for Zod v4 which has better url handling
-export const OriginalUrlSchema = z.object({
-  originalUrl: z.string().trim().min(1).max(255)
-})
-.transform(({ originalUrl }) => {
-  if (originalUrl.startsWith("https://")) return { originalUrl };
-  return { originalUrl: "https://" + originalUrl };
-})
-.refine(({ originalUrl }) => {
-  try {
-    const url = new URL(originalUrl);
-    return url.protocol === "https:";
-  } catch {
-    return false;
-  }
-});
+export const OriginalUrlSchema = z
+  .object({ originalUrl: z.string().trim().min(1, { message: "link is required" }).max(255) })
+  .transform(({ originalUrl }) => ({
+    originalUrl: originalUrl.startsWith("https://")
+      ? originalUrl
+      : "https://" + originalUrl,
+  }))
+  .refine(
+    ({ originalUrl }) => {
+      try {
+        const url = new URL(originalUrl);
+        // also enforce at least one dot in the hostname
+        return url.protocol === "https:" && url.hostname.includes(".");
+      } catch {
+        return false;
+      }
+    },
+    {
+      message: "must be a valid URL (including a dot in the domain)",
+      path: ["originalUrl"],      // ← now the error lives on the field
+    }
+  );
+
 
 export const LinkCreateSchema = LinkSchema.pick({
   originalUrl: true,

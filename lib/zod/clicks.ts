@@ -62,7 +62,7 @@ export const ClickPayloadSchema = ClickEventSchema.omit({
 });
 
 const ClickChartSchema = z.object({
-  date: z.date(),
+  date: z.coerce.date(),
   qrCount: z.number(),
   linkCount: z.number()
 }).array()
@@ -183,7 +183,6 @@ export const ServerResponseAnalyticsOutputSchema = serverResponseSchema(Analayti
 
 export type ComboboxPage = z.infer<typeof ComboboxPageSchema>;
 export type Combobox = z.infer<typeof ComboboxSchema>;
-// export type RecordClickIfExists = z.infer<typeof RecordClickIfExistsSchema>;
 export type ClickPayload = z.infer<typeof ClickPayloadSchema>;
 export type ClickChart = z.infer<typeof ClickChartSchema>;
 export type AllGroupedData = z.infer<typeof AllGroupedDataSchema>;

@@ -41,12 +41,8 @@ export const editLink = async (params: unknown) => {
   if (!isAllowed(session.user.id)) return ServerResponse.fail(ERROR_MESSAGES.UNAUTHORIZED);
 
   // 3 - Send request to DAL
-  const response = await LinkTable.editLink({
+  return await LinkTable.editLink({
     userId: session.user.id,
     ...validated.data
   });
-
-  // 4 - Handle DAL response
-  if (!response.success) return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS);
-  return response.data;
 }
