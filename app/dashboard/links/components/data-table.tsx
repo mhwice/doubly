@@ -168,13 +168,13 @@ export function DataTable<TData, TValue>({
           <TableBody>
             {isLoading ? (
               new Array(10).fill(null).map((_, idx) => (
-                <TableRow key={`${idx}-row`} className="h-16">
+                <TableRow key={`${idx}-row`}>
                   <TableCell
                     key={`${idx}-cell`}
                     colSpan={columns.length}
-                    className="text-center h-full"
+                    className="text-center h-16"
                   >
-                    <Skeleton className="w-full h-full" />
+                    <Skeleton className="w-full h-8" />
                   </TableCell>
                 </TableRow>
               ))
