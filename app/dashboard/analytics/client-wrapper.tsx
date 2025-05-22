@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { Combobox as FilterPicker } from "./combobox";
 import { ServerResponseAnalyticsOutputSchema, type ClickChart, type AllGroupedData, type Combobox } from "@/lib/zod/clicks";
 import { TimePicker } from "./time-picker";
-import { deserialize } from "superjson";
 import { TabGroup } from "./tab-group";
 import { TabCard } from "./tab-content";
 import { TagGroup } from "./tag-group";
@@ -42,8 +41,8 @@ export function ClientWrapper() {
   const fetcher = async (url: string) => {
     const response = await fetch(url);
     const jsonResponse = await response.json();
-    const deserialized = deserialize(jsonResponse);
-    const validated = ServerResponseAnalyticsOutputSchema.safeParse(deserialized);
+    // const deserialized = deserialize(jsonResponse);
+    const validated = ServerResponseAnalyticsOutputSchema.safeParse(jsonResponse);
     if (!validated.success) throw new Error("failed to validate api response");
     if (!validated.data.success) throw new Error(validated.data.error);
     return validated.data.data;

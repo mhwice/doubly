@@ -32,7 +32,6 @@ import {
 
 import { type Combobox, ServerResponseComboboxPageSchema } from "@/lib/zod/clicks"
 import { useDebounce } from "@/hooks/use-debounce";
-import { deserialize } from "superjson"
 import { type FilterEnumType } from "@/lib/zod/links"
 import { CircularCheckbox } from "./circular-checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -112,8 +111,7 @@ export function Combobox({ comboboxData, dateRange }: ComboboxProps) {
   const fetcher = async (url: string) => {
     const response = await fetch(url);
     const jsonResponse = await response.json();
-    const deserialized = deserialize(jsonResponse);
-    const validated = ServerResponseComboboxPageSchema.safeParse(deserialized);
+    const validated = ServerResponseComboboxPageSchema.safeParse(jsonResponse);
     if (!validated.success) throw new Error("failed to validate api response");
     if (!validated.data.success) throw new Error(validated.data.error);
     return validated.data.data;

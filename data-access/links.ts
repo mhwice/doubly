@@ -69,9 +69,29 @@ const LinkGetAllSchema = z.object({
   dateEnd: z.date()
 }).strict()
 
+interface LinkDTO {
+  id: number,
+  originalUrl: string,
+  shortUrl: string,
+  code: string,
+  createdAt: Date,
+  updatedAt: Date,
+}
+
+function linkToDTO(link: Link) {
+  return {
+    id: link.id,
+    originalUrl: link.originalUrl,
+    shortUrl: link.shortUrl,
+    code: link.code,
+    createdAt: link.createdAt,
+    updatedAt: link.updatedAt,
+  }
+}
+
 export class LinkTable {
 
-  static async getLinkByCode(params: z.infer<typeof LinkCodeSchema>): Promise<ServerResponseType<Link>> {
+  static async getLinkByCode(params: z.infer<typeof LinkCodeSchema>): Promise<ServerResponseType<LinkDTO>> {
     try {
 
       const code = LinkCodeSchema.parse(params);
@@ -87,7 +107,7 @@ export class LinkTable {
 
       if (result.length !== 1) return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
 
-      return ServerResponse.success(result[0]);
+      return ServerResponse.success(linkToDTO(result[0]));
 
     } catch (error: unknown) {
       console.log(error)
@@ -96,7 +116,7 @@ export class LinkTable {
     }
   }
 
-  static async createLink(params: z.infer<typeof LinkCreateSchema>): Promise<ServerResponseType<Link>> {
+  static async createLink(params: z.infer<typeof LinkCreateSchema>): Promise<ServerResponseType<LinkDTO>> {
     try {
 
       /*
@@ -128,7 +148,7 @@ export class LinkTable {
 
       if (result.length !== 1) return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
 
-      return ServerResponse.success(result[0]);
+      return ServerResponse.success(linkToDTO(result[0]));
 
     } catch (error: unknown) {
       console.log(error)
@@ -137,7 +157,7 @@ export class LinkTable {
     }
   }
 
-  static async editLink(params: z.infer<typeof LinkEditSchema>): Promise<ServerResponseType<Link>> {
+  static async editLink(params: z.infer<typeof LinkEditSchema>): Promise<ServerResponseType<LinkDTO>> {
     try {
 
       const { userId, id, updates: { originalUrl } } = LinkEditSchema.parse(params);
@@ -154,7 +174,7 @@ export class LinkTable {
 
       if (result.length !== 1) return ServerResponse.fail(ERROR_MESSAGES.NOT_FOUND);
 
-      return ServerResponse.success(result[0]);
+      return ServerResponse.success(linkToDTO(result[0]));
 
     } catch (error: unknown) {
       if (error instanceof ZodError) return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS);

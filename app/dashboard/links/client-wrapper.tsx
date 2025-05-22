@@ -5,7 +5,6 @@ import { DataTable } from "./components/data-table";
 import { cleanUrl } from "./components/columns";
 import { useCurrentDate } from "../date-context";
 import useSWR from "swr";
-import { deserialize } from "superjson";
 import { useMemo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableRowActions } from "./components/data-table-row-actions";
@@ -22,7 +21,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-
 
 export function ClientWrapper() {
 
@@ -51,8 +49,8 @@ export function ClientWrapper() {
   const fetcher = async (url: string) => {
     const response = await fetch(url);
     const jsonResponse = await response.json();
-    const deserialized = deserialize(jsonResponse);
-    const validated = ServerResponseLinksGetAllSchema.safeParse(deserialized);
+    const validated = ServerResponseLinksGetAllSchema.safeParse(jsonResponse);
+    if (!validated.success) console.log(validated.error)
     if (!validated.success) throw new Error("failed to validate api response");
     if (!validated.data.success) throw new Error(validated.data.error);
     return validated.data.data;
@@ -164,7 +162,7 @@ export function ClientWrapper() {
       {activeLink && <>
         <QRCodeModal isOpen={showQRModal} onOpenChange={setShowQRModal} shortUrl={activeLink.shortUrl} />
         <DeleteLinkModal onLinkDelete={onLinkDelete} isOpen={showDeleteModal} onOpenChange={setShowDeleteModal} ids={[activeLink.id]}/>
-        <EditLinkModal isOpen={showEditModal} onOpenChange={setShowEditModal} id={activeLink.id} link={activeLink.originalUrl} />
+        <EditLinkModal isOpen={showEditModal} onOpenChange={setShowEditModal} id={activeLink.id} originalUrl={activeLink.originalUrl} />
       </>}
       <DataTable isLoading={isValidating} rowSelection={rowSelection} setRowSelection={setRowSelection} data={data || []} columns={columns} />
     </div>
