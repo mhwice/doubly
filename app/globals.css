@@ -248,3 +248,101 @@ html body[data-scroll-locked] {
   overflow: visible !important;
   margin-right: 0 !important;
 }
+
+/* Calendar Styles */
+
+/* td[data-hover="true"] {
+  background-color: #f4f4f5;
+}
+
+td.last-hovered {
+  background-color: #f4f4f5 !important;
+  border-top-right-radius: 0.375rem !important;
+  border-bottom-right-radius: 0.375rem !important;
+}
+
+td.first-hovered {
+  background-color: #f4f4f5 !important;
+  border-top-left-radius: 0.375rem !important;
+  border-bottom-left-radius: 0.375rem !important;
+}
+
+button.last-hovered-button {
+  background-color: #18181b !important;
+  color: #FAFAFA !important;
+}
+
+button.first-hovered-button {
+  background-color: #18181b !important;
+  color: #FAFAFA !important;
+} */
+
+/* .rdp-day-hover-range {
+  background-color: rgba(59, 130, 246, 0.3) !important;
+  color: #1e3a8a !important;
+} */
+
+/* 1. middle days are square */
+.hover-range {
+  background-color: #f4f4f5 !important;
+  color: #18181b !important;
+  border-radius: 0 !important;
+}
+
+/* 2. true endpoints get a full pill‑cap */
+.hover-range-start {
+  border-radius: 0.375rem !important;
+  background-color: #18181b !important;
+  color: #FAFAFA !important;
+}
+.hover-range-end {
+  border-radius: 0.375rem !important;
+  background-color: #18181b !important;
+  color: #FAFAFA !important;
+}
+
+/* 3. also round at the end of each row inside the hover slice */
+.hover-range-row-end {
+  border-top-right-radius: 0.375rem !important;
+  border-bottom-right-radius: 0.375rem !important;
+}
+
+.hover-range-row-start {
+  border-top-left-radius: 0.375rem !important;
+  border-bottom-left-radius: 0.375rem !important;
+}
+
+/* for every <td> whose direct child <button> has the hover‑range class */
+td:has(> button.hover-range) {
+  /* your pill‑style middle */
+  background-color: #f4f4f5 !important;
+  border-radius: 0 !important;
+}
+
+/* absolute start cap on the <td> */
+td:has(> button.hover-range-start) {
+  border-top-left-radius: 0.375rem !important;
+  border-bottom-left-radius: 0.375rem !important;
+  background-color: #f4f4f5 !important;
+}
+
+/* absolute end cap on the <td> */
+td:has(> button.hover-range-end) {
+  border-top-right-radius: 0.375rem !important;
+  border-bottom-right-radius: 0.375rem !important;
+  background-color: #f4f4f5 !important;
+}
+
+/* row breaks (Saturday) */
+td:has(> button.hover-range-row-end) {
+  border-top-right-radius: 0.375rem !important;
+  border-bottom-right-radius: 0.375rem !important;
+  background-color: #f4f4f5 !important;
+}
+
+/* row starts (Sunday) */
+td:has(> button.hover-range-row-start) {
+  border-top-left-radius: 0.375rem !important;
+  border-bottom-left-radius: 0.375rem !important;
+  background-color: #f4f4f5 !important;
+}
