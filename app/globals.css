@@ -253,6 +253,15 @@ html body[data-scroll-locked] {
 
 /*--------------------------------------------*/
 
+.weekend {
+  color: #666666 !important;
+}
+
+.rdp-day_outside {
+  opacity: 1 !important;
+  color: #8f8f8f !important;
+}
+
 button.rdp-day:not(.range_middle):not(.range_start):not(.range_end):not(.hover-range-start):not(.hover-range-end):not(.hover-range-row-start):not(.hover-range-row-end):not(.hover-range):not(.today):hover {
   background: none !important;
 }
@@ -261,7 +270,6 @@ button.rdp-day:not(.range_middle):not(.range_start):not(.range_end):not(.hover-r
 button.range_middle,
 td:has(> button.range_middle) {
   background-color: #f4f4f5 !important;
-  color:           #18181b !important;
   border-radius:   0 !important;
 }
 
@@ -321,9 +329,10 @@ button.range-row-end {
 /* 1. middle days are square */
 .hover-range {
   background-color: #f4f4f5 !important;
-  color: #18181b !important;
+  /* color: #18181b !important; */
   border-radius: 0 !important;
 }
+
 
 /* 2. true endpoints get a full pill‑cap */
 .hover-range-start {

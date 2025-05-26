@@ -2,17 +2,16 @@
 
 import * as React from "react";
 import { format, isToday } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { DateRange, DayPicker, Matcher } from "react-day-picker";
 import { isSameDay, isWithinInterval } from "date-fns";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import "react-day-picker/dist/style.css";
+import { Calendar } from "@/components/ui/calendar";
 
 export function DatePickerWithRange({ className }: React.HTMLAttributes<HTMLDivElement>) {
-  const [date, setDate] = React.useState<DateRange | undefined>();
-
   const [selected, setSelected] = React.useState<DateRange>({ from: undefined, to: undefined })
   const [hoverDate, setHoverDate] = React.useState<Date | undefined>(undefined)
 
@@ -64,8 +63,6 @@ export function DatePickerWithRange({ className }: React.HTMLAttributes<HTMLDivE
       );
 
     const fullRange = selected.from && selected.to ? { start: selected.from, end: selected.to } : undefined;
-    const isStartSelected: Matcher = day => !!(fullRange && isSameDay(day, fullRange.start));
-    const isEndSelected: Matcher = day => !!(fullRange && isSameDay(day, fullRange.end));
     const isRowStartSelected: Matcher = day =>
       !!(
         fullRange &&
@@ -88,18 +85,18 @@ export function DatePickerWithRange({ className }: React.HTMLAttributes<HTMLDivE
             variant={"outline"}
             className={cn(
               "w-[300px] justify-start text-left font-normal",
-              !date && "text-muted-foreground"
+              !selected && "text-muted-foreground"
             )}
           >
             <CalendarIcon />
-            {date?.from ? (
-              date.to ? (
+            {selected?.from ? (
+              selected.to ? (
                 <>
-                  {format(date.from, "LLL dd, y")} -{" "}
-                  {format(date.to, "LLL dd, y")}
+                  {format(selected.from, "LLL dd, y")} -{" "}
+                  {format(selected.to, "LLL dd, y")}
                 </>
               ) : (
-                format(date.from, "LLL dd, y")
+                format(selected.from, "LLL dd, y")
               )
             ) : (
               <span>Pick a date</span>
@@ -109,6 +106,15 @@ export function DatePickerWithRange({ className }: React.HTMLAttributes<HTMLDivE
         <PopoverContent className="w-auto p-0 flex flex-row" align="start">
 
         <DayPicker
+            formatters={{
+              formatWeekdayName: (date: Date) => {
+                const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+                const dayOfWeek = date.getDay(); // 0 for Sunday, 1 for Monday, ..., 6 for Saturday
+                return days[dayOfWeek];
+              }
+            }}
+
+            showOutsideDays={true}
             mode="range"
             selected={selected}
             onSelect={(d) => {
@@ -124,8 +130,33 @@ export function DatePickerWithRange({ className }: React.HTMLAttributes<HTMLDivE
                 if (d) setSelected(d);
               }
             }}
-            onDayMouseEnter={(d) => setHoverDate(d)}
+            className="bg-white font-normal"
+            classNames={{
+              months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
+              month: "space-y-4",
+              caption: "flex items-center justify-between",
+              caption_label: "text-sm font-medium",
+              nav: "flex items-center gap-5",
+              nav_button: "!bg-white h-7 w-7 p-0 opacity-50 hover:opacity-100",
+              nav_button_previous: "absolute left-1",
+              nav_button_next: "absolute right-1",
+              table: "w-full border-collapse space-y-1",
+              head_row: "flex justify-evenly",
+              head_cell: "text-muted-foreground rounded-md font-normal text-[0.8rem] w-[40px]",
+              row: "flex w-full mt-2",
+              cell: "relative p-0 text-center text-sm",
+            }}
 
+            components={{
+              IconLeft: ({ className, ...props }) => (
+                <ChevronLeft className={cn("h-5 w-5", className)} {...props} />
+              ),
+              IconRight: ({ className, ...props }) => (
+                <ChevronRight className={cn("h-5 w-5", className)} {...props} />
+              ),
+            }}
+
+            onDayMouseEnter={(d) => setHoverDate(d)}
             modifiers={{
               hoverRange: hoverRange || [],
               hoverRangeStart: isStart,
@@ -134,7 +165,10 @@ export function DatePickerWithRange({ className }: React.HTMLAttributes<HTMLDivE
               hoverRangeRowStart: isRowStart,
               rangeRowStart: isRowStartSelected,
               rangeRowEnd: isRowEndSelected,
-              singleHover: isSingleHover
+              singleHover: isSingleHover,
+              weekend: (day) => {
+                return (day.getDay() === 0 || day.getDay() === 6);
+              }
             }}
             modifiersClassNames={{
               singleHover: "single-hover",
@@ -143,8 +177,6 @@ export function DatePickerWithRange({ className }: React.HTMLAttributes<HTMLDivE
               hoverRangeEnd:     "hover-range-end",
               hoverRangeRowEnd:  "hover-range-row-end",
               hoverRangeRowStart:"hover-range-row-start",
-              // selected:          "!bg-red-500",
-              // selected:          "bg-primary text-primary-foreground",
               selected:            'selected',
               range_middle:        'range_middle',
               range_start:         'range_start',
@@ -152,8 +184,7 @@ export function DatePickerWithRange({ className }: React.HTMLAttributes<HTMLDivE
               rangeRowStart: "range-row-start",
               rangeRowEnd:   "range-row-end",
               today:             "today",
-              // range_start:       "rounded-l-full bg-accent/30 text-accent-foreground",
-              // range_end:         "rounded-r-full bg-accent/30 text-accent-foreground",
+              weekend: 'weekend'
             }}
           />
         </PopoverContent>
@@ -161,137 +192,3 @@ export function DatePickerWithRange({ className }: React.HTMLAttributes<HTMLDivE
     </div>
   );
 }
-
-/*
-
-I want the middle of the hover range to have a
-
-
-
-          <Calendar
-            initialFocus
-            mode="range"
-            defaultMonth={date?.from}
-            selected={date}
-            onSelect={(d) => {
-              if (date?.from && date?.to) {
-                if (d?.to === date.to) {
-                  // d.from is the new value to take
-                  setDate({ from: d.from, to: undefined });
-                } else {
-                  // d.to is the new value to take
-                  setDate({ from: d?.to, to: undefined });
-                }
-              } else {
-                setDate(d);
-              }
-            }}
-            onDayMouseEnter={(_, __, event) => {
-              // 1) Early exit / full reset
-              if ((date?.from && date?.to) || (!date?.from && !date?.to)) {
-                // clear Tds
-                [firstHoveredTd, lastHoveredTd].forEach(ref => {
-                  if (ref.current) {
-                    ref.current.classList.remove(
-                      ref === firstHoveredTd ? 'first-hovered' : 'last-hovered'
-                    )
-                  }
-                  ref.current = null
-                })
-                // clear Buttons
-                if (firstHoveredButton.current) {
-                  firstHoveredButton.current.classList.remove('first-hovered-button');
-                  firstHoveredButton.current = null;
-                }
-                if (lastHoveredButton.current) {
-                  lastHoveredButton.current.classList.remove('last-hovered-button');
-                  lastHoveredButton.current = null;
-                }
-
-                return
-              }
-
-              // 2) Compute hovered buttons
-              const btn = event.target as HTMLButtonElement
-              const tbody = btn.closest('tbody')
-              if (!tbody) return
-
-              const buttons       = Array.from(tbody.querySelectorAll('button'))
-              const currentIndex  = buttons.indexOf(btn)
-              const selectedIndex = buttons.findIndex(b => b.getAttribute('aria-selected') === 'true')
-              if (selectedIndex === -1) return
-
-              const start = Math.min(currentIndex, selectedIndex)
-              const end   = Math.max(currentIndex, selectedIndex)
-              const hoveredButtons = buttons.slice(start, end + 1)
-
-              // 3) Update data-hover on each <button> and its <td>
-              buttons.forEach(b => {
-                const inRange = hoveredButtons.includes(b)
-                b.setAttribute('data-hover', inRange ? 'true' : 'false')
-                const cell = b.closest('td')
-                if (cell) cell.setAttribute('data-hover', inRange ? 'true' : 'false')
-              })
-
-              // 4) Remove old button-classes
-              if (firstHoveredButton.current) {
-                firstHoveredButton.current.classList.remove('first-hovered-button')
-              }
-              if (lastHoveredButton.current) {
-                lastHoveredButton.current.classList.remove('last-hovered-button')
-              }
-
-              // 5) Mark new first/last buttons
-              const newFirstBtn = hoveredButtons.length
-                ? hoveredButtons[0]
-                : null
-              const newLastBtn  = hoveredButtons.length
-                ? hoveredButtons[hoveredButtons.length - 1]
-                : null
-
-              if (newFirstBtn) {
-                newFirstBtn.classList.add('first-hovered-button')
-                firstHoveredButton.current = newFirstBtn
-              } else {
-                firstHoveredButton.current = null
-              }
-
-              if (newLastBtn) {
-                newLastBtn.classList.add('last-hovered-button')
-                lastHoveredButton.current = newLastBtn
-              } else {
-                lastHoveredButton.current = null
-              }
-
-              // 6) Remove old first/last cell-classes
-              if (firstHoveredTd.current) {
-                firstHoveredTd.current.classList.remove('first-hovered')
-              }
-              if (lastHoveredTd.current) {
-                lastHoveredTd.current.classList.remove('last-hovered')
-              }
-
-              // 7) Mark new first/last cells
-              const firstTd = newFirstBtn?.closest('td') ?? null
-              const lastTd  = newLastBtn?.closest('td')  ?? null
-
-              if (firstTd) {
-                firstTd.classList.add('first-hovered')
-                firstHoveredTd.current = firstTd
-              } else {
-                firstHoveredTd.current = null
-              }
-
-              if (lastTd) {
-                lastTd.classList.add('last-hovered')
-                lastHoveredTd.current = lastTd
-              } else {
-                lastHoveredTd.current = null
-              }
-            }}
-
-          />
-          <div className="bg-red-200 w-[200px] h-auto"></div>
-
-
-*/
