@@ -253,6 +253,10 @@ html body[data-scroll-locked] {
 
 /*--------------------------------------------*/
 
+button.rdp-day:not(.range_middle):not(.range_start):not(.range_end):not(.hover-range-start):not(.hover-range-end):not(.hover-range-row-start):not(.hover-range-row-end):not(.hover-range):not(.today):hover {
+  background: none !important;
+}
+
 /* 1. middle days are square */
 button.range_middle,
 td:has(> button.range_middle) {
@@ -377,4 +381,17 @@ td:has(> button.hover-range-row-start) {
   border-top-left-radius: 0.375rem !important;
   border-bottom-left-radius: 0.375rem !important;
   background-color: #f4f4f5 !important;
+}
+
+button.single-hover {
+  border-style: solid;
+  border-width: 1px;
+  border-color: #8f8f8f;
+  border-radius: 0.375rem !important;
+}
+
+button.today {
+  background-color: #0068d6 !important;
+  color:white;
+  border-radius: 0.375rem !important;
 }

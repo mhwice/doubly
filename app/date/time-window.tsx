@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { format } from "date-fns";
+import { format, isToday } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { DateRange, DayPicker, Matcher } from "react-day-picker";
 import { isSameDay, isWithinInterval } from "date-fns";
@@ -24,6 +24,28 @@ export function DatePickerWithRange({ className }: React.HTMLAttributes<HTMLDivE
       hoverRange = { from: hoverDate, to: selected.from };
     }
   }
+
+  const isSingleHover: Matcher = (day) => {
+    const noneSelected = !selected?.from && !selected?.to;
+    const bothSelected = !!(selected?.from && selected?.to);
+
+    // only in the “no dates” or “both dates” states
+    if (!(noneSelected || bothSelected)) return false;
+
+    // dont highlight today
+    if (hoverDate && isToday(hoverDate)) return false;
+
+    // don’t highlight your actual selected endpoints
+    if (
+      (selected?.from && isSameDay(day, selected.from)) ||
+      (selected?.to   && isSameDay(day, selected.to))
+    ) {
+      return false;
+    }
+
+    // and only highlight the one you’re hovering
+    return !!(hoverDate && isSameDay(day, hoverDate));
+  };
 
     const isStart: Matcher = (d) => !!(hoverRange && hoverRange.from && isSameDay(d, hoverRange.from));
     const isEnd:   Matcher = (d) => !!(hoverRange && hoverRange.to && isSameDay(d, hoverRange.to));
@@ -112,8 +134,10 @@ export function DatePickerWithRange({ className }: React.HTMLAttributes<HTMLDivE
               hoverRangeRowStart: isRowStart,
               rangeRowStart: isRowStartSelected,
               rangeRowEnd: isRowEndSelected,
+              singleHover: isSingleHover
             }}
             modifiersClassNames={{
+              singleHover: "single-hover",
               hoverRange:        "hover-range",
               hoverRangeStart:   "hover-range-start",
               hoverRangeEnd:     "hover-range-end",
@@ -127,7 +151,7 @@ export function DatePickerWithRange({ className }: React.HTMLAttributes<HTMLDivE
               range_end:           'range_end',
               rangeRowStart: "range-row-start",
               rangeRowEnd:   "range-row-end",
-              // today:             "bg-accent text-accent-foreground",
+              today:             "today",
               // range_start:       "rounded-l-full bg-accent/30 text-accent-foreground",
               // range_end:         "rounded-r-full bg-accent/30 text-accent-foreground",
             }}
