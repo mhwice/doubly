@@ -41,6 +41,22 @@ export function DatePickerWithRange({ className }: React.HTMLAttributes<HTMLDivE
         day.getDay() === 0
       );
 
+    const fullRange = selected.from && selected.to ? { start: selected.from, end: selected.to } : undefined;
+    const isStartSelected: Matcher = day => !!(fullRange && isSameDay(day, fullRange.start));
+    const isEndSelected: Matcher = day => !!(fullRange && isSameDay(day, fullRange.end));
+    const isRowStartSelected: Matcher = day =>
+      !!(
+        fullRange &&
+        isWithinInterval(day, fullRange) &&
+        day.getDay() === 0    // Sunday
+      );
+    const isRowEndSelected: Matcher = day =>
+      !!(
+        fullRange &&
+        isWithinInterval(day, fullRange) &&
+        day.getDay() === 6    // Saturday
+      );
+
   return (
     <div className={cn("grid gap-2", className)}>
       <Popover>
@@ -73,7 +89,6 @@ export function DatePickerWithRange({ className }: React.HTMLAttributes<HTMLDivE
         <DayPicker
             mode="range"
             selected={selected}
-
             onSelect={(d) => {
               if (selected?.from && selected?.to) {
                 if (d?.to === selected.to) {
@@ -87,7 +102,6 @@ export function DatePickerWithRange({ className }: React.HTMLAttributes<HTMLDivE
                 if (d) setSelected(d);
               }
             }}
-
             onDayMouseEnter={(d) => setHoverDate(d)}
 
             modifiers={{
@@ -96,13 +110,26 @@ export function DatePickerWithRange({ className }: React.HTMLAttributes<HTMLDivE
               hoverRangeEnd:   isEnd,
               hoverRangeRowEnd: isRowEnd,
               hoverRangeRowStart: isRowStart,
+              rangeRowStart: isRowStartSelected,
+              rangeRowEnd: isRowEndSelected,
             }}
             modifiersClassNames={{
               hoverRange:        "hover-range",
               hoverRangeStart:   "hover-range-start",
               hoverRangeEnd:     "hover-range-end",
               hoverRangeRowEnd:  "hover-range-row-end",
-              hoverRangeRowStart:  "hover-range-row-start",
+              hoverRangeRowStart:"hover-range-row-start",
+              // selected:          "!bg-red-500",
+              // selected:          "bg-primary text-primary-foreground",
+              selected:            'selected',
+              range_middle:        'range_middle',
+              range_start:         'range_start',
+              range_end:           'range_end',
+              rangeRowStart: "range-row-start",
+              rangeRowEnd:   "range-row-end",
+              // today:             "bg-accent text-accent-foreground",
+              // range_start:       "rounded-l-full bg-accent/30 text-accent-foreground",
+              // range_end:         "rounded-r-full bg-accent/30 text-accent-foreground",
             }}
           />
         </PopoverContent>

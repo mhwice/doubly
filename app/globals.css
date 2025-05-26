@@ -251,36 +251,68 @@ html body[data-scroll-locked] {
 
 /* Calendar Styles */
 
-/* td[data-hover="true"] {
-  background-color: #f4f4f5;
+/*--------------------------------------------*/
+
+/* 1. middle days are square */
+button.range_middle,
+td:has(> button.range_middle) {
+  background-color: #f4f4f5 !important;
+  color:           #18181b !important;
+  border-radius:   0 !important;
 }
 
-td.last-hovered {
+/* 2. true endpoints get a full pill‑cap */
+button.range_start {
+  border-radius:         0.375rem !important;
+  background-color:      #18181b !important;
+  color:                 #FAFAFA !important;
+}
+button.range_end {
+  border-radius:         0.375rem !important;
+  background-color:      #18181b !important;
+  color:                 #FAFAFA !important;
+}
+
+/* 3. round at the end of each row inside the selected slice */
+/*    (you only get `.range_end` on the actual end, so if you also want row‑break rounding for “middle” cells you’ll need to add custom `rangeRowEnd` modifiers) */
+td:has(> button.range_end) {
   background-color: #f4f4f5 !important;
-  border-top-right-radius: 0.375rem !important;
+  border-top-right-radius:    0.375rem !important;
   border-bottom-right-radius: 0.375rem !important;
 }
-
-td.first-hovered {
+td:has(> button.range_start) {
   background-color: #f4f4f5 !important;
-  border-top-left-radius: 0.375rem !important;
+  border-top-left-radius:    0.375rem !important;
   border-bottom-left-radius: 0.375rem !important;
 }
 
-button.last-hovered-button {
-  background-color: #18181b !important;
-  color: #FAFAFA !important;
+/* then in your CSS */
+/* this needs to apply to the week start/end! */
+td:has(> button.range-row-start) {
+  background-color: #f4f4f5 !important;
+  border-top-left-radius:    0.375rem !important;
+  border-bottom-left-radius: 0.375rem !important;
 }
 
-button.first-hovered-button {
-  background-color: #18181b !important;
-  color: #FAFAFA !important;
-} */
+td:has(> button.range-row-end) {
+  background-color: #f4f4f5 !important;
+  border-top-right-radius:    0.375rem !important;
+  border-bottom-right-radius: 0.375rem !important;
+}
 
-/* .rdp-day-hover-range {
-  background-color: rgba(59, 130, 246, 0.3) !important;
-  color: #1e3a8a !important;
-} */
+button.range-row-start {
+  border-top-left-radius:    0.375rem !important;
+  border-bottom-left-radius: 0.375rem !important;
+  /* background-color: pink !important; */
+}
+button.range-row-end {
+  border-top-right-radius:    0.375rem !important;
+  border-bottom-right-radius: 0.375rem !important;
+  /* background-color: pink !important; */
+}
+
+
+/*--------------------------------------------*/
 
 /* 1. middle days are square */
 .hover-range {
