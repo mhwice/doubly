@@ -13,6 +13,7 @@ import { useCurrentDate } from "../date-context";
 import { StatsHeader } from "../links/stats-header";
 import { useCurrentFilters } from "../filters-context";
 import { RefreshButton } from "@/components/refresh-button";
+import { DatePickerWithRange } from "@/app/date/date-selector";
 
 interface StatsHeaderProps {
   numLinks: number,
@@ -82,7 +83,8 @@ export function ClientWrapper() {
 
       <div className="flex flex-row justify-start space-x-[6px] sm:space-x-3">
         <FilterPicker comboboxData={comboboxData} dateRange={dateRange} />
-        <TimePicker dateRange={dateRange} setDateRange={setDateRange} now={now} />
+        {/* <TimePicker dateRange={dateRange} setDateRange={setDateRange} now={now} /> */}
+        <DatePickerWithRange now={now} dateRange={dateRange} setDateRange={setDateRange} />
         <RefreshButton isLoading={isValidating}/>
       </div>
 

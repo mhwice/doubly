@@ -1,11 +1,9 @@
-import { Calendar } from "@/components/ui/calendar";
-import { DatePickerWithRange } from "./time-window";
+import { DatePickerWithRange } from "./date-selector";
 
 export default function Page() {
   return (
-    <div className="flex justify-center items-center h-full">
-      <DatePickerWithRange />
-      {/* <Calendar /> */}
+    <div className="flex justify-center items-center h-[50%]">
+      {/* <DatePickerWithRange now={new Date()}/> */}
     </div>
   );
 }

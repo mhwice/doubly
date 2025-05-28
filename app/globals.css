@@ -262,16 +262,16 @@ html body[data-scroll-locked] {
   .rdp-day:focus-visible {
     outline: none !important;
     border-radius: 0.375rem !important;
-    border: none !important;
-    box-shadow: 0 0 0 2px white, 0 0 0 4px #0068d6;
+    /* border: none !important; */
+    /* box-shadow: 0 0 0 2px white, 0 0 0 4px #0068d6; */
     z-index: 999 !important;
   }
 
   .rdp-day:focus {
     outline: none !important;
     border-radius: 0.375rem !important;
-    border: none !important;
-    box-shadow: 0 0 0 2px white, 0 0 0 4px #0068d6;
+    /* border: none !important; */
+    /* box-shadow: 0 0 0 2px white, 0 0 0 4px #0068d6; */
     z-index: 999 !important;
   }
 
@@ -402,9 +402,9 @@ html body[data-scroll-locked] {
   }
 
   button.single-hover {
-    border-style: solid;
-    border-width: 1px;
-    border-color: #8f8f8f;
+    border-style: solid !important;
+    border-width: 1px !important;
+    border-color: #8f8f8f !important;
     border-radius: 0.375rem !important;
   }
 }
