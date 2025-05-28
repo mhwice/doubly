@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { differenceInYears, endOfDay, format, startOfDay, subDays, subYears } from "date-fns"
+import { addDays, endOfDay, format, startOfDay, subDays, subYears } from "date-fns"
 import { Calendar, X } from "lucide-react"
 import { DateRange } from "react-day-picker"
 
@@ -29,32 +29,28 @@ interface DatePickerWithRangeProps {
 
 export function DatePickerWithRange({ now, dateRange, setDateRange }: DatePickerWithRangeProps) {
 
+  // this is the internally selected dates for the calendar, not the dateRange we are using to
+  // filter clicks
   const [selected, setSelected] = React.useState<DateRange>({
     from: undefined,
     to: undefined,
   });
 
   React.useEffect(() => {
-    setSelected({ from: dateRange[0], to: dateRange[1] });
-  }, [dateRange[0], dateRange[1]]);
-
-  // Wrap your setter so it also writes back to the tuple:
-  const handleSelectedChange = (range: DateRange) => {
-    setSelected(range);
-    if (range.to) setDateRange([range.from, range.to]);
-  };
+    if (selected?.from && selected?.to) {
+      setOpen(false)
+      setDateRange([selected.from, addDays(selected.to, 1)]);
+    }
+  }, [selected.from, selected.to]);
 
   const [open, setOpen] = React.useState(false);
 
   const options = [
-    { label: "Today", value: "today", getDates: () => ({ start: startOfDay(now), end: now }) },
-    { label: "Yesterday", value: "yesterday", getDates: () => ({ start: startOfDay(subDays(now, 1)), end: endOfDay(subDays(now, 1)) }) },
-    { label: "Last 7 Days", value: "last-7", getDates: () => ({ start: startOfDay(subDays(now, 7)), end: now }) },
-    { label: "Last 30 Days", value: "last-30", getDates: () => ({ start: startOfDay(subDays(now, 30)), end: now }) },
-    { label: "Last 90 Days", value: "last-90", getDates: () => ({ start: startOfDay(subDays(now, 90)), end: now }) },
-    { label: "Last Year", value: "last-year", getDates: () => ({ start: startOfDay(subYears(now, 1)), end: now }) },
-    { label: "All Time", value: "all-time", getDates: () => ({ start: startOfDay(subYears(now, 100)), end: now })},
-    // { label: "All Time", value: "all-time", getDates: () => ({ start: undefined, end: now })},
+    { label: "Last 1 Day",   value: "yesterday", getDates: () => ({ start: subDays(now, 1), end: now }) },
+    { label: "Last 7 Days",  value: "last-7",    getDates: () => ({ start: subDays(now, 7), end: now }) },
+    { label: "Last 30 Days", value: "last-30",   getDates: () => ({ start: subDays(now, 30), end: now }) },
+    { label: "Last 90 Days", value: "last-90",   getDates: () => ({ start: subDays(now, 90), end: now }) },
+    { label: "Last 1 Year",  value: "last-year", getDates: () => ({ start: subYears(now, 1), end: now }) },
   ];
 
   const handleClick = (e: string) => {
@@ -69,20 +65,13 @@ export function DatePickerWithRange({ now, dateRange, setDateRange }: DatePicker
 
   const label = React.useMemo(() => {
     if (!selected.from || !selected.to) return "Select Date Range";
-    // if (!selected.to) return format(selected.from, "LLL dd, y");
-    if (differenceInYears(selected.to, selected.from) >= 99) return "All Time";
     return `${format(selected.from, "LLL dd, y")} - ${format(selected.to, "LLL dd, y")}`;
   }, [selected.from, selected.to]);
-
-  React.useEffect(() => {
-    if (selected.from && selected.to) {
-      setOpen(false)
-    }
-  }, [selected.from, selected.to])
 
   const clear = (e: React.MouseEvent) => {
     e.stopPropagation();
     setSelected({ from: undefined, to: undefined });
+    setDateRange([undefined, now]);
   }
 
   return (
@@ -92,7 +81,7 @@ export function DatePickerWithRange({ now, dateRange, setDateRange }: DatePicker
           <Button
             variant="outline"
             onClick={() => setOpen(true)}
-            className="flex justify-start px-4 py-2 w-[330px] text-sm font-normal text-xtext"
+            className="flex justify-start px-4 py-2 sm:w-[330px] w-full text-sm font-normal text-xtext"
           >
             <Calendar />
             {label}

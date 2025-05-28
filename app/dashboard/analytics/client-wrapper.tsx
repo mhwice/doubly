@@ -13,7 +13,8 @@ import { useCurrentDate } from "../date-context";
 import { StatsHeader } from "../links/stats-header";
 import { useCurrentFilters } from "../filters-context";
 import { RefreshButton } from "@/components/refresh-button";
-import { DatePickerWithRange } from "@/app/date/date-selector";
+import { format } from "date-fns";
+import { DatePickerWithRange } from "@/components/date-selector";
 
 interface StatsHeaderProps {
   numLinks: number,
@@ -28,7 +29,8 @@ export function ClientWrapper() {
 
   useEffect(() => {
     setDateRange((prevDateRange) => {
-      return [prevDateRange[0], now];
+      if (prevDateRange[1] === undefined) return [prevDateRange[0], now];
+      return prevDateRange;
     })
   }, [now]);
 
@@ -53,8 +55,10 @@ export function ClientWrapper() {
   for (const [field, values] of filters) {
     for (const value of values) params.append(field, value);
   }
-  if (dateRange[0] !== undefined) params.append("dateStart", dateRange[0].toISOString());
-  params.append("dateEnd", dateRange[1].toISOString());
+  if (dateRange[0] !== undefined) params.append("dateStart", format(dateRange[0], "yyyy-MM-dd'T'HH:mm:ssXXX"));
+  // if (dateRange[0] !== undefined) params.append("dateStart", dateRange[0].toISOString());
+  params.append("dateEnd", format(dateRange[1], "yyyy-MM-dd'T'HH:mm:ssXXX"));
+  // params.append("dateEnd", dateRange[1].toISOString());
   const url = `/api/filter?${params.toString()}`;
 
   // how can I add some client-side validation?
@@ -81,7 +85,7 @@ export function ClientWrapper() {
 
       <TagGroup />
 
-      <div className="flex flex-row justify-start space-x-[6px] sm:space-x-3">
+      <div className="flex flex-col justify-start sm:space-x-3 sm:flex-row space-y-1 sm:space-y-0">
         <FilterPicker comboboxData={comboboxData} dateRange={dateRange} />
         {/* <TimePicker dateRange={dateRange} setDateRange={setDateRange} now={now} /> */}
         <DatePickerWithRange now={now} dateRange={dateRange} setDateRange={setDateRange} />

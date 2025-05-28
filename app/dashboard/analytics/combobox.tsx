@@ -39,6 +39,7 @@ import { cleanUrl } from "../links/components/columns";
 import useSWR from 'swr';
 import { useCurrentFilters } from "../filters-context"
 import { Button } from "@/components/doubly/ui/button"
+import { format } from "date-fns"
 
 type ComboboxProps = {
   comboboxData: Combobox | undefined,
@@ -123,8 +124,8 @@ export function Combobox({ comboboxData, dateRange }: ComboboxProps) {
   for (const [field, values] of filters) {
     for (const value of values) params.append(field, value);
   }
-  if (dateRange[0] !== undefined) params.append("dateStart", dateRange[0].toISOString());
-  params.append("dateEnd", dateRange[1].toISOString());
+  if (dateRange[0] !== undefined) params.append("dateStart", format(dateRange[0], "yyyy-MM-dd'T'HH:mm:ssXXX"));
+  params.append("dateEnd", format(dateRange[1], "yyyy-MM-dd'T'HH:mm:ssXXX"));
 
   if (debouncedQueryString !== "" && page !== "root") {
     params.append("queryString", debouncedQueryString);
