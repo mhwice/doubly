@@ -4,6 +4,7 @@ import iso3166 from "iso-3166-2";
 import { cacheLink, getLink } from "@/data-access/redis";
 import { LinkTable } from "@/data-access/links";
 import { enqueueClick } from "@/data-access/queue";
+import { writeToStream } from "@/utils/write-to-stream";
 
 // Makes sure that we never cache anything
 export const dynamic = 'force-dynamic';
@@ -110,11 +111,15 @@ export async function GET(request: NextRequest) {
   // Check cache for url
   const redisLink = await getLink(code);
   if (redisLink) {
-    await enqueueClick({
+    const payload = {
       linkId: redisLink.linkId,
       createdAt: new Date(),
       ...extractMetadata(request)
-    });
+    };
+    await enqueueClick(payload);
+    // ----- Experimental -------
+    await writeToStream(payload);
+    // --------------------------
     permanentRedirect(redisLink.originalUrl);
   }
 
@@ -130,12 +135,17 @@ export async function GET(request: NextRequest) {
   // Populate cache
   await cacheLink(code, dbLink.originalUrl, dbLink.id);
 
-  // Enqueue click
-  await enqueueClick({
+  const payload = {
     linkId: dbLink.id,
     createdAt: new Date(),
     ...extractMetadata(request)
-  });
+  };
+
+  // Enqueue click
+  await enqueueClick(payload);
+  // ----- Experimental -------
+  await writeToStream(payload);
+  // --------------------------
 
   permanentRedirect(dbLink.originalUrl);
 }

@@ -2,7 +2,7 @@ import "server-only";
 
 import { env } from "@/data-access/env";
 import { neon } from '@neondatabase/serverless';
-import { ZodError } from 'zod';
+import { date, ZodError } from 'zod';
 import { parseQueryResponse, type QueryResponse } from "@/utils/helper";
 import {
   ClickPayloadSchema,
@@ -208,6 +208,10 @@ export class ClickEvents {
       not in the old format
       */
       if (dateRange[1] === undefined) throw new Error('temp workaround, pass an end date for now');
+
+      // console.log("")
+      // console.log(dateRange[0], dateRange[1]);
+      // console.log("")
 
       const datePlaceholders: [number, number] = [-1, -1];
       const dateConditions = [];

@@ -21,6 +21,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { format } from "date-fns";
 
 export function ClientWrapper() {
 
@@ -57,7 +58,7 @@ export function ClientWrapper() {
   }
 
   const params = new URLSearchParams();
-  params.append("dateEnd", now.toISOString());
+  params.append("dateEnd", format(now, "yyyy-MM-dd'T'HH:mm:ssXXX"));
   const url = `/api/links?${params.toString()}`;
 
   const { data, error, isLoading, isValidating } = useSWR(url, fetcher, {
