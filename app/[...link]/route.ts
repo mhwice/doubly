@@ -5,6 +5,7 @@ import { cacheLink, getLink } from "@/data-access/redis";
 import { LinkTable } from "@/data-access/links";
 import { enqueueClick } from "@/data-access/queue";
 import { writeToStream } from "@/utils/write-to-stream";
+import { writeToKV } from "@/data-access/cloudflare-kv";
 
 // Makes sure that we never cache anything
 export const dynamic = 'force-dynamic';
@@ -134,6 +135,10 @@ export async function GET(request: NextRequest) {
 
   // Populate cache
   await cacheLink(code, dbLink.originalUrl, dbLink.id);
+
+  // ----- Experimental -------
+  await writeToKV(code, dbLink.originalUrl, dbLink.id);
+  // --------------------------
 
   const payload = {
     linkId: dbLink.id,

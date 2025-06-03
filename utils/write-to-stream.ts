@@ -4,7 +4,7 @@ import { Redis } from "@upstash/redis";
  * Takes a click event and writes it to the Upstash Redis Stream to be consumed later
  */
 
-interface PayloadProps {
+export interface PayloadProps {
   linkId: number,
   createdAt: Date,
   source: string;

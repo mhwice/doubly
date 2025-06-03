@@ -226,3 +226,25 @@ export function DateRangePicker({ selected, setSelected }: DateRangePickerProps)
     </div>
   );
 }
+
+
+/*
+
+linkId 49
+createdAt 2025-05-29T04:33:49.149Z
+source link
+city Duncan
+continent North America
+country Canada
+latitude 48.7835
+longitude -123.7014
+region British Columbia
+browser Safari
+os Mac OS
+device unknown
+
+1) Create a cloudflare worker that schedules a cron job. The cron job should log the current date, thats it.
+2) Figure out the code needed to read from the redis stream. Once I read events from the stream, log what I pulled from the stream.
+3) Figure out how to write this to Neon.
+
+*/
