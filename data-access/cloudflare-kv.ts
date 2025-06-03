@@ -9,18 +9,12 @@ export async function writeToKV(code: string, originalUrl: string, linkId: numbe
   const payload = JSON.stringify({ originalUrl, linkId });
   const namespaceId = "7fdaccaf9072443db29e72b452dd8254";
   const accountId = "cedc684260ce5373e68f79a5fa17e2f3";
-  const metadata = "";
 
   try {
-    // const response = await client.kv.namespaces.values.update(namespaceId, key, {
-    //   account_id: accountId,
-    //   metadata: metadata,
-    //   value: payload,
-    // });
-
     const response = await client.put(`/accounts/${accountId}/storage/kv/namespaces/${namespaceId}/values/${key}`,
       {
-        headers: { "Content-Type": "application/json" },
+        // headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "text/plain;charset=UTF-8" },
         body: payload,
       }
     );
