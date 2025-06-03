@@ -44,6 +44,7 @@
     "better-auth": "^1.2.2",
     "change-case": "^5.4.4",
     "class-variance-authority": "^0.7.1",
+    "cloudflare": "^4.3.0",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
     "date-fns": "^3.6.0",

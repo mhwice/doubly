@@ -8,8 +8,10 @@ const queue = client.queue({
 });
 
 export async function enqueueClick(clickPayload: ClickPayload) {
+  const url = `${process.env.APP_URL}/api/record-click`;
+  // console.log(url)
   const result = await queue.enqueueJSON({
-    url: `${process.env.APP_URL}/api/record-click`,
+    url: url,
     body: clickPayload
   });
 
