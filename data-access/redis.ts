@@ -8,6 +8,7 @@ function shortCodeKey(code: string) {
 }
 
 export async function cacheLink(code: string, originalUrl: string, linkId: number): Promise<void> {
+  console.log("redis", redis)
   await redis.hset(shortCodeKey(code), { originalUrl, linkId });
 }
 

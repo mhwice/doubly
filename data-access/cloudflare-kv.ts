@@ -8,6 +8,7 @@ const namespaceId = process.env.CLOUDFLARE_KV_NAMESPACE_ID;
 const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
 
 export async function writeToKV(code: string, originalUrl: string, linkId: number) {
+  console.log("client", client)
   const keyName = code;
   const payload = { originalUrl, linkId };
   try {

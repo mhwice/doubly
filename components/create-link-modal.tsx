@@ -45,20 +45,23 @@ export function CreateLinkModal({ isOpen, onOpenChange }: CustomDialogProps) {
     startTransition(async () => {
       try {
         const res = await createLink({ originalUrl });
+        console.log("success?", res.success);
         if (res.success) {
           const { code, originalUrl, id } = res.data;
 
           // [TODO] - eventually one of these will be removed
 
           // populate kv cache with fire and forget.
-          writeToKV(code, originalUrl, id).catch((e) => {
-            console.error("failed to write to kv", e);
-          });
+          console.log("writing to kv", code, originalUrl, id);
+          writeToKV(code, originalUrl, id)
+            .then(() => console.log("writeToKV resolved"))
+            .catch((e) => console.error("failed to write to kv", e));
 
           // populate redis cache with fire and forget.
-          cacheLink(code, originalUrl, id).catch((e) => {
-            console.error("failed to write to kv", e);
-          });
+          console.log("writing to redis", code, originalUrl, id);
+          cacheLink(code, originalUrl, id)
+            .then(() => console.log("cacheLink resolved"))
+            .catch((e) => console.error("failed to write to redis", e));
 
           // [TODO] use optimistic update to make faster
           setDate(new Date());
