@@ -2,13 +2,12 @@ import "server-only";
 
 import { env } from "@/data-access/env";
 import { neon } from '@neondatabase/serverless';
-import { date, ZodError } from 'zod';
+import { ZodError } from 'zod';
 import { parseQueryResponse, type QueryResponse } from "@/utils/helper";
 import {
   ClickPayloadSchema,
   ComboboxEntrySchema,
   AnalyticsReadSchema,
-  type ClickPayload,
   type AnalyticsRead,
   type ComboboxPage,
 } from "@/lib/zod/clicks";
