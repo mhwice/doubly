@@ -51,3 +51,22 @@ docker compose down --volumes
 
 For more information checkout [this article](https://neon.tech/guides/local-development-with-neon) by Neon.
 
+#### TimescaleDB Hypertable
+
+This project uses TimescaleDB Hypertables to greatly improve the write performance of our Postgres database. In order to setup TimescaleDB do the following:
+
+1. Install the extension
+```sql
+CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
+```
+
+2. Convert the click_events table, using the 'created_at' field as the time dimension
+```sql
+SELECT create_hypertable(
+  'click_events',
+  'created_at',
+  chunk_time_interval => INTERVAL '1 day',
+  if_not_exists => TRUE,
+  migrate_data => TRUE
+);
+```
