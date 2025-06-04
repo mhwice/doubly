@@ -1,7 +1,9 @@
 "use server";
 
+import { writeToKV } from "@/data-access/cloudflare-kv";
 import { LinkTable } from "@/data-access/links";
 import { isAllowed } from "@/data-access/permission";
+import { cacheLink } from "@/data-access/redis";
 import { ERROR_MESSAGES } from "@/lib/error-messages";
 import { getSession } from "@/lib/get-session";
 import { ServerResponse } from "@/lib/server-repsonse";
@@ -33,10 +35,28 @@ export const createLink = async (params: unknown) => {
   if (!code) return ServerResponse.fail(ERROR_MESSAGES.INTERNAL_SERVER_ERROR);
   const shortUrl = makeShortUrl(code);
 
-  return await LinkTable.createLink({
+  const dbResponse = await LinkTable.createLink({
     userId: session.user.id,
     code,
     shortUrl: shortUrl,
     ...validated.data,
   });
+
+  if (!dbResponse.success) {
+    return dbResponse; // our existing error handling logic will kick in
+  }
+
+  const { code: shortCode, originalUrl, id: linkId } = dbResponse.data;
+
+  console.log("writing to kv", shortCode, originalUrl, linkId);
+  writeToKV(shortCode, originalUrl, linkId)
+    .then(() => console.log("writeToKV resolved"))
+    .catch((e) => console.error("failed to write to kv", e));
+
+  console.log("writing to redis", shortCode, originalUrl, linkId);
+  cacheLink(shortCode, originalUrl, linkId)
+    .then(() => console.log("cacheLink resolved"))
+    .catch((e) => console.error("failed to write to redis", e));
+
+  return dbResponse;
 }
