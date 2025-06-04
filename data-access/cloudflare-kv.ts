@@ -4,27 +4,17 @@ const client = new Cloudflare({
   apiToken: process.env.CLOUDFLARE_API_KEY
 });
 
+const namespaceId = process.env.CLOUDFLARE_KV_NAMESPACE_ID;
+const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+
 export async function writeToKV(code: string, originalUrl: string, linkId: number) {
-  const key = code;
-  const payload = JSON.stringify({ originalUrl, linkId });
-  const namespaceId = "7fdaccaf9072443db29e72b452dd8254";
-  const accountId = "cedc684260ce5373e68f79a5fa17e2f3";
-
+  const keyName = code;
+  const payload = { originalUrl, linkId };
   try {
-    const response = await client.put(`/accounts/${accountId}/storage/kv/namespaces/${namespaceId}/values/${key}`,
-      {
-        // headers: { "Content-Type": "application/json" },
-        headers: { "Content-Type": "text/plain;charset=UTF-8" },
-        body: payload,
-      }
-    );
-
-    console.log("KV write success:", response);
-    return response;
+    await client.put(`/accounts/${accountId}/storage/kv/namespaces/${namespaceId}/values/${keyName}`, { body: payload });
   } catch (error: unknown) {
     console.error("Failed to write to KV", error);
     throw error;
   }
-
 }
 
