@@ -26,6 +26,9 @@ Doubly empowers you to make informed decisions based on real user behavior, all 
   - [Vercel](https://vercel.com/) - Hosting + edge functions
   - [Upstash Redis](https://upstash.com/) - Link caching
   - [Upstash QStash](https://upstash.com/) - Serverless queues
+  - [TimescaleDB Hypertable](https://docs.timescale.com/use-timescale/latest/hypertables/) - Fast time-series Postgres tables
+  - [Cloudflare Workers](https://workers.cloudflare.com/) - Serverless, edge functions
+  - [Cloudflare KV](https://developers.cloudflare.com/kv/) - Serverless, edge key/value storage
 
 ### Local Development
 
