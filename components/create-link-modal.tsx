@@ -19,6 +19,7 @@ import { useCurrentDate } from '@/app/dashboard/date-context';
 import { Input } from './doubly/ui/input';
 import { cleanUrl } from '@/app/dashboard/links/components/columns';
 import { OriginalUrlSchema } from "@/lib/zod/links";
+import { writeToKV } from "@/data-access/cloudflare-kv";
 
 interface CustomDialogProps {
   isOpen: boolean;
@@ -44,6 +45,12 @@ export function CreateLinkModal({ isOpen, onOpenChange }: CustomDialogProps) {
       try {
         const res = await createLink({ originalUrl });
         if (res.success) {
+          const { code, originalUrl, id } = res.data;
+          // populate kv cache with fire and forget.
+          writeToKV(code, originalUrl, id).catch((e) => {
+            console.error("failed to write to kv", e);
+          });
+
           // [TODO] use optimistic update to make faster
           setDate(new Date());
           onOpenChange(false);
