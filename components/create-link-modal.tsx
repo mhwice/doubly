@@ -20,6 +20,7 @@ import { Input } from './doubly/ui/input';
 import { cleanUrl } from '@/app/dashboard/links/components/columns';
 import { OriginalUrlSchema } from "@/lib/zod/links";
 import { writeToKV } from "@/data-access/cloudflare-kv";
+import { cacheLink } from "@/data-access/redis";
 
 interface CustomDialogProps {
   isOpen: boolean;
@@ -46,8 +47,16 @@ export function CreateLinkModal({ isOpen, onOpenChange }: CustomDialogProps) {
         const res = await createLink({ originalUrl });
         if (res.success) {
           const { code, originalUrl, id } = res.data;
+
+          // [TODO] - eventually one of these will be removed
+
           // populate kv cache with fire and forget.
           writeToKV(code, originalUrl, id).catch((e) => {
+            console.error("failed to write to kv", e);
+          });
+
+          // populate redis cache with fire and forget.
+          cacheLink(code, originalUrl, id).catch((e) => {
             console.error("failed to write to kv", e);
           });
 
