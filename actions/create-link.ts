@@ -3,7 +3,7 @@
 import { writeToKV } from "@/data-access/cloudflare-kv";
 import { LinkTable } from "@/data-access/links";
 import { isAllowed } from "@/data-access/permission";
-import { cacheLink } from "@/data-access/redis";
+// import { cacheLink } from "@/data-access/redis";
 import { ERROR_MESSAGES } from "@/lib/error-messages";
 import { getSession } from "@/lib/get-session";
 import { ServerResponse } from "@/lib/server-repsonse";
@@ -48,15 +48,15 @@ export const createLink = async (params: unknown) => {
 
   const { code: shortCode, originalUrl, id: linkId } = dbResponse.data;
 
-  console.log("writing to kv", shortCode, originalUrl, linkId);
+  // console.log("writing to kv", shortCode, originalUrl, linkId);
   writeToKV(shortCode, originalUrl, linkId)
-    .then(() => console.log("writeToKV resolved"))
-    .catch((e) => console.error("failed to write to kv", e));
+    // .then(() => console.log("writeToKV resolved"))
+    // .catch((e) => console.error("failed to write to kv", e));
 
-  console.log("writing to redis", shortCode, originalUrl, linkId);
-  cacheLink(shortCode, originalUrl, linkId)
-    .then(() => console.log("cacheLink resolved"))
-    .catch((e) => console.error("failed to write to redis", e));
+  // console.log("writing to redis", shortCode, originalUrl, linkId);
+  // cacheLink(shortCode, originalUrl, linkId)
+    // .then(() => console.log("cacheLink resolved"))
+    // .catch((e) => console.error("failed to write to redis", e));
 
   return dbResponse;
 }

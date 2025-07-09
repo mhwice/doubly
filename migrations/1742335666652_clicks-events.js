@@ -15,6 +15,7 @@ exports.up = (pgm) => {
     CREATE TABLE click_events (
       id SERIAL NOT NULL,
       link_id INTEGER NOT NULL REFERENCES links(id) ON DELETE CASCADE,
+      event_id TEXT NOT NULL,
       source source_type NOT NULL,
       created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
       country VARCHAR(63),
@@ -28,6 +29,16 @@ exports.up = (pgm) => {
       device VARCHAR(63),
       PRIMARY KEY (id, created_at)
     );
+
+    SELECT create_hypertable(
+      'click_events',
+      'created_at',
+      chunk_time_interval => INTERVAL '1 day',
+      if_not_exists => TRUE,
+      migrate_data => TRUE
+    );
+
+    CREATE UNIQUE INDEX click_events_created_at_event_id_uniq ON click_events (created_at, event_id);
   `);
 };
 

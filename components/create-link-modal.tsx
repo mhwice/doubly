@@ -19,8 +19,8 @@ import { useCurrentDate } from '@/app/dashboard/date-context';
 import { Input } from './doubly/ui/input';
 import { cleanUrl } from '@/app/dashboard/links/components/columns';
 import { OriginalUrlSchema } from "@/lib/zod/links";
-import { writeToKV } from "@/data-access/cloudflare-kv";
-import { cacheLink } from "@/data-access/redis";
+// import { writeToKV } from "@/data-access/cloudflare-kv";
+// import { cacheLink } from "@/data-access/redis";
 
 interface CustomDialogProps {
   isOpen: boolean;

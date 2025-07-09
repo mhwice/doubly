@@ -5,6 +5,7 @@ import { z } from "zod";
 export const ClickEventSchema = z.object({
   id: z.number().nonnegative().lt(2_147_483_648),
   linkId: z.number().nonnegative().lt(2_147_483_648),
+  eventId: z.string().trim(),
   source: z.enum(["qr", "link"]),
   createdAt: z.coerce.date(),
   country: z.string().trim().min(1).max(63),

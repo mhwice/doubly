@@ -1,7 +1,5 @@
 # doubly
 
-**Track Every Click. Master Every Metric.**
-
 **Doubly** is a powerful link shortener and analytics platform designed to give you deep insights into how your links are performing. Simply provide a URL, and Doubly generates a smart proxy link. When users click this link, they’re seamlessly redirected to your original destination—while Doubly captures detailed data about the click event.
 
 From device type to geographic location, Doubly collects and organizes valuable metrics, presenting them in a clear, user-friendly dashboard. With intuitive filtering options, you can quickly drill down to the data that matters most. For example, you can effortlessly view how many clicks came from Firefox on Android devices from Mexico, France or anywhere in Asia, in the last 30 days.
@@ -29,6 +27,7 @@ Doubly empowers you to make informed decisions based on real user behavior, all 
   - [TimescaleDB Hypertable](https://docs.timescale.com/use-timescale/latest/hypertables/) - Fast time-series Postgres tables
   - [Cloudflare Workers](https://workers.cloudflare.com/) - Serverless, edge functions
   - [Cloudflare KV](https://developers.cloudflare.com/kv/) - Serverless, edge key/value storage
+  - [Cloudflare Queues](https://developers.cloudflare.com/queues/) - Serverless queues
 
 ### Local Development
 
