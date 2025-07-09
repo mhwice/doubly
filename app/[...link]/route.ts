@@ -1,11 +1,12 @@
 import { permanentRedirect, redirect } from "next/navigation";
 import { NextRequest, userAgent } from 'next/server'
 import iso3166 from "iso-3166-2";
-import { cacheLink, getLink } from "@/data-access/redis";
+// import { cacheLink, getLink } from "@/data-access/redis";
 import { LinkTable } from "@/data-access/links";
-import { enqueueClick } from "@/data-access/queue";
-import { writeToStream } from "@/utils/write-to-stream";
-import { writeToKV } from "@/data-access/cloudflare-kv";
+import { ClickEvents } from "@/data-access/clicks";
+// import { enqueueClick } from "@/data-access/queue";
+// import { writeToStream } from "@/utils/write-to-stream";
+// import { writeToKV } from "@/data-access/cloudflare-kv";
 
 // Makes sure that we never cache anything
 export const dynamic = 'force-dynamic';
@@ -110,19 +111,20 @@ export async function GET(request: NextRequest) {
   }
 
   // Check cache for url
-  const redisLink = await getLink(code);
-  if (redisLink) {
-    const payload = {
-      linkId: redisLink.linkId,
-      createdAt: new Date(),
-      ...extractMetadata(request)
-    };
-    await enqueueClick(payload);
-    // ----- Experimental -------
-    await writeToStream(payload);
-    // --------------------------
-    permanentRedirect(redisLink.originalUrl);
-  }
+  // const redisLink = await getLink(code);
+  // if (redisLink) {
+  //   const payload = {
+  //     linkId: redisLink.linkId,
+  //     createdAt: new Date(),
+  //     ...extractMetadata(request)
+  //   };
+
+  //   // await enqueueClick(payload);
+  //   // await writeToStream(payload);
+  //   await ClickEvents.recordClick(payload);
+
+  //   permanentRedirect(redisLink.originalUrl);
+  // }
 
   // Cache miss → DB lookup
   const response = await LinkTable.getLinkByCode(code);
@@ -134,23 +136,21 @@ export async function GET(request: NextRequest) {
   const dbLink = response.data;
 
   // Populate cache
-  await cacheLink(code, dbLink.originalUrl, dbLink.id);
+  // await cacheLink(code, dbLink.originalUrl, dbLink.id);
 
-  // ----- Experimental -------
-  await writeToKV(code, dbLink.originalUrl, dbLink.id);
-  // --------------------------
+  // await writeToKV(code, dbLink.originalUrl, dbLink.id);
 
   const payload = {
     linkId: dbLink.id,
-    createdAt: new Date(),
+    createdAt: new Date().toISOString(),
+    eventId: "tmp",
     ...extractMetadata(request)
   };
 
   // Enqueue click
-  await enqueueClick(payload);
-  // ----- Experimental -------
-  await writeToStream(payload);
-  // --------------------------
+  // await enqueueClick(payload);
+  // await writeToStream(payload);
+  await ClickEvents.recordClick(payload);
 
   permanentRedirect(dbLink.originalUrl);
 }

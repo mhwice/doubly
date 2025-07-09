@@ -157,6 +157,42 @@ export class LinkTable {
     }
   }
 
+  static async writeLinkBatch({ keys, values }: { keys: string[], values: string[][] }): Promise<ServerResponseType<{
+      code: string;
+      linkId: number;
+  }[]>> {
+    try {
+
+      const placeholders = values.map((rowValues, rowIdx) => {
+        const rowPlaceholders = rowValues.map((_, colIdx) => `$${rowIdx * keys.length + colIdx + 1}`);
+        return `(${rowPlaceholders.join(",")})`;
+      }).join(",");
+
+      const query = `
+        INSERT INTO links (${keys})
+        VALUES ${placeholders}
+        RETURNING *;
+      `;
+
+      const flattened = values.flat();
+      // console.log(query, flattened);
+      const response: QueryResponse = await sql(query, flattened);
+      // console.log(response);
+      const result = parseQueryResponse(response, LinkSchema);
+
+      if (result.length !== values.length) return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
+
+      const linkIds = [];
+      for (const { code, id } of result) linkIds.push({ code, linkId: id });
+      return ServerResponse.success(linkIds);
+
+    } catch (error: unknown) {
+      console.log(error)
+      if (error instanceof ZodError) return ServerResponse.fail(ERROR_MESSAGES.INVALID_PARAMS);
+      return ServerResponse.fail(ERROR_MESSAGES.DATABASE_ERROR);
+    }
+  }
+
   static async editLink(params: z.infer<typeof LinkEditSchema>): Promise<ServerResponseType<LinkDTO>> {
     try {
 

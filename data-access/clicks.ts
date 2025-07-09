@@ -26,8 +26,8 @@ const sql = env.ENV === "dev" ? localSQL : neon(env.DATABASE_URL);
 export class ClickEvents {
 
   static async recordClick(params: unknown): Promise<ServerResponseType<Click>> {
+
     try {
-      console.log({params})
       /*
 
       params: {
@@ -55,6 +55,7 @@ export class ClickEvents {
       ]
 
       */
+
       const tableData = ClickPayloadSchema.parse(params);
 
       const columns = Object.keys(tableData);
