@@ -1,16 +1,15 @@
 export const runtime = "nodejs";
 
-import { createLink } from "@/actions/create-link";
 import { LinkTable } from "@/data-access/links";
 import { ERROR_MESSAGES } from "@/lib/error-messages";
 import { getSession } from "@/lib/get-session";
 import { ServerResponse } from "@/lib/server-repsonse";
 import { makeCode, makeShortUrl } from "@/utils/generate-short-code";
 import { writeFile } from "fs/promises";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { resolve } from "path";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   const session = await getSession();
   if (!session) return NextResponse.json(ServerResponse.fail(ERROR_MESSAGES.UNAUTHORIZED));
   if (session.user.email !== "test@doubly.dev") return NextResponse.json(ServerResponse.fail(ERROR_MESSAGES.UNAUTHORIZED));
@@ -25,7 +24,7 @@ export async function GET(request: NextRequest) {
     const data = [];
     for (let it = 0; it < LINKS_PER_BATCH; it += 1) {
       const code = makeCode();
-      if (!code) return ServerResponse.fail(ERROR_MESSAGES.INTERNAL_SERVER_ERROR);
+      if (!code) return NextResponse.json(ServerResponse.fail(ERROR_MESSAGES.INTERNAL_SERVER_ERROR));
       const shortUrl = makeShortUrl(code);
       const entry = [session.user.id, code, shortUrl, "https://www.google.com"];
       data.push(entry);
