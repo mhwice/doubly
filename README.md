@@ -1,4 +1,4 @@
-# doubly
+![](./README.assets/doubly-header.png)
 
 **Doubly** is a powerful link shortener and analytics platform designed to give you deep insights into how your links are performing. Simply provide a URL, and Doubly generates a smart proxy link. When users click this link, they’re seamlessly redirected to your original destination—while Doubly captures detailed data about the click event.
 
