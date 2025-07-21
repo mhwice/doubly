@@ -1,7 +1,12 @@
 ![](./README.assets/doubly-header.png)
 
-[![Live Demo](https://img.shields.io/badge/demo-doubly.dev-blue?style=flat&logo=vercel)](https://doubly.dev)  
-[![Backend Repo](https://img.shields.io/badge/backend-redirect--service-green?style=flat&logo=github)](https://github.com/mhwice/doubly-redirect-service)
+<p align="center">
+  <a href="https://doubly.dev">Live Site</a> •
+  <a href="https://github.com/mhwice/doubly-redirect-service">Redirect Service</a> •
+  <a href="#built-with">Built With</a> •
+  <a href="#features">Features</a> •
+  <a href="#performance">Performance</a>
+</p>
 
 **Doubly** is a link shortener and analytics platform that generates compact proxy URLs and captures rich click data—everything from device type and geographic location to timestamp and referrer. Simply provide a destination URL, get back a smart short link, and watch as every click is logged and visualized in a clean, user‑friendly dashboard. Filter by browser, OS, country, city, referrer, or any combination over any timeframe to turn raw clicks into actionable insights—no manual instrumentation required.
 
